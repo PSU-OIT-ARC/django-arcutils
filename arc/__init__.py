@@ -1,10 +1,24 @@
+from django import forms
 from django.template.loader import add_to_builtins
 from django.contrib.admin.util import NestedObjects
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth import get_user_model
 from django.conf import settings
 
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arc.templatetags.arc')
 add_to_builtins('bootstrapform.templatetags.bootstrap')
+
+# monkey patch the PasswordResetForm so it indicates if a user does not exist
+def _clean_email(self):
+    email = self.cleaned_data['email']
+    UserModel = get_user_model()
+    if not UserModel.objects.filter(email=email, is_active=True).exists():
+        raise forms.ValidationError("A user with that email address does not exist!")
+
+    return email
+
+PasswordResetForm.clean_email = _clean_email
 
 def will_be_deleted_with(obj):
     """
