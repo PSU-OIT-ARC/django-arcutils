@@ -8,7 +8,10 @@ setup(
     author='Matt Johnson',
     author_email='mdj2@pdx.edu',
     description="ARC Utils for Django sites",
-    packages=['django-bootstrap-form'],
+    packages=['arc'],
+    install_requires=[
+        'django-bootstrap-form',
+    ],
     zip_safe=False,
     classifiers=[
         'Framework :: Django',
