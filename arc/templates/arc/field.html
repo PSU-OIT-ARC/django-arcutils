@@ -1,0 +1,38 @@
+<div class="form-group {{ css_class }}">
+    {% if field.is_checkbox %}
+        <div class=" {{ field.error_class }}">
+            <label class="control-label checkbox {% if field.field.required %}is-required{% endif %}">{{ field }} {{ field.label }}</label>
+            {{ field.errors }}
+        </div>
+    {% elif field.is_date %}
+        <div class=" {{ field.error_class }} datepicker">
+            <label class="control-label {% if field.field.required %}is-required{% endif %}" for="{{ field.id_for_label }}">{{ field.label|safe }}{% if field.help_text and tooltip_help %}<a href=# title="{{field.help_text}}"><i class='glyphicon glyphicon-question-sign'></i></a>{% endif%}</label>
+            {{ field.errors }}
+            {{ field }}
+        </div>
+    {% elif field.is_multi_checkbox %}
+        <div class=" {{ field.error_class }}">
+            <label class="control-label {% if field.field.required %}is-required{% endif %}" for="{{ field.id_for_label }}">{{ field.label|safe }}{% if field.help_text and tooltip_help %}<a href=# title="{{field.help_text}}"><i class='glyphicon glyphicon-question-sign'></i></a>{% endif%}</label>
+            {{ field.errors }}
+            <div class="checkbox">
+                <label class="check-all" onclick="$(this).parent().find('input').prop('checked', $(this).find('input').prop('checked'))"><input type="checkbox" value="check-all" /> Check all</label>
+                {{ field }}
+            </div>
+        </div>
+    {% elif not field.is_hidden %}
+        <div class=" {{ field.error_class }}">
+            {% if field.label %}
+                <label class="control-label {% if field.field.required %}is-required{% endif %}" for="{{ field.id_for_label }}">{{ field.label|safe }}{% if field.help_text and tooltip_help %}<a href=# title="{{field.help_text}}"><i class='glyphicon glyphicon-question-sign'></i></a>{% endif%}</label>
+            {% endif %}
+            {{ field.errors }}
+            {{ field }}
+        </div>
+    {% else %}
+        {{ field }}
+    {% endif %}
+    {% if not tooltip_help %}
+        {% if field.help_text %}
+        <p class="help-block">{{ field.help_text }}</p>
+        {% endif %}
+    {%endif %}
+</div>
