@@ -29,3 +29,7 @@ class SomeModel(models.Model):
 1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
 
 
+## Testing
+
+    pip install model_mommy django django-bootstrap-form
+    ./runtests.py
