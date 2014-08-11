@@ -3,6 +3,12 @@
 ## Install
 
     pip install -e git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
+    
+Add to settings file:
+    
+    INSTALLED_APPS = (
+        'arcutils',
+    )
 
 ## Features
 
