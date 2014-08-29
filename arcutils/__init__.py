@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.utils.six import add_metaclass
 
+forms.Form.required_css_class = "required"
+forms.ModelForm.required_css_class = "required"
 
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arcutils.templatetags.arc')
