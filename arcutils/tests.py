@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from model_mommy.mommy import make
 from django.test import TestCase
 from django.http import HttpRequest, QueryDict
@@ -6,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
 from . import PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum
+from .ldap import parse_profile
 
 class TestPasswordResetForm(TestCase):
     def setUp(self):
@@ -109,3 +111,16 @@ class TestAddGet(TestCase):
             "variable": "lame",
         }))
         self.assertEqual(output, "?foo=1&foo=2&bar=lame&page=1&next=lame")
+
+
+class TestLdap(TestCase):
+    def test_parse_profile(self):
+        entry = {
+            "sn": ["Johnson"],
+            "givenName": ['Matt'],
+            "mail": ["mdj2@pdx.edu"],
+        }
+        result = parse_profile(entry)
+        self.assertEqual(result['first_name'], "Matt")
+        self.assertEqual(result['last_name'], "Johnson")
+        self.assertEqual(result['email'], "mdj2@pdx.edu")
