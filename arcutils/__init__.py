@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.fields import Field
 from django.template.loader import add_to_builtins
 from django.contrib.admin.util import NestedObjects
 from django.contrib.auth.forms import PasswordResetForm
@@ -8,6 +9,7 @@ from django.utils.six import add_metaclass
 
 forms.Form.required_css_class = "required"
 forms.ModelForm.required_css_class = "required"
+Field.required_css_class = "required"
 
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arcutils.templatetags.arc')
