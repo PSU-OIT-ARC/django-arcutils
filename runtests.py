@@ -16,7 +16,15 @@ settings.configure(
         'django.contrib.sessions',
         'django.contrib.admin',
         'arcutils',
-    )
+    ),
+    LDAP={
+        "default": {
+            "host": "ldap://ldap-login.oit.pdx.edu",
+            "username": "",
+            "password": "",
+            "search_dn": "ou=people,dc=pdx,dc=edu",
+        }
+    }
 )
 
 

@@ -2,12 +2,13 @@ from __future__ import absolute_import
 from model_mommy.mommy import make
 from django.test import TestCase
 from django.http import HttpRequest, QueryDict
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
 from . import PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum
-from .ldap import parse_profile
+from .ldap import parse_profile, parse_email, parse_name, connect
 
 class TestPasswordResetForm(TestCase):
     def setUp(self):
@@ -114,13 +115,54 @@ class TestAddGet(TestCase):
 
 
 class TestLdap(TestCase):
+    def test_connect(self):
+        conn = connect(using="default")
+        self.assertTrue(conn)
+        self.assertIn("_conn", settings.LDAP['default'])
+
     def test_parse_profile(self):
         entry = {
             "sn": ["Johnson"],
             "givenName": ['Matt'],
             "mail": ["mdj2@pdx.edu"],
+            "uid": ["mdj2"],
         }
         result = parse_profile(entry)
         self.assertEqual(result['first_name'], "Matt")
         self.assertEqual(result['last_name'], "Johnson")
         self.assertEqual(result['email'], "mdj2@pdx.edu")
+
+    def test_parse_email(self):
+        self.assertEqual("foo@bar.com", parse_email({"mail": ["foo@bar.com"]}))
+        self.assertEqual("foo@pdx.edu", parse_email({"uid": ["foo"]}))
+
+    def test_parse_name(self):
+        # test the last name login
+        self.assertEqual(("John", "Doe"), parse_name({
+            "sn": ["Doe"],
+            "givenName": ["John"]
+        }))
+        self.assertEqual(("John", "Doe"), parse_name({
+            "preferredcn": ["John Doe"],
+            "givenName": ["John"]
+        }))
+        self.assertEqual(("John", "Doe"), parse_name({
+            "cn": ["John Rake Doe"],
+            "givenName": ["John"]
+        }))
+        self.assertEqual(("John", ""), parse_name({
+            "givenName": ["John"]
+        }))
+
+        # test the first_name login
+        self.assertEqual(("John", "Doe"), parse_name({
+            "sn": ["Doe"],
+            "preferredcn": ["John Rake Doe"]
+        }))
+        self.assertEqual(("John", "Doe"), parse_name({
+            "sn": ["Doe"],
+            "cn": ["John Rake Doe"]
+        }))
+        self.assertEqual(("", "Doe"), parse_name({
+            "sn": ["Doe"],
+        }))
