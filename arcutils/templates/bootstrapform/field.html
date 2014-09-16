@@ -5,7 +5,7 @@
         <div class="{{ classes.single_value }}">
             <div class="checkbox">
                 {% if field.auto_id %}
-                    <label {% if field.field.required and field.required_css_class %}class="{{ field.required_css_class }}"{% endif %}>
+                    <label {% if field.field.required and field.field.required_css_class %}class="{{ field.field.required_css_class }}"{% endif %}>
                         {{ field }} <span>{{ field.label }}</span>
                     </label>
                 {% endif %}
@@ -22,7 +22,7 @@
         </div>
     {% elif field|is_radio %}
         {% if field.auto_id %}
-            <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.required_css_class }}{% endif %}">{{ field.label }}</label>
+            <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.field.required_css_class }}{% endif %}">{{ field.label }}</label>
         {% endif %}
         <div class="{{ classes.value }}">
             {% for choice in field %}
@@ -46,7 +46,7 @@
         </div>
     {% else %}
         {% if field.auto_id and field.label %}
-            <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.required_css_class }}{% endif %}" for="{{ field.auto_id }}">{{ field.label }}</label>
+            <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.field.required_css_class }}{% endif %}" for="{{ field.auto_id }}">{{ field.label }}</label>
         {% endif %}
 
         <div class="{{ classes.value }} {% if field|is_multiple_checkbox %}multiple-checkbox{% endif %}">
