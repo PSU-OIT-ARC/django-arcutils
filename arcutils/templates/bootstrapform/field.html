@@ -24,6 +24,11 @@
         {% if field.auto_id %}
             <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.field.required_css_class }}{% endif %}">{{ field.label }}</label>
         {% endif %}
+
+        {% for error in field.errors %}
+            <span class="help-block {{ field.error_css_class }}">{{ error }}</span>
+        {% endfor %}
+
         <div class="{{ classes.value }}">
             {% for choice in field %}
                 <div class="radio">
@@ -32,10 +37,6 @@
                         {{ choice.choice_label }}
                     </label>
                 </div>
-            {% endfor %}
-
-            {% for error in field.errors %}
-                <span class="help-block {{ field.error_css_class }}">{{ error }}</span>
             {% endfor %}
 
             {% if field.help_text %}
@@ -51,15 +52,15 @@
             <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.field.required_css_class }}{% endif %}" for="{{ field.auto_id }}">{{ field.label }}</label>
         {% endif %}
 
+        {% for error in field.errors %}
+            <span class="help-block {{ field.error_css_class }}">{{ error }}</span>
+        {% endfor %}
+
         <div class="{{ classes.value }} {% if field|is_multiple_checkbox %}checkbox multiple-checkbox{% endif %}">
             {% if field|is_multiple_checkbox %}
                 <label id='check-all-{{ field.auto_id }}' class="check-all" onclick="$(this).parent().find('input').prop('checked', $(this).find('input').prop('checked'))"><input type="checkbox" value="check-all" /> Check all</label>
             {% endif %}
             {{ field }}
-
-            {% for error in field.errors %}
-                <span class="help-block {{ field.error_css_class }}">{{ error }}</span>
-            {% endfor %}
 
             {% if field.help_text %}
                 <p class="help-block">
