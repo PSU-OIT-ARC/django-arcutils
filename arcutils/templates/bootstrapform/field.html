@@ -44,6 +44,8 @@
             </p>
             {% endif %}
         </div>
+    {% elif field.field.widget.is_hidden %}
+        {{ field }}
     {% else %}
         {% if field.auto_id and field.label %}
             <label class="control-label {{ classes.label }} {% if field.field.required %}{{ field.field.required_css_class }}{% endif %}" for="{{ field.auto_id }}">{{ field.label }}</label>
