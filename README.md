@@ -55,6 +55,8 @@ results = ldapsearch("odin=mdj2")
 dn, entry = results[0]
 parse_profile(entry)
 ```
+1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form in templates, without having a special case for it.
+1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if a form is being deleted, its validation errors are blanked out.
 
 
 ## Testing

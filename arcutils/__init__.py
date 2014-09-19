@@ -1,5 +1,8 @@
 from django import forms
 from django.forms.fields import Field
+from django.forms.models import BaseModelFormSet
+from django.forms.formsets import BaseFormSet
+from django.forms.util import ErrorDict
 from django.template.loader import add_to_builtins
 from django.contrib.admin.util import NestedObjects
 from django.contrib.auth.forms import PasswordResetForm
@@ -14,6 +17,35 @@ Field.required_css_class = "required"
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arcutils.templatetags.arc')
 add_to_builtins('bootstrapform.templatetags.bootstrap')
+
+
+# add some helpful methods to the formset
+class FormSetMixin(object):
+    def iter_with_empty_form_first(self):
+        """
+        Iterates over the forms in this formset, but the first form yielded
+        is the empty one. This simplifies the logic in templates, since the
+        empty_form is no longer a special case
+        """
+        yield self.empty_form
+        for form in iter(self):
+            yield form
+
+    def clean(self):
+        """
+        When cleaning, if the form is being deleted, any errors on it should be
+        ignored
+        """
+        for form in self.forms:
+            # this form is being deleted, so overwrite the errors
+            if form.cleaned_data.get("DELETE"):
+                form._errors = ErrorDict()
+
+
+# add the FormSetMixin to the base FormSet classes
+class BaseFormSet(FormSetMixin, BaseFormSet): pass
+class BaseModelFormSet(FormSetMixin, BaseModelFormSet): pass
+
 
 # monkey patch the PasswordResetForm so it indicates if a user does not exist
 def _clean_email(self):
