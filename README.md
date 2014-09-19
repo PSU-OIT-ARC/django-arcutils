@@ -61,5 +61,5 @@ parse_profile(entry)
 
 ## Testing
 
-    pip install model_mommy django django-bootstrap-form
+    pip install model_mommy django django-bootstrap-form mock
     ./runtests.py
