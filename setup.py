@@ -9,9 +9,6 @@ setup(
     author_email='mdj2@pdx.edu',
     description="ARC Utils for Django sites",
     packages=['arcutils'],
-    install_requires=[
-        'django-bootstrap-form',
-    ],
     zip_safe=False,
     classifiers=[
         'Framework :: Django',

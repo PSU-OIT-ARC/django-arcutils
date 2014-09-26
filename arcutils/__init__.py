@@ -16,7 +16,7 @@ Field.required_css_class = "required"
 
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arcutils.templatetags.arc')
-add_to_builtins('bootstrapform.templatetags.bootstrap')
+add_to_builtins('arcutils.templatetags.bootstrap')
 
 
 # add some helpful methods to the formset
