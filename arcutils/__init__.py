@@ -90,9 +90,40 @@ def will_be_deleted_with(obj):
 
 
 class IterableChoiceEnum(type):
-    def __iter__(self):
+
+    def __init__(cls, name, bases, attrs):
+        cls._choices_dict = dict(cls)
+
+    def __iter__(cls):
         """Simply return the iterator of the _choices tuple"""
-        return iter(self._choices)
+        return iter(cls._choices)
+
+    def __getitem__(cls, choice):
+        """Return choice description via item access.
+
+        Example::
+
+            >>> class MyEnum(ChoiceEnum):
+            ...
+            ...     A = 1
+            ...     B = 2
+            ...
+            ...     _choices = (
+            ...         (A, 'Alpha'),
+            ...         (B, 'Beta'),
+            ...     )
+            ...
+            >>> MyEnum[MyEnum.A]
+            'Alpha'
+
+        """
+        return cls._choices_dict[choice]
+
+    def get(cls, choice, default=None):
+        try:
+            return cls[choice]
+        except KeyError:
+            return default
 
 
 @add_metaclass(IterableChoiceEnum)
@@ -120,4 +151,3 @@ class ChoiceEnum(object):
     """
     _choices = ()
     # http://stackoverflow.com/questions/5434400/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
-
