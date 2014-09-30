@@ -74,16 +74,22 @@ def parse_profile(ldap_entry):
 
 
 def parse_name(ldap_entry):
+    """Return the user's first and last name as a 2-tuple.
+
+    This is messy because there's apparently no canonical field to pull
+    the user's first and last name from and also because the user's
+    surname field (for example) may contain a title at the end (like
+    "Bob Smith, Assistant Professor").
+
     """
-    Returns a two tuple: The user's first and last name derived from the ldapentry
-    """
-    if "sn" in ldap_entry:
-        last_name = ldap_entry['sn'][0]
+    first_name = ldap_entry.get(
+        'givenName', ldap_entry.get('preferredcn', ldap_entry.get('cn', [''])))
+    first_name = first_name[0].split(' ')[0]
+    if 'sn' in ldap_entry:
+        last_name = ldap_entry['sn'][0].split(',', 1)[0]
     else:
-        last_name = ldap_entry.get("preferredcn", ldap_entry.get('cn', [""]))[0].split(" ")[-1]
-
-    first_name = ldap_entry.get("givenName", ldap_entry.get("preferredcn", ldap_entry.get("cn", [""])))[0].split(" ")[0]
-
+        last_name = ldap_entry.get('preferredcn', ldap_entry.get('cn', ['']))
+        last_name = last_name[0].split(',', 1)[0].split(' ')[-1]
     return first_name, last_name
 
 
