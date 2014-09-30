@@ -84,9 +84,9 @@ def parse_profile(ldap_entry):
     # XXX: This part is wonky. I'm not sure how many OU parts there can
     #      be or what there proper names are (school vs office, etc).
     ou = ldap_entry.get('ou')
-    if ou is not None:
+    if ou and ou[0]:
         ou = ou[0]
-        ou_parts = ou[0].split(' - ', 1)
+        ou_parts = ou.split(' - ', 1)
         if len(ou_parts) == 1:
             school_or_office = ou_parts[0]
             department = None

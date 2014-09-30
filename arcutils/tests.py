@@ -128,11 +128,18 @@ class TestLdap(TestCase):
             "givenName": ['Matt'],
             "mail": ["mdj2@pdx.edu"],
             "uid": ["mdj2"],
+            "ou": [
+                'Academic & Research Computing - Office of Information Technology',
+                'Blurp - Bloop',
+            ],
         }
         result = parse_profile(entry)
         self.assertEqual(result['first_name'], "Matt")
         self.assertEqual(result['last_name'], "Johnson")
         self.assertEqual(result['email'], "mdj2@pdx.edu")
+        self.assertEqual(result['ou'], 'Academic & Research Computing - Office of Information Technology')
+        self.assertEqual(result['school_or_office'], 'Office of Information Technology')
+        self.assertEqual(result['department'], 'Academic & Research Computing')
 
     def test_parse_email(self):
         self.assertEqual("foo@bar.com", parse_email({"mail": ["foo@bar.com"]}))
