@@ -55,21 +55,58 @@ def ldapsearch(query, using="default", **kwargs):
 
 
 def parse_profile(ldap_entry):
-    """
-    From an LDAP entry, parse out the first name, last name, email address and
-    ODIN username.
+    """Parse fields from LDAP entry into a dict.
 
-    Usage:
-    results = ldapsearch("odin=mdj2")
-    dn, entry = results[0]
-    parse_profile(entry)
+    Items that will be present in the returned dict:
+
+        - first_name
+        - last_name
+        - full_name (may include a middle initial)
+        - title
+        - ou (Organizational unit, unparsed)
+        - school_or_office
+        - department
+        - email
+        - odin (ODIN username)
+
+    Usage::
+
+        results = ldapsearch('odin=mdj2')
+        dn, entry = results[0]
+        parse_profile(entry)
+
     """
-    f, l = parse_name(ldap_entry)
+    first_name, last_name = parse_name(ldap_entry)
+    full_name = ldap_entry.get('preferredcn', ldap_entry.get('cn', ['']))[0]
+    full_name = full_name.split(',', 1)[0]
+    title = ldap_entry.get('title', [''])[0]
+
+    # XXX: This part is wonky. I'm not sure how many OU parts there can
+    #      be or what there proper names are (school vs office, etc).
+    ou = ldap_entry.get('ou')
+    if ou is not None:
+        ou = ou[0]
+        ou_parts = ou[0].split(' - ', 1)
+        if len(ou_parts) == 1:
+            school_or_office = ou_parts[0]
+            department = None
+        else:
+            school_or_office = ou_parts[1]
+            department = ou_parts[0]
+    else:
+        ou = None
+        school_or_office = department = None
+
     return {
-        "first_name": f,
-        "last_name": l,
-        "email": parse_email(ldap_entry),
-        "odin": ldap_entry['uid'][0],
+        'first_name': first_name,
+        'last_name': last_name,
+        'full_name': full_name,
+        'title': title,
+        'ou': ou,
+        'school_or_office': school_or_office,
+        'department': department,
+        'email': parse_email(ldap_entry),
+        'odin': ldap_entry['uid'][0],
     }
 
 
