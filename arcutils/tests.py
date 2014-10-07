@@ -113,7 +113,10 @@ class TestAddGet(TestCase):
             "request": request,
             "variable": "lame",
         }))
-        self.assertEqual(output, "?foo=1&foo=2&bar=lame&page=1&next=lame")
+        self.assertTrue(output.startswith('?'))
+        output_dict = QueryDict(output.lstrip('?'))
+        expected_dict = QueryDict("foo=1&foo=2&bar=lame&page=1&next=lame")
+        self.assertEqual(output_dict, expected_dict)
 
 
 class TestLdap(TestCase):
