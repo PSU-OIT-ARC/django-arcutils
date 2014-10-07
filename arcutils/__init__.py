@@ -3,7 +3,7 @@ from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
 from django.forms.formsets import BaseFormSet
 from django.forms.util import ErrorDict
-from django.template.loader import add_to_builtins
+from django.template import add_to_builtins
 from django.contrib.admin.util import NestedObjects
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
