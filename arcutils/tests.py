@@ -123,7 +123,7 @@ class TestLdap(TestCase):
     def test_connect(self):
         conn = connect(using="default")
         self.assertTrue(conn)
-        self.assertIn("_conn", settings.LDAP['default'])
+        self.assertIn("_server", settings.LDAP['default'])
 
     def test_parse_profile(self):
         entry = {

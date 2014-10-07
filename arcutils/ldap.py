@@ -12,46 +12,63 @@ settings.LDAP = {
 }
 """
 from __future__ import absolute_import
-import tempfile
-import ldap
-import ldap.filter
+
+import ssl
+
+import ldap3
+
 from django.conf import settings
 
-# create a simple alias
-escape = ldap.filter.escape_filter_chars
+
+def escape(s):
+    """python3-ldap doesn't include this for some reason."""
+    s = s.replace('\\', r'\\5C')
+    s = s.replace('*', r'\\2A')
+    s = s.replace('(', r'\\28')
+    s = s.replace(')', r'\\29')
+    s = s.replace('\0', r'\\00')
+    return s
+
 
 def connect(using="default"):
     """
     Connect to the LDAP server in the LDAP settings dict with the name `using`
     """
     config = settings.LDAP[using]
-    # we cache the connection so we don't have to reconnect every time we want
-    # to use LDAP
-    if '_conn' in config:
-        return config['_conn']
 
-    if config.get("ca_file"):
-        ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, config['ca_file'])
-    if config.get("ca_dir"):
-        ldap.set_option(ldap.OPT_X_TLS_CACERTDIR, config['ca_dir'])
+    if config.get('tls'):
+        tls = ldap3.Tls(
+            ca_certs_file=config.get('ca_file'),
+            validate=ssl.CERT_REQUIRED,
+        )
+    else:
+        tls = None
 
-    conn = ldap.initialize(config['host'])
-    conn.protocol_version = ldap.VERSION3
-    if config.get("tls"):
-        conn.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_DEMAND)
-        conn.start_tls_s()
+    if '_server' not in config:
+        server = ldap3.Server(config['host'], tls=tls)
+        config['_server'] = server
 
-    conn.simple_bind_s(config['username'], config['password'])
-    # cache the connection so we don't reconnect
-    config['_conn'] = conn
+    conn = ldap3.Connection(
+        config['_server'],
+        auto_bind=True,
+        user=config['username'],
+        password=config['password'],
+    )
+
     return conn
 
 
 def ldapsearch(query, using="default", **kwargs):
     """Performs an ldapsearch and returns the results"""
     connection = connect(using)
-    results = connection.search_s(settings.LDAP[using]['search_dn'], ldap.SCOPE_SUBTREE, query, **kwargs)
-    return results
+    config = settings.LDAP[using]
+    connection.search(
+        search_base=config['search_dn'],
+        search_filter=query,
+        search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
+        attributes=ldap3.ALL_ATTRIBUTES,
+        **kwargs)
+    return [(r['dn'], r['attributes']) for r in connection.response]
 
 
 def parse_profile(ldap_entry):
