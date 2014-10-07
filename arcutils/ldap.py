@@ -58,17 +58,40 @@ def connect(using="default"):
     return conn
 
 
-def ldapsearch(query, using="default", **kwargs):
-    """Performs an ldapsearch and returns the results"""
+def ldapsearch(query, using="default", attributes=ldap3.ALL_ATTRIBUTES,
+               **kwargs):
+    """Performs an LDAP search and returns the results.
+
+    If there are results, they will be returned as a list of 2-tuples.
+    The first item in each tuple will be the ``dn``. The second item
+    will be a dictionary containing the attributes specified via
+    ``attributes`` (all attributes by default).
+
+    If there are no results, and empty list will be returned.
+
+    ``query`` should be well-formed LDAP query string, escaped if
+    necessary. E.g.::
+
+        '(uid=bob)'
+
+    ``using`` specifies which LDAP settings to use from the ``LDAP``
+    settings dict.
+
+    ``attributes`` and all other keyword args are sent directly to
+    :meth:`ldap3.Connection.search`.
+
+    """
     connection = connect(using)
     config = settings.LDAP[using]
-    connection.search(
+    result = connection.search(
         search_base=config['search_dn'],
         search_filter=query,
         search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
-        attributes=ldap3.ALL_ATTRIBUTES,
+        attributes=attributes,
         **kwargs)
-    return [(r['dn'], r['attributes']) for r in connection.response]
+    if result:
+        return [(r['dn'], r['attributes']) for r in connection.response]
+    return []
 
 
 def parse_profile(ldap_entry):
