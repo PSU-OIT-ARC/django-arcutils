@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-import os, sys
+import sys
+
+import django
 from django.conf import settings
 
 settings.configure(
@@ -17,6 +19,7 @@ settings.configure(
         'django.contrib.admin',
         'arcutils',
     ),
+    MIDDLEWARE_CLASSES=[],
     LDAP={
         "default": {
             "host": "ldap://ldap-login.oit.pdx.edu",
@@ -27,8 +30,16 @@ settings.configure(
     }
 )
 
+if django.VERSION[:2] >= (1, 7):
+    from django import setup
+else:
+    setup = lambda: None
 
 from django.test.simple import DjangoTestSuiteRunner
+from django.test.utils import setup_test_environment
+
+setup()
+setup_test_environment()
 test_runner = DjangoTestSuiteRunner(verbosity=1)
 failures = test_runner.run_tests(['arcutils', ])
 if failures:
