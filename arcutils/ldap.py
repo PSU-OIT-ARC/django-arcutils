@@ -53,6 +53,7 @@ def connect(using="default"):
         auto_bind=True,
         user=config['username'],
         password=config['password'],
+        lazy=True,
     )
 
     return conn
@@ -83,12 +84,13 @@ def ldapsearch(query, using="default", attributes=ldap3.ALL_ATTRIBUTES,
     """
     connection = connect(using)
     config = settings.LDAP[using]
-    result = connection.search(
-        search_base=config['search_dn'],
-        search_filter=query,
-        search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
-        attributes=attributes,
-        **kwargs)
+    with connection:
+        result = connection.search(
+            search_base=config['search_dn'],
+            search_filter=query,
+            search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
+            attributes=attributes,
+            **kwargs)
     if result:
         return [(r['dn'], r['attributes']) for r in connection.response]
     return []
