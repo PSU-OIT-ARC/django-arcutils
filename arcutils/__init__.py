@@ -14,6 +14,7 @@ forms.Form.required_css_class = "required"
 forms.ModelForm.required_css_class = "required"
 Field.required_css_class = "required"
 
+add_to_builtins('django.contrib.staticfiles.templatetags.staticfiles')
 # add the arc template tags to the builtin tags, and the bootstrap tag
 add_to_builtins('arcutils.templatetags.arc')
 add_to_builtins('arcutils.templatetags.bootstrap')
