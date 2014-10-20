@@ -9,8 +9,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
+
 from . import PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
+from .templatetags import arc as arc_tags
+
 
 class TestPasswordResetForm(TestCase):
     def setUp(self):
@@ -210,3 +213,29 @@ class TestFormSetMixin(TestCase):
         self.assertTrue(issubclass(BaseFormSet, FormSetMixin))
         self.assertTrue(issubclass(BaseModelFormSet, FormSetMixin))
 
+
+class TestCDNURLTag(TestCase):
+
+    def test_cdn_url_has_no_scheme_by_default(self):
+        self.assertEqual(arc_tags.cdn_url('/x/y/z'), '//cdn.research.pdx.edu/x/y/z')
+
+    def test_leading_slash_is_irrelevant(self):
+        self.assertEqual(arc_tags.cdn_url('/x/y/z'), '//cdn.research.pdx.edu/x/y/z')
+        self.assertEqual(arc_tags.cdn_url('x/y/z'), '//cdn.research.pdx.edu/x/y/z')
+
+    def test_with_explicit_scheme(self):
+        self.assertEqual(
+            arc_tags.cdn_url('/x/y/z', scheme='http'),
+            'http://cdn.research.pdx.edu/x/y/z')
+
+    def test_integration(self):
+        template = Template('{% cdn_url "/x/y/z" %}')
+        request = HttpRequest()
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, '//cdn.research.pdx.edu/x/y/z')
+
+    def test_integration_with_scheme(self):
+        template = Template('{% cdn_url "/x/y/z" scheme="http" %}')
+        request = HttpRequest()
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
