@@ -1,3 +1,5 @@
+from __future__ import print_function
+import datetime
 from django import forms
 from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
@@ -8,6 +10,9 @@ from django.contrib.admin.util import NestedObjects
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.core.signals import request_started
+from django.dispatch import receiver
+from django.utils.importlib import import_module
 from django.utils.six import add_metaclass
 
 forms.Form.required_css_class = "required"
@@ -151,4 +156,23 @@ class ChoiceEnum(object):
         foo = models.ChoiceField(choices=FooType)
     """
     _choices = ()
-    # http://stackoverflow.com/questions/5434400/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
+    # http://stackoverflow.com/questions/5434401/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
+
+
+
+@receiver(request_started)
+def process_request(sender, **kwargs):
+    if "django.contrib.sessions" in settings.INSTALLED_APPS:
+        RequestCounter.request_count = RequestCounter.request_count + 1
+        if RequestCounter.request_count >= 1000:
+            engine = import_module(settings.SESSION_ENGINE)
+            try:
+                engine.SessionStore.clear_expired()
+                RequestCounter.request_count = 0
+                print("Sessions cleared: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+            except NotImplementedError:
+                print("Session engine '%s' doesn't support clearing "
+                        "expired sessions.\n" % settings.SESSION_ENGINE)
+
+class RequestCounter:
+    request_count = 0
