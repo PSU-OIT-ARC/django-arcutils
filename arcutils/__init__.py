@@ -159,20 +159,19 @@ class ChoiceEnum(object):
     # http://stackoverflow.com/questions/5434401/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
 
 
-
-@receiver(request_started)
-def process_request(sender, **kwargs):
-    if "django.contrib.sessions" in settings.INSTALLED_APPS:
-        RequestCounter.request_count = RequestCounter.request_count + 1
-        if RequestCounter.request_count >= 1000:
+if "django.contrib.sessions" in settings.INSTALLED_APPS:
+    request_count = 0
+    @receiver(request_started)
+    def process_request(sender, **kwargs):
+        global request_count
+        request_count = request_count + 1
+        count = getattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
+        if request_count >= count:
             engine = import_module(settings.SESSION_ENGINE)
             try:
                 engine.SessionStore.clear_expired()
-                RequestCounter.request_count = 0
+                request_count = 0
                 print("Sessions cleared: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
             except NotImplementedError:
                 print("Session engine '%s' doesn't support clearing "
                         "expired sessions.\n" % settings.SESSION_ENGINE)
-
-class RequestCounter:
-    request_count = 0

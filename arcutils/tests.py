@@ -11,7 +11,8 @@ from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
 
-from . import RequestCounter, process_request, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
+import arcutils
+from . import process_request, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
 from .templatetags import arc as arc_tags
 
@@ -243,21 +244,18 @@ class TestCDNURLTag(TestCase):
 
 
 class TestSessionManager(TestCase):
-    def test_no_sessions(self):
-        old_apps = settings.INSTALLED_APPS
-        settings.INSTALLED_APPS = ''
-        count = RequestCounter.request_count
-        request = self.client.get('/') 
-        self.assertEqual(count, RequestCounter.request_count)
 
     def test_less_than_max(self):
-        count = RequestCounter.request_count
+        count = arcutils.request_count
         for i in range(0, 10):
            self.client.get('/')
-        self.assertEqual(count+10, RequestCounter.request_count)
+        self.assertEqual(count+10, arcutils.request_count)
 
     def test_greater_than_max(self):
-        count = RequestCounter.request_count
-        for i in range(0,1000):
+        setattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 10)
+        count = arcutils.request_count
+        for i in range(0,settings.MAX_REQUESTS_BEFORE_SESSION_CLEAR):
             self.client.get('/')
-        self.assertEqual(count, RequestCounter.request_count%1000)
+        self.assertEqual(count, arcutils.request_count%settings.MAX_REQUESTS_BEFORE_SESSION_CLEAR)
+        setattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
+
