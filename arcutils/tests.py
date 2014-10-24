@@ -12,7 +12,7 @@ from django.db import connection
 from django.template import Context, Template
 
 import arcutils
-from . import process_request, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
+from . import session_monitor, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
 from .templatetags import arc as arc_tags
 

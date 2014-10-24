@@ -162,7 +162,7 @@ class ChoiceEnum(object):
 if "django.contrib.sessions" in settings.INSTALLED_APPS:
     request_count = 0
     @receiver(request_started)
-    def process_request(sender, **kwargs):
+    def session_monitor(sender, **kwargs):
         global request_count
         request_count = request_count + 1
         count = getattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
