@@ -24,6 +24,10 @@ Optionally, add your LDAP connection information
         }
     }
 
+If you'd like to specify a custom number of requests that can be made before Django clears the sessions, add the following line as well (replacing 1000 with a positive integer of your choice)
+
+    MAX_REQUESTS_BEFORE_SESSION_CLEAR = 1000
+    
 ## Features
 
 1. Monkey Patch `django.contrib.auth.forms.PasswordResetForm` so that it raises an error if the email address is not found in the DB
@@ -57,6 +61,7 @@ parse_profile(entry)
 ```
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form in templates, without having a special case for it.
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if a form is being deleted, its validation errors are blanked out.
+1. `arcutils.session_monitor` counts the number of requests made to the server, then clears the session data when the count has reached a certain limit (default: 1000).
 
 ## Testing
 
