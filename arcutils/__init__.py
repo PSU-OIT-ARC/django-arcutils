@@ -1,5 +1,5 @@
 from __future__ import print_function
-import datetime
+import random, datetime
 from django import forms
 from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
@@ -160,9 +160,21 @@ class ChoiceEnum(object):
 
 
 if "django.contrib.sessions" in settings.INSTALLED_APPS:
-    request_count = 0
+    #request_count = 0
     @receiver(request_started)
     def session_monitor(sender, **kwargs):
+        probability = getattr(settings, "CLEAR_SESSIONS_PROBABILITY", 0.01)
+        if random.random() <= probability:
+            engine = import_module(settings.SESSION_ENGINE)
+            try:
+                engine.SessionStore.clear_expired()
+                print("Sessions cleared: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+            except NotImplementedError:
+                print("Session engine '%s' doesn't support clearing "
+                        "expired sessions.\n" % settings.SESSION_ENGINE)
+
+        """
+        # METHOD USING COUNTERS
         global request_count
         request_count = request_count + 1
         count = getattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
@@ -175,3 +187,4 @@ if "django.contrib.sessions" in settings.INSTALLED_APPS:
             except NotImplementedError:
                 print("Session engine '%s' doesn't support clearing "
                         "expired sessions.\n" % settings.SESSION_ENGINE)
+        """
