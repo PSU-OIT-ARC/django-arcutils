@@ -51,8 +51,8 @@ def connect(using="default"):
     conn = ldap3.Connection(
         config['_server'],
         auto_bind=True,
-        user=config['username'],
-        password=config['password'],
+        user=config.get('username'),
+        password=config.get('password'),
         lazy=True,
     )
 
