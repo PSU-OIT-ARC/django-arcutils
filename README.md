@@ -62,6 +62,7 @@ parse_profile(entry)
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form in templates, without having a special case for it.
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if a form is being deleted, its validation errors are blanked out.
 1. `arcutils.session_monitor` counts the number of requests made to the server, then clears the session data when the count has reached a certain limit (default: 1000).
+1. `arcutils.logging.basic` configures basic logging to the console, and pipes logs to LOGSTASH_ADDRESS when DEBUG is off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set the LOGSTASH_ADDRESS to something like 'localhost:5000' during development. It defaults to `logs.rc.pdx.edu:8000`
 
 ## Testing
 

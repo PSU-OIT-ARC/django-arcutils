@@ -15,6 +15,9 @@ from django.dispatch import receiver
 from django.utils.importlib import import_module
 from django.utils.six import add_metaclass
 
+# set the default place to send logs
+LOGSTASH_ADDRESS = getattr(settings, "LOGSTASH_ADDRESS", 'logs.rc.pdx.edu:8000')
+
 forms.Form.required_css_class = "required"
 forms.ModelForm.required_css_class = "required"
 Field.required_css_class = "required"
