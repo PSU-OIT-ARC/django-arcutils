@@ -15,6 +15,11 @@ def basic(_):
     logging.config.dictConfig({
         'version': 1,
         'disable_existing_loggers': True,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(pathname)s:%(lineno)d %(message)s'
+            }
+        },
         'filters': {
             'require_debug_false': {
                 '()': 'django.utils.log.RequireDebugFalse',
@@ -25,7 +30,7 @@ def basic(_):
         },
         'handlers': {
             'logstash': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logstash.TCPLogstashHandler',
                 'host': LOGSTASH_ADDRESS.rsplit(":", 1)[0],
                 'port': int(LOGSTASH_ADDRESS.rsplit(":", 1)[1]),
@@ -34,9 +39,16 @@ def basic(_):
                 'filters': ['require_debug_false'],
             },
             'console': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
             },
+            'mail_admins': {
+                'level': 'ERROR',
+                'filters': ['require_debug_false'],
+                'class': 'django.utils.log.AdminEmailHandler',
+                'include_html': True
+            }
         },
         'loggers': {
             # we need to explicitly override the django logger so it propagates
@@ -46,7 +58,7 @@ def basic(_):
             }
         },
         'root': {
-            'handlers': ['logstash', 'console'],
-            'level': 'DEBUG',
+            'handlers': ['console', 'mail_admins', 'logstash'],
+            'level': 'INFO',
         },
     })
