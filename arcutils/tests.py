@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 import sys
+from datetime import timedelta
 from mock import patch, Mock
 from model_mommy.mommy import make
 from django.test import TestCase
+from django.utils.timezone import now
 from django.http import HttpRequest, QueryDict
 from django.conf import settings
 from django.forms.util import ErrorDict
@@ -10,6 +12,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
+from django.contrib.sessions.backends.db import SessionStore
+from django.contrib.sessions.models import Session
 
 import arcutils
 from . import session_monitor, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
@@ -243,19 +247,30 @@ class TestCDNURLTag(TestCase):
         self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
 
 
-class TestSessionManager(TestCase):
+class TestSessionClearer(TestCase):
+    @patch("arcutils.random.random")
+    def test_clear_session(self, random):
+        # create a session
+        s = SessionStore()
+        s['foo'] = "bar"
+        s.save()
+        key = s.session_key
 
-    def test_less_than_max(self):
-        count = arcutils.request_count
-        for i in range(0, 10):
-           self.client.get('/')
-        self.assertEqual(count+10, arcutils.request_count)
+        # make it expired
+        s = Session.objects.get(pk=key)
+        s.expire_date = now() - timedelta(days=1)
+        s.save()
 
-    def test_greater_than_max(self):
-        setattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 10)
-        count = arcutils.request_count
-        for i in range(0,settings.MAX_REQUESTS_BEFORE_SESSION_CLEAR):
-            self.client.get('/')
-        self.assertEqual(count, arcutils.request_count%settings.MAX_REQUESTS_BEFORE_SESSION_CLEAR)
-        setattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
+        # this shouldn't get cleared even though it is expired since the probability is 0
+        random.return_value = 0.5
+        with self.settings(CLEAR_SESSIONS_PROBABILITY=0):
+            response = self.client.get("login")
+            self.assertTrue(Session.objects.filter(pk=key).exists())
+            # make sure random was called
+            self.assertTrue(random.called)
 
+        # the session should get deleted now since the probability setting is
+        # greater than what random returns
+        with self.settings(CLEAR_SESSIONS_PROBABILITY=1):
+            response = self.client.get("login")
+            self.assertFalse(Session.objects.filter(pk=key).exists())
