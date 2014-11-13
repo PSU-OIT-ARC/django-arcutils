@@ -4,7 +4,7 @@
 
     pip install -e git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
 
-If you are using LDAP, `pip install python-ldap`
+If you are using LDAP, `pip install python3-ldap`
 
 Add to settings file:
 
