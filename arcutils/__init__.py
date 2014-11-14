@@ -1,5 +1,7 @@
 from __future__ import print_function
-import datetime
+from __future__ import absolute_import
+import random, datetime
+import logging
 from django import forms
 from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
@@ -15,8 +17,12 @@ from django.dispatch import receiver
 from django.utils.importlib import import_module
 from django.utils.six import add_metaclass
 
+logger = logging.getLogger(__name__)
+
 # set the default place to send logs
 LOGSTASH_ADDRESS = getattr(settings, "LOGSTASH_ADDRESS", 'logs.rc.pdx.edu:8000')
+# set the default probability of when to clear sessions
+CLEAR_SESSIONS_PROBABILITY = getattr(settings, "CLEAR_SESSIONS_PROBABILITY", 0.01)
 
 forms.Form.required_css_class = "required"
 forms.ModelForm.required_css_class = "required"
@@ -163,18 +169,13 @@ class ChoiceEnum(object):
 
 
 if "django.contrib.sessions" in settings.INSTALLED_APPS:
-    request_count = 0
     @receiver(request_started)
     def session_monitor(sender, **kwargs):
-        global request_count
-        request_count = request_count + 1
-        count = getattr(settings, "MAX_REQUESTS_BEFORE_SESSION_CLEAR", 1000)
-        if request_count >= count:
+        if random.random() <= CLEAR_SESSIONS_PROBABILITY:
             engine = import_module(settings.SESSION_ENGINE)
             try:
                 engine.SessionStore.clear_expired()
-                request_count = 0
-                print("Sessions cleared: " + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+                logger.debug("Sessions cleared")
             except NotImplementedError:
-                print("Session engine '%s' doesn't support clearing "
-                        "expired sessions.\n" % settings.SESSION_ENGINE)
+                logger.debug("Session engine '%s' doesn't support clearing "
+                        "expired sessions." % settings.SESSION_ENGINE)
