@@ -6,15 +6,15 @@
 
 with ldap
 
-    pip install git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[ldap]
+    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[ldap]
 
 with logging
 
-    pip install git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[logging]
+    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[logging]
 
 with testing
 
-    pip install git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[test]
+    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[test]
 
 Add to settings file:
 
