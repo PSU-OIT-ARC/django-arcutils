@@ -8,7 +8,7 @@ setup(
     author='Matt Johnson',
     author_email='mdj2@pdx.edu',
     description="ARC Utils for Django sites",
-    packages=['arcutils'],
+    packages=['arcutils', 'templatetags'],
     zip_safe=False,
     classifiers=[
         'Framework :: Django',
