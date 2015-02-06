@@ -13,6 +13,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.signals import request_started
+from django.core.exceptions import ImproperlyConfigured
 from django.dispatch import receiver
 from django.utils.importlib import import_module
 from django.utils.six import add_metaclass
@@ -21,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 # set the default place to send logs
 LOGSTASH_ADDRESS = getattr(settings, "LOGSTASH_ADDRESS", 'logs.rc.pdx.edu:8000')
-# set the default probability of when to clear sessions
-CLEAR_SESSIONS_PROBABILITY = getattr(settings, "CLEAR_SESSIONS_PROBABILITY", 0.01)
+
+CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS = getattr(settings, 'CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS', 100)
 
 forms.Form.required_css_class = "required"
 forms.ModelForm.required_css_class = "required"
@@ -168,14 +169,19 @@ class ChoiceEnum(object):
     # http://stackoverflow.com/questions/5434401/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
 
 
-if "django.contrib.sessions" in settings.INSTALLED_APPS:
+if 'django.contrib.sessions' in settings.INSTALLED_APPS and CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS is not None:
+
+    if CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS < 1:
+        raise ImproperlyConfigured('The CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS setting must be > 0')
+
     @receiver(request_started)
-    def session_monitor(sender, **kwargs):
-        if random.random() <= CLEAR_SESSIONS_PROBABILITY:
-            engine = import_module(settings.SESSION_ENGINE)
+    def clear_expired_sessions(sender, **kwargs):
+        if random.random() <= clear_expired_sessions.probability:
             try:
-                engine.SessionStore.clear_expired()
-                logger.debug("Sessions cleared")
+                clear_expired_sessions.engine.SessionStore.clear_expired()
+                logger.debug('Sessions cleared')
             except NotImplementedError:
-                logger.debug("Session engine '%s' doesn't support clearing "
-                        "expired sessions." % settings.SESSION_ENGINE)
+                logger.debug('Session engine "%s" does ont support clearing expired sessions.' % settings.SESSION_ENGINE)
+
+    clear_expired_sessions.engine = import_module(settings.SESSION_ENGINE)
+    clear_expired_sessions.probability = 1.0 / CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS

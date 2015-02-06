@@ -16,7 +16,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 
 import arcutils
-from . import session_monitor, PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
+from . import PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
 from .templatetags import arc as arc_tags
 
@@ -247,9 +247,10 @@ class TestCDNURLTag(TestCase):
         self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
 
 
-class TestSessionClearer(TestCase):
+class TestExpiredSessionClearer(TestCase):
+
     @patch("arcutils.random.random")
-    def test_clear_session(self, random):
+    def test_clear_expired_sessions(self, random):
         # create a session
         s = SessionStore()
         s['foo'] = "bar"
@@ -263,7 +264,7 @@ class TestSessionClearer(TestCase):
 
         # this shouldn't get cleared even though it is expired since the probability is 0
         random.return_value = 0.5
-        with patch("arcutils.CLEAR_SESSIONS_PROBABILITY", 0):
+        with patch("arcutils.clear_expired_sessions.probability", 0):
             response = self.client.get("login")
             self.assertTrue(Session.objects.filter(pk=key).exists())
             # make sure random was called
@@ -271,6 +272,6 @@ class TestSessionClearer(TestCase):
 
         # the session should get deleted now since the probability setting is
         # greater than what random returns
-        with patch("arcutils.CLEAR_SESSIONS_PROBABILITY", 1):
+        with patch("arcutils.clear_expired_sessions.probability", 1):
             response = self.client.get("login")
             self.assertFalse(Session.objects.filter(pk=key).exists())
