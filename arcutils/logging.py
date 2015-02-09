@@ -55,6 +55,9 @@ def basic(_):
             # to the root logger
             'django': {
                 'propagate': True,
+            },
+            'elasticsearch': {
+                'level': 'ERROR',
             }
         },
         'root': {
