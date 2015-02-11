@@ -68,11 +68,21 @@ parse_profile(entry)
 ```
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form in templates, without having a special case for it.
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if a form is being deleted, its validation errors are blanked out.
-1. `arcutils.logging.basic` configures basic logging to the console, and pipes logs to LOGSTASH_ADDRESS when DEBUG is off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set the LOGSTASH_ADDRESS to something like 'localhost:5000' during development. It defaults to `logs.rc.pdx.edu:8000`
 1. arcutils will clear expired sessions after `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` requests.
    The default is 100 requests. `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` can be set to `None` to
    disable this feature. Note: the implementation is probabilistic, so there's no guarantee that
    expired sessions will be cleared after exactly N requests.
+
+### Logging
+
+`arcutils.logging.basic` configures basic logging to the console, and pipes logs to
+`LOGSTASH_ADDRESS` when DEBUG is off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set
+the `LOGSTASH_ADDRESS` to something like 'localhost:5000' during development. It defaults to
+'logs.rc.pdx.edu:8000'.
+
+`arcutils.logging.basic` also configures error email logging; for this to work, the `SERVER_EMAIL`
+setting *must* be set to a valid value.
+
 
 ## Testing
 
