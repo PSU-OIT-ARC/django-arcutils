@@ -15,8 +15,8 @@ setup(
     ],
     include_package_data=True,
     extras_require={
-        'ldap': ['python3-ldap'],
-        'test': ['python3-ldap', 'model_mommy', 'mock', 'django'],
+        'ldap': ['ldap3'],
+        'test': ['ldap3', 'model_mommy', 'mock', 'django'],
         'logging': ['python-logstash'],
     }
 )
