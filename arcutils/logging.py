@@ -44,7 +44,10 @@ DEFAULT_CONFIG = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
-        }
+        },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
     },
     'loggers': {
         # we need to explicitly override the django logger so it propagates
