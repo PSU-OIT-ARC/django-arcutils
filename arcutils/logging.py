@@ -81,16 +81,21 @@ def basic(config):
     :func:`logging.config.dictConfig`), that config will be passed to
     this function as the ``config`` arg. Any such config will be merged
     into `DEFAULT_CONFIG` and will take precedence over the defaults.
-    For example, to configure a logger for your app, you might set
-    `LOGGING_CONFIG` like so::
+    For example, you might set `LOGGING_CONFIG` like so to stop those
+    annoying ALLOWED_HOSTS errors::
 
         LOGGING_CONFIG = {
             'loggers': {
-                'rethink': {
-                    'level': 'DEBUG'
-                }
+                'django.security.DisallowedHost': {
+                    'handlers': ['null'],
+                    'propagate': false
+                },
             }
         }
+
+    .. note:: The above isn't enabled by default because you should be
+              really sure your ALLOWED_HOSTS setting is correct before
+              ignoring these errors.
 
     """
     config = _merge(DEFAULT_CONFIG, config)
