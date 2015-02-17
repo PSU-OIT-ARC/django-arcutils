@@ -14,6 +14,7 @@ setup(
         'Framework :: Django',
     ],
     include_package_data=True,
+    install_requires=['stashward'],
     extras_require={
         'ldap': ['ldap3'],
         'test': ['ldap3', 'model_mommy', 'mock', 'django'],
