@@ -1,7 +1,8 @@
+import os
 from copy import copy
 import logging.config
 
-from . import LOGSTASH_ADDRESS
+from . import LOGSTASH_ADDRESS, LOGSTASH_CA_CERTS
 
 
 LOGSTASH_HOST, LOGSTASH_PORT = LOGSTASH_ADDRESS.rsplit(':', 1)
@@ -28,10 +29,10 @@ DEFAULT_CONFIG = {
     'handlers': {
         'logstash': {
             'level': 'INFO',
-            'class': 'logstash.TCPLogstashHandler',
+            'class': 'stashward.StashwardHandler',
             'host': LOGSTASH_HOST,
             'port': LOGSTASH_PORT,
-            'version': 1,
+            'ca_certs': LOGSTASH_CA_CERTS,
             'message_type': 'django',
             'filters': ['require_debug_false'],
         },

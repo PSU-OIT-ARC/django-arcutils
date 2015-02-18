@@ -8,10 +8,6 @@ with ldap
 
     pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[ldap]
 
-with logging
-
-    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[logging]
-
 with testing
 
     pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[test]
@@ -75,10 +71,13 @@ parse_profile(entry)
 
 ### Logging
 
-`arcutils.logging.basic` configures basic logging to the console, and pipes logs to
-`LOGSTASH_ADDRESS` when DEBUG is off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set
-the `LOGSTASH_ADDRESS` to something like 'localhost:5000' during development. It defaults to
-'logs.rc.pdx.edu:8000'.
+`arcutils.logging.basic` configures basic logging to the console, and pipes
+logs to `LOGSTASH_ADDRESS` using the logstash-forwarder protocol when DEBUG is
+off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set the
+`LOGSTASH_ADDRESS` to something like 'localhost:5000' during development. It
+defaults to 'logs.rc.pdx.edu:5043'. The logstash-forwarder protocol requires
+SSL, so you must specify the path to a CA file using the `LOGSTASH_CA_CERTS`
+setting. This package includes the PSUCA.crt file, which is the default.
 
 `arcutils.logging.basic` also configures error email logging; for this to work, the `SERVER_EMAIL`
 setting *must* be set to a valid value.
