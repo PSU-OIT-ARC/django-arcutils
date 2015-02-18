@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import random, datetime
 import logging
 import os
+import pkg_resources
 from django import forms
 from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 # set the default place to send logs, and a CA cert file. Since logs.rc.pdx.edu
 # has a cert signed by signed by PSUCA, that's the CA we're going to use
 LOGSTASH_ADDRESS = getattr(settings, "LOGSTASH_ADDRESS", 'logs.rc.pdx.edu:5043')
-LOGSTASH_CA_CERTS = getattr(settings, "LOGSTASH_CA_CERTS", os.path.normpath(os.path.join(os.path.dirname(__file__), "PSUCA.crt")))
+LOGSTASH_CA_CERTS = getattr(settings, "LOGSTASH_CA_CERTS", pkg_resources.resource_filename('arcutils', "PSUCA.crt"))
 
 CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS = getattr(settings, 'CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS', 100)
 
