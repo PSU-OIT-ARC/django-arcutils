@@ -1,4 +1,3 @@
-from django.contrib.admin.util import NestedObjects
 from django.utils.six import add_metaclass
 
 
@@ -18,6 +17,7 @@ def will_be_deleted_with(obj):
     deletion, yielding a two-tuple: the model class, and a set of all the
     objects of that type that would be deleted.
     """
+    from django.contrib.admin.util import NestedObjects
     collector = NestedObjects(using="default")
     collector.collect([obj])
     # the collector returns a list of all objects in the database that

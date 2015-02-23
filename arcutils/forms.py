@@ -1,15 +1,7 @@
-from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth import get_user_model
-from django.forms.fields import Field
 from django.forms.models import BaseModelFormSet
 from django.forms.formsets import BaseFormSet
 from django.forms.util import ErrorDict
-from django import forms
 
-
-forms.Form.required_css_class = "required"
-forms.ModelForm.required_css_class = "required"
-Field.required_css_class = "required"
 
 # add some helpful methods to the formset
 class FormSetMixin(object):
@@ -35,17 +27,9 @@ class FormSetMixin(object):
 
 
 # add the FormSetMixin to the base FormSet classes
-class BaseFormSet(FormSetMixin, BaseFormSet): pass
-class BaseModelFormSet(FormSetMixin, BaseModelFormSet): pass
+class BaseFormSet(FormSetMixin, BaseFormSet):
+    pass
 
 
-# monkey patch the PasswordResetForm so it indicates if a user does not exist
-def _clean_email(self):
-    email = self.cleaned_data['email']
-    UserModel = get_user_model()
-    if not UserModel.objects.filter(email=email, is_active=True).exists():
-        raise forms.ValidationError("A user with that email address does not exist!")
-
-    return email
-
-PasswordResetForm.clean_email = _clean_email
+class BaseModelFormSet(FormSetMixin, BaseModelFormSet):
+    pass

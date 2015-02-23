@@ -1,9 +1,13 @@
-import os
 from copy import copy
 import logging.config
+import pkg_resources
+from django.conf import settings
 
-from . import LOGSTASH_ADDRESS, LOGSTASH_CA_CERTS
 
+# set the default place to send logs, and a CA cert file. Since logs.rc.pdx.edu
+# has a cert signed by signed by PSUCA, that's the CA we're going to use
+LOGSTASH_ADDRESS = getattr(settings, "LOGSTASH_ADDRESS", 'logs.rc.pdx.edu:5043')
+LOGSTASH_CA_CERTS = getattr(settings, "LOGSTASH_CA_CERTS", pkg_resources.resource_filename('arcutils', "PSUCA.crt"))
 
 LOGSTASH_HOST, LOGSTASH_PORT = LOGSTASH_ADDRESS.rsplit(':', 1)
 LOGSTASH_PORT = int(LOGSTASH_PORT)

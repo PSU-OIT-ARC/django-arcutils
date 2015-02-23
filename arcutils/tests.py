@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import sys
 from datetime import timedelta
 from mock import patch, Mock
 from model_mommy.mommy import make
@@ -7,6 +6,7 @@ from django.test import TestCase
 from django.utils.timezone import now
 from django.http import HttpRequest, QueryDict
 from django.conf import settings
+from django.contrib.auth.forms import PasswordResetForm
 from django.forms.util import ErrorDict
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -15,8 +15,8 @@ from django.template import Context, Template
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 
-import arcutils
-from . import PasswordResetForm, dictfetchall, will_be_deleted_with, ChoiceEnum, FormSetMixin, BaseFormSet, BaseModelFormSet
+from .db import dictfetchall, will_be_deleted_with, ChoiceEnum
+from .forms import FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
 from .templatetags import arc as arc_tags
 
@@ -248,8 +248,7 @@ class TestCDNURLTag(TestCase):
 
 
 class TestExpiredSessionClearer(TestCase):
-
-    @patch("arcutils.random.random")
+    @patch("arcutils.sessions.random", return_value=0.5)
     def test_clear_expired_sessions(self, random):
         # create a session
         s = SessionStore()
@@ -263,8 +262,7 @@ class TestExpiredSessionClearer(TestCase):
         s.save()
 
         # this shouldn't get cleared even though it is expired since the probability is 0
-        random.return_value = 0.5
-        with patch("arcutils.clear_expired_sessions.probability", 0):
+        with patch("arcutils.sessions.clear_expired_sessions.probability", 0):
             response = self.client.get("login")
             self.assertTrue(Session.objects.filter(pk=key).exists())
             # make sure random was called
@@ -272,6 +270,6 @@ class TestExpiredSessionClearer(TestCase):
 
         # the session should get deleted now since the probability setting is
         # greater than what random returns
-        with patch("arcutils.clear_expired_sessions.probability", 1):
+        with patch("arcutils.sessions.clear_expired_sessions.probability", 1):
             response = self.client.get("login")
             self.assertFalse(Session.objects.filter(pk=key).exists())
