@@ -1,9 +1,25 @@
-import os
+from __future__ import absolute_import
 from copy import copy
-import logging.config
+import logging
+import os
 
 from . import LOGSTASH_ADDRESS, LOGSTASH_CA_CERTS
 
+# Make sure a NullHandler is available
+# This was added in Python 2.7/3.2
+try:
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+# Make sure that dictConfig is available
+# This was added in Python 2.7/3.2
+try:
+    from logging.config import dictConfig
+except ImportError:
+    from django.utils.dictconfig import dictConfig
 
 LOGSTASH_HOST, LOGSTASH_PORT = LOGSTASH_ADDRESS.rsplit(':', 1)
 LOGSTASH_PORT = int(LOGSTASH_PORT)
@@ -47,7 +63,7 @@ DEFAULT_CONFIG = {
             'class': 'django.utils.log.AdminEmailHandler',
         },
         'null': {
-            'class': 'logging.NullHandler',
+            'class': 'arcutils.logging.NullHandler',
         },
     },
     'loggers': {
@@ -100,8 +116,7 @@ def basic(config):
 
     """
     config = _merge(DEFAULT_CONFIG, config)
-    return logging.config.dictConfig(config)
-
+    dictConfig(config)
 
 def _merge(d, e):
     """Merge dict ``e`` into dict ``d``."""
