@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 from setuptools import setup
+import sys
+
+django_version = "django"
+if sys.version_info[0] < 3:
+    django_version += "<1.7"
 
 setup(
     name="django-arcutils",
@@ -17,6 +22,6 @@ setup(
     install_requires=['stashward'],
     extras_require={
         'ldap': ['ldap3'],
-        'test': ['ldap3', 'model_mommy', 'mock', 'django'],
+        'test': ['ldap3', 'model_mommy', 'mock', django_version],
     }
 )
