@@ -101,7 +101,7 @@ def basic(config):
     For example, you might set `LOGGING_CONFIG` like so to stop those
     annoying ALLOWED_HOSTS errors::
 
-        LOGGING_CONFIG = {
+        LOGGING = {
             'loggers': {
                 'django.security.DisallowedHost': {
                     'handlers': ['null'],
