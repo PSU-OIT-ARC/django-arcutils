@@ -1,5 +1,7 @@
 # ARC Utils
 
+[![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=master)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
+
 ## Install
 
     pip install -e git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
