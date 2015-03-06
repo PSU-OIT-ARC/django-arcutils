@@ -20,6 +20,12 @@ Add to settings file:
         'arcutils',
     )
 
+In **Django 1.6 and worse** you must add this after Django apps have been loaded (for example, in a models.py file):
+
+    from arcutils.apps import ARCUtilsConfig
+    ARCUtilsConfig().ready()
+
+
 Optionally, add your LDAP connection information
 
     LDAP = {

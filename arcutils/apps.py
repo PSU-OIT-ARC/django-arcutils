@@ -1,10 +1,17 @@
 from __future__ import absolute_import
 
+# Django verions 1.6 and worse don't have the "apps" package so we have to mock
+# it up when its not available
 try:
     from django.apps import AppConfig, apps
+    is_installed = apps.is_installed
 except ImportError:
     class AppConfig:
         pass
+
+    def is_installed(dotted_app_path):
+        from django.conf import settings
+        return dotted_app_path in settings.INSTALLED_APPS
 
 from . import DEFAULT_FEATURES
 
@@ -35,7 +42,7 @@ class ARCUtilsConfig(AppConfig):
 
         # hook up the session clearer
         CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS = getattr(settings, 'CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS', 100)
-        CLEAR_EXPIRED_SESSIONS_ENABLED = apps.is_installed('django.contrib.sessions') and CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS is not None
+        CLEAR_EXPIRED_SESSIONS_ENABLED = is_installed('django.contrib.sessions') and CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS is not None
         if ARCUTILS_FEATURES.get('clear_expired_sessions') and CLEAR_EXPIRED_SESSIONS_ENABLED:
             from .sessions import patch_sessions
 
