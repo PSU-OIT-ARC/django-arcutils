@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from datetime import timedelta
+from doctest import DocTestSuite
 from mock import patch, Mock
 from model_mommy.mommy import make
 from django.test import TestCase
@@ -15,10 +16,16 @@ from django.template import Context, Template
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sessions.models import Session
 
+from . import colorize
 from .db import dictfetchall, will_be_deleted_with, ChoiceEnum
 from .forms import FormSetMixin, BaseFormSet, BaseModelFormSet
 from .ldap import parse_profile, parse_email, parse_name, connect
 from .templatetags import arc as arc_tags
+
+
+def load_tests(loader, tests, ignore):
+    tests.addTests(DocTestSuite(colorize))
+    return tests
 
 
 class TestPasswordResetForm(TestCase):
