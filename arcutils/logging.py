@@ -1,9 +1,8 @@
-from __future__ import absolute_import
+import logging.config
+import pkg_resources
 from copy import copy
-import logging
-import os
 
-from . import LOGSTASH_ADDRESS, LOGSTASH_CA_CERTS
+from django.conf import settings
 
 # Make sure a NullHandler is available
 # This was added in Python 2.7/3.2
@@ -21,8 +20,13 @@ try:
 except ImportError:
     from django.utils.dictconfig import dictConfig
 
+
+# set the default place to send logs, and a CA cert file. Since logs.rc.pdx.edu
+# has a cert signed by signed by PSUCA, that's the CA we're going to use
+LOGSTASH_ADDRESS = getattr(settings, 'LOGSTASH_ADDRESS', 'logs.rc.pdx.edu:5043')
 LOGSTASH_HOST, LOGSTASH_PORT = LOGSTASH_ADDRESS.rsplit(':', 1)
 LOGSTASH_PORT = int(LOGSTASH_PORT)
+LOGSTASH_CA_CERTS = getattr(settings, 'LOGSTASH_CA_CERTS', pkg_resources.resource_filename('arcutils', 'PSUCA.crt'))
 
 
 DEFAULT_CONFIG = {
@@ -117,6 +121,7 @@ def basic(config):
     """
     config = _merge(DEFAULT_CONFIG, config)
     dictConfig(config)
+
 
 def _merge(d, e):
     """Merge dict ``e`` into dict ``d``."""
