@@ -8,7 +8,7 @@ if sys.version_info[0] < 3:
 
 setup(
     name="django-arcutils",
-    version='0.0.1',
+    version='1.0.0',
     url='https://github.com/PSU-OIT-ARC/django-arcutils',
     author='Matt Johnson',
     author_email='mdj2@pdx.edu',
