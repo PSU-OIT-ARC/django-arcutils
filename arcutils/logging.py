@@ -9,6 +9,7 @@ from django.conf import settings
 try:
     from logging import NullHandler
 except ImportError:
+    import logging
     class NullHandler(logging.Handler):
         def emit(self, record):
             pass
