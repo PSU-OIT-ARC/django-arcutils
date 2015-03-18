@@ -27,7 +27,8 @@ settings.configure(
             "password": "",
             "search_dn": "ou=people,dc=pdx,dc=edu",
         }
-    }
+    },
+    LOGGING_CONFIG='arcutils.logging.basic',
 )
 
 if django.VERSION[:2] >= (1, 7):
