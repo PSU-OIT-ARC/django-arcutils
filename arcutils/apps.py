@@ -50,7 +50,7 @@ class ARCUtilsConfig(AppConfig):
 
         # add all the templatetag libraries we want available by default
         if ARCUTILS_FEATURES.get('templatetags'):
-            from django.template import add_to_builtins
+            from django.template.base import add_to_builtins
 
             add_to_builtins('django.contrib.staticfiles.templatetags.staticfiles')
             # add the arc template tags to the builtin tags, and the bootstrap tag
