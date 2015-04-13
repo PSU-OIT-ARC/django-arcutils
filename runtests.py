@@ -36,12 +36,12 @@ if django.VERSION[:2] >= (1, 7):
 else:
     setup = lambda: None
 
-from django.test.simple import DjangoTestSuiteRunner
+from django.test.runner import DiscoverRunner
 from django.test.utils import setup_test_environment
 
 setup()
 setup_test_environment()
-test_runner = DjangoTestSuiteRunner(verbosity=1)
+test_runner = DiscoverRunner(verbosity=1)
 
 # Django 1.6 doesn't have the app loader, so you have to manually call ready()
 if django.VERSION[:2] < (1, 7):

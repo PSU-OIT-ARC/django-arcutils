@@ -2,8 +2,14 @@ from __future__ import absolute_import
 from random import random
 import logging
 
+try:
+    # Python >= 2.7
+    import importlib
+except ImportError:
+    # Python < 2.7; will be removed in Django 1.9
+    from django.utils import importlib
+
 from django.conf import settings
-from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.core.signals import request_started
 
@@ -33,6 +39,6 @@ def patch_sessions(num_requests):
     if num_requests < 1:
         raise ImproperlyConfigured('The num_requests setting must be > 0')
 
-    clear_expired_sessions.engine = import_module(settings.SESSION_ENGINE)
+    clear_expired_sessions.engine = importlib.import_module(settings.SESSION_ENGINE)
     clear_expired_sessions.probability = 1.0 / num_requests
     request_started.connect(clear_expired_sessions)
