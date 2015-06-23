@@ -29,6 +29,8 @@ class ARCUtilsConfig(AppConfig):
         # monkey patch the PasswordResetForm so it indicates if a user does not exist
         if ARCUTILS_FEATURES.get('warn_on_invalid_email_during_password_reset'):
             from django.contrib.auth.forms import PasswordResetForm
+
+            original_clean_email = getattr(PasswordResetForm, "clean_email", lambda self: self.cleaned_data['email'])
             def _clean_email(self):
                 from django.contrib.auth import get_user_model
                 email = self.cleaned_data['email']
@@ -36,7 +38,7 @@ class ARCUtilsConfig(AppConfig):
                 if not UserModel.objects.filter(email=email, is_active=True).exists():
                     raise forms.ValidationError("A user with that email address does not exist!")
 
-                return email
+                return original_clean_email(self)
 
             PasswordResetForm.clean_email = _clean_email
 
