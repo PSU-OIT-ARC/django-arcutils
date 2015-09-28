@@ -1,7 +1,6 @@
 from django import template
-from django.template.defaulttags import url
-from django.conf import settings
-from django.template import Node, Variable, VariableDoesNotExist
+from django.core.urlresolvers import reverse
+from django.template import Node, Variable
 
 
 register = template.Library()
@@ -13,25 +12,17 @@ def model_name(cls):
     return cls._meta.verbose_name.title()
 
 
-@register.tag
-def full_url(parser, token):
-    """Spits out the full URL"""
-    url_node = url(parser, token)
-    f = url_node.render
-    url_node.render = lambda context: _get_host_from_context(context) + f(context)
-    return url_node
+@register.simple_tag(takes_context=True)
+def full_url(context, viewname):
+    """Spits out the fully qualified URL for ``viewname``.
 
+    ``viewname`` will be passed to ``reverse()``.
 
-def _get_host_from_context(context):
     """
-    Returns the hostname from context or the settings.HOSTNAME or
-    settings.HOST_NAME variables
-    """
-    try:
-        request = Variable('request.HTTP_HOST').resolve(context)
-    except VariableDoesNotExist:
-        request = ""
-    return request or getattr(settings, "HOSTNAME", "") or getattr(settings, "HOST_NAME", "")
+    request = context['request']
+    path = reverse(viewname)
+    url = request.build_absolute_uri(path)
+    return url
 
 
 class AddGetParameter(Node):

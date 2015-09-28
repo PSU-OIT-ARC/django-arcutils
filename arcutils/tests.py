@@ -101,21 +101,13 @@ class TestModelName(TestCase):
 
 
 class TestFullUrl(TestCase):
+
     def test(self):
-        t = Template("{% full_url 'login' %}")
-        # try rendering with the HTTP_HOST in the request object
-        output = t.render(Context({"request": {"HTTP_HOST": "example.com"}}))
-        self.assertEqual("example.com/login", output)
-
-        # try rendering with the HOST_NAME in the settings file
-        with self.settings(HOST_NAME="example.com"):
-            output = t.render(Context())
-            self.assertEqual("example.com/login", output)
-
-        # try rendering with the HOSTNAME in the settings file
-        with self.settings(HOSTNAME="example.com"):
-            output = t.render(Context())
-            self.assertEqual("example.com/login", output)
+        request = HttpRequest()
+        request.META['HTTP_HOST'] = 'example.com'
+        template = Template('{% full_url "test" %}')
+        output = template.render(Context({'request': request}))
+        self.assertEqual('http://example.com/test', output)
 
 
 class TestAddGet(TestCase):

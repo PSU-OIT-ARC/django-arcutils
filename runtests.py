@@ -3,6 +3,8 @@ import sys
 
 import django
 from django.conf import settings
+from django.conf.urls import url
+from django.http import HttpResponse
 
 settings.configure(
     DEBUG=True,
@@ -11,7 +13,9 @@ settings.configure(
             'ENGINE': 'django.db.backends.sqlite3',
         }
     },
-    ROOT_URLCONF='urls',
+    ROOT_URLCONF=(
+        url(r'^test$', lambda request: HttpResponse('test'), name='test'),
+    ),
     INSTALLED_APPS=(
         'django.contrib.auth',
         'django.contrib.contenttypes',
