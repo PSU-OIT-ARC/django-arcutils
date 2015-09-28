@@ -1,8 +1,8 @@
 all:
-	./setup.py sdist
+	python setup.py sdist
 
 upload:
-	./setup.py sdist upload
+	python setup.py sdist upload
 
 clean:
 	rm -rf *.egg-info build dist
