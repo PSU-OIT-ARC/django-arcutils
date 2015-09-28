@@ -3,7 +3,9 @@ from django.template.defaulttags import url
 from django.conf import settings
 from django.template import Node, Variable, VariableDoesNotExist
 
+
 register = template.Library()
+
 
 @register.filter
 def model_name(cls):
@@ -41,7 +43,7 @@ class AddGetParameter(Node):
         params = req.GET.copy()
         for key, value in self.values.items():
             params[key] = value.resolve(context)
-        return '?%s' %  params.urlencode()
+        return '?%s' % params.urlencode()
 
 
 @register.tag
@@ -79,6 +81,7 @@ def add_get(parser, token):
 
 
 CDN_HOST = 'cdn.research.pdx.edu'
+
 
 @register.simple_tag
 def cdn_url(path, scheme=None):
