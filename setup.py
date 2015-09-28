@@ -25,6 +25,7 @@ setup(
         ],
         'test': [
             'django' if PY3 else 'django<1.7',
+            'flake8',
             'ldap3',
             'mock',
             'model_mommy',
