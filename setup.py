@@ -1,26 +1,43 @@
-from setuptools import setup
 import sys
 
-django_version = "django"
-if sys.version_info[0] < 3:
-    django_version += "<1.7"
+from setuptools import find_packages, setup
+
+
+PY3 = sys.version_info[:2] >= (3, 0)
+
 
 setup(
-    name="django-arcutils",
+    name='django-arcutils',
     version='1.1.1',
     url='https://github.com/PSU-OIT-ARC/django-arcutils',
     author='PSU - OIT - ARC',
     author_email='consultants@pdx.edu',
-    description="ARC Utils for Django sites",
-    packages=['arcutils', 'arcutils.templatetags'],
-    zip_safe=False,
-    classifiers=[
-        'Framework :: Django',
-    ],
+    description='Common utilities used in ARC Django projects',
+    packages=find_packages(),
     include_package_data=True,
-    install_requires=['stashward'],
+    zip_safe=False,
+    install_requires=[
+        'stashward'
+    ],
     extras_require={
-        'ldap': ['ldap3'],
-        'test': ['ldap3', 'model_mommy', 'mock', django_version],
-    }
+        'ldap': [
+            'ldap3',
+        ],
+        'test': [
+            'django' if PY3 else 'django<1.7',
+            'ldap3',
+            'mock',
+            'model_mommy',
+        ],
+    },
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Framework :: Django',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+    ],
 )
