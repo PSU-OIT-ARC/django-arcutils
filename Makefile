@@ -1,8 +1,11 @@
-all:
+all: sdist
+
+sdist:
+	rm -rf dist
 	python setup.py sdist
 
-upload:
-	python setup.py sdist upload
+upload: sdist
+	scp dist/django-arcutils* hrimfaxi:/vol/www/cdn/pypi/dist
 
 clean:
 	rm -rf *.egg-info build dist
