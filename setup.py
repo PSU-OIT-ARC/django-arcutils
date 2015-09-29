@@ -8,7 +8,7 @@ PY3 = sys.version_info[:2] >= (3, 0)
 
 setup(
     name='django-arcutils',
-    version='1.1.1',
+    version='1.2.0.dev0',
     url='https://github.com/PSU-OIT-ARC/django-arcutils',
     author='PSU - OIT - ARC',
     author_email='consultants@pdx.edu',
