@@ -2,13 +2,11 @@ import sys
 
 from setuptools import find_packages, setup
 
-
-PY3 = sys.version_info[:2] >= (3, 0)
-
+VERSION = '2.0.dev0'
 
 setup(
     name='django-arcutils',
-    version='1.2.0.dev0',
+    version=VERSION,
     url='https://github.com/PSU-OIT-ARC/django-arcutils',
     author='PSU - OIT - ARC',
     author_email='consultants@pdx.edu',
@@ -23,8 +21,8 @@ setup(
         'ldap': [
             'ldap3',
         ],
-        'test': [
-            'django' if PY3 else 'django<1.7',
+        'dev': [
+            'django>=1.7',
             'flake8',
             'ldap3',
             'mock',
@@ -32,11 +30,8 @@ setup(
         ],
     },
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Framework :: Django',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',

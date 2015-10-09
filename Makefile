@@ -1,5 +1,13 @@
 all: sdist
 
+init:
+	virtualenv -p python3 .env
+	.env/bin/pip install -e .[dev]
+	$(MAKE) test
+
+test:
+	.env/bin/python runtests.py
+
 sdist:
 	rm -rf dist
 	python setup.py sdist
