@@ -19,7 +19,7 @@ setup(
     ],
     extras_require={
         'ldap': [
-            'ldap3',
+            'ldap3>=0.9.9.1',
         ],
         'dev': [
             'django>=1.7',
