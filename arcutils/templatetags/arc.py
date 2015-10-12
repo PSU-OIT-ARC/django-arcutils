@@ -1,7 +1,13 @@
 import json
 
 from django import template
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
+
+try:
+    import markdown as _markdown
+except ImportError:
+    _markdown = None
 
 
 register = template.Library()
@@ -34,3 +40,10 @@ def cdn_url(path, scheme=None):
 @register.filter
 def jsonify(obj):
     return mark_safe(json.dumps(obj))
+
+
+@register.filter
+def markdown(content):
+    if _markdown is None:
+        raise ImproperlyConfigured('Markdown must be installed to use the markdown template filter')
+    return mark_safe(_markdown.markdown(content))
