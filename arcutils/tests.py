@@ -4,7 +4,7 @@ from mock import patch, Mock
 from model_mommy.mommy import make
 from django.test import TestCase
 from django.utils.timezone import now
-from django.http import HttpRequest, QueryDict
+from django.http import HttpRequest
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
 from django.forms.util import ErrorDict
@@ -90,40 +90,6 @@ class TestChoiceEnum(TestCase):
 
     def test(self):
         self.assertEqual(list(self.Foo), list(self.Foo._choices))
-
-
-class TestModelName(TestCase):
-    def test(self):
-        t = Template("{{ model|model_name }}")
-        output = t.render(Context({"model": get_user_model()}))
-        self.assertEqual("User", output)
-
-
-class TestFullUrl(TestCase):
-
-    def test(self):
-        request = HttpRequest()
-        request.META['HTTP_HOST'] = 'example.com'
-        template = Template('{% full_url "test" %}')
-        output = template.render(Context({'request': request}))
-        self.assertEqual('http://example.com/test', output)
-
-
-class TestAddGet(TestCase):
-    def test(self):
-        t = Template("{% add_get page=1 next=variable %}")
-        # try rendering with the HTTP_HOST in the request object
-        request = HttpRequest()
-        request.GET = QueryDict("foo=1&foo=2&bar=lame")
-
-        output = t.render(Context({
-            "request": request,
-            "variable": "lame",
-        }))
-        self.assertTrue(output.startswith('?'))
-        output_dict = QueryDict(output.lstrip('?'))
-        expected_dict = QueryDict("foo=1&foo=2&bar=lame&page=1&next=lame")
-        self.assertEqual(output_dict, expected_dict)
 
 
 class TestLdap(TestCase):
