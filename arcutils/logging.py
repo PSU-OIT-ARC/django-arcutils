@@ -3,22 +3,7 @@ from copy import copy
 
 from django.conf import settings
 
-# Make sure a NullHandler is available
-# This was added in Python 2.7/3.2
-try:
-    from logging import NullHandler
-except ImportError:
-    import logging
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
-
-# Make sure that dictConfig is available
-# This was added in Python 2.7/3.2
-try:
-    from logging.config import dictConfig
-except ImportError:
-    from django.utils.dictconfig import dictConfig
+from logging.config import dictConfig
 
 
 # set the default place to send logs, and a CA cert file. Since logs.rc.pdx.edu
@@ -67,7 +52,7 @@ DEFAULT_CONFIG = {
             'class': 'django.utils.log.AdminEmailHandler',
         },
         'null': {
-            'class': 'arcutils.logging.NullHandler',
+            'class': 'logging.NullHandler',
         },
     },
     'loggers': {

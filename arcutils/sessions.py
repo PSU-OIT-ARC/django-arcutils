@@ -1,12 +1,6 @@
 from random import random
+import importlib
 import logging
-
-try:
-    # Python >= 2.7
-    import importlib
-except ImportError:
-    # Python < 2.7; will be removed in Django 1.9
-    from django.utils import importlib
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured

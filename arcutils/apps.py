@@ -1,15 +1,5 @@
-# Django verions 1.6 and worse don't have the "apps" package so we have to mock
-# it up when its not available
-try:
-    from django.apps import AppConfig, apps
-    is_installed = apps.is_installed
-except ImportError:
-    class AppConfig:
-        pass
-
-    def is_installed(dotted_app_path):
-        from django.conf import settings
-        return dotted_app_path in settings.INSTALLED_APPS
+from django.apps import AppConfig, apps
+is_installed = apps.is_installed
 
 from . import DEFAULT_FEATURES
 
