@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 # Django verions 1.6 and worse don't have the "apps" package so we have to mock
 # it up when its not available
 try:

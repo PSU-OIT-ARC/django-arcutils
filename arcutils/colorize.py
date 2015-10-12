@@ -22,8 +22,6 @@ instance of :class:`.Colorizer` or :class:`ColorPrinter` with your own
 color map.
 
 """
-from __future__ import print_function
-
 import sys
 
 

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from .forms import BaseFormSet, BaseModelFormSet  # noqa
 from .db import dictfetchall, will_be_deleted_with, ChoiceEnum  # noqa
 

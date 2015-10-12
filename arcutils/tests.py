@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from datetime import timedelta
 from doctest import DocTestSuite
 from mock import patch, Mock
