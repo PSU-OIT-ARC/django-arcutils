@@ -1,4 +1,7 @@
+import json
+
 from django import template
+from django.utils.safestring import mark_safe
 
 
 register = template.Library()
@@ -26,3 +29,8 @@ def cdn_url(path, scheme=None):
     if scheme is not None:
         url = '{scheme}:{url}'.format(scheme=scheme, url=url)
     return url
+
+
+@register.filter
+def jsonify(obj):
+    return mark_safe(json.dumps(obj))
