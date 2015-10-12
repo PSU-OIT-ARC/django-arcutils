@@ -61,7 +61,6 @@ Optionally, add your LDAP connection information:
             foo = models.ChoiceField(choices=FooType)
 
 1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
-1. `arcutils.ldap.escape` is an alias for `ldap.filter.escape_filter_chars`
 1. `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the
    LDAP connection specified by the using parameter.
 1. `arcutils.ldap.parse_profile()` will parse out the first_name, last_name, email, and odin as
