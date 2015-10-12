@@ -55,9 +55,8 @@ class ARCUtilsConfig(AppConfig):
             from django.template.base import add_to_builtins
 
             add_to_builtins('django.contrib.staticfiles.templatetags.staticfiles')
-            # add the arc template tags to the builtin tags, and the bootstrap tag
+            # add the arc template tags to the builtin tags
             add_to_builtins('arcutils.templatetags.arc')
-            add_to_builtins('arcutils.templatetags.bootstrap')
 
         # make the `required_css_class` attribute for forms and fields
         # "required" by default
