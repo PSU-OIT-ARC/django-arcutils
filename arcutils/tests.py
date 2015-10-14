@@ -180,13 +180,13 @@ class TestCDNURLTag(TestCase):
             'http://cdn.research.pdx.edu/x/y/z')
 
     def test_integration(self):
-        template = Template('{% cdn_url "/x/y/z" %}')
+        template = Template('{% load arc %}{% cdn_url "/x/y/z" %}')
         request = HttpRequest()
         output = template.render(Context({'request': request}))
         self.assertEqual(output, '//cdn.research.pdx.edu/x/y/z')
 
     def test_integration_with_scheme(self):
-        template = Template('{% cdn_url "/x/y/z" scheme="http" %}')
+        template = Template('{% load arc %}{% cdn_url "/x/y/z" scheme="http" %}')
         request = HttpRequest()
         output = template.render(Context({'request': request}))
         self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
