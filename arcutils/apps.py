@@ -13,13 +13,3 @@ class ARCUtilsConfig(AppConfig):
         """
         from django.conf import settings
         ARCUTILS_FEATURES = getattr(settings, 'ARCUTILS_FEATURES', DEFAULT_FEATURES)
-
-        # make the `required_css_class` attribute for forms and fields
-        # "required" by default
-        if ARCUTILS_FEATURES.get('add_css_classes_to_forms'):
-            from django.forms.fields import Field
-            from django import forms
-
-            forms.Form.required_css_class = "required"
-            forms.ModelForm.required_css_class = "required"
-            Field.required_css_class = "required"
