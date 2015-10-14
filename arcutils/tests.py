@@ -4,7 +4,6 @@ from model_mommy.mommy import make
 from django.test import TestCase
 from django.http import HttpRequest
 from django.conf import settings
-from django.contrib.auth.forms import PasswordResetForm
 from django.forms.util import ErrorDict
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -21,20 +20,6 @@ from .templatetags import arc as arc_tags
 def load_tests(loader, tests, ignore):
     tests.addTests(DocTestSuite(colorize))
     return tests
-
-
-class TestPasswordResetForm(TestCase):
-    def setUp(self):
-        make(get_user_model(), email="lame@example.com", is_active=1)
-
-    def test_exeception_raised_when_email_does_not_exist(self):
-        form = PasswordResetForm({"email": "foo@bar.com"})
-        self.assertFalse(form.is_valid())
-        self.assertIn("email", form.errors)
-
-    def test_exeception_not_raised_when_email_does_not_exist(self):
-        form = PasswordResetForm({"email": "lame@example.com"})
-        self.assertTrue(form.is_valid())
 
 
 class TestDictFetchAll(TestCase):

@@ -14,22 +14,6 @@ class ARCUtilsConfig(AppConfig):
         from django.conf import settings
         ARCUTILS_FEATURES = getattr(settings, 'ARCUTILS_FEATURES', DEFAULT_FEATURES)
 
-        # monkey patch the PasswordResetForm so it indicates if a user does not exist
-        if ARCUTILS_FEATURES.get('warn_on_invalid_email_during_password_reset'):
-            from django.contrib.auth.forms import PasswordResetForm
-
-            original_clean_email = getattr(PasswordResetForm, "clean_email", lambda self: self.cleaned_data['email'])
-            def _clean_email(self):
-                from django.contrib.auth import get_user_model
-                email = self.cleaned_data['email']
-                UserModel = get_user_model()
-                if not UserModel.objects.filter(email=email, is_active=True).exists():
-                    raise forms.ValidationError("A user with that email address does not exist!")
-
-                return original_clean_email(self)
-
-            PasswordResetForm.clean_email = _clean_email
-
         # add all the templatetag libraries we want available by default
         if ARCUTILS_FEATURES.get('templatetags'):
             from django.template.base import add_to_builtins

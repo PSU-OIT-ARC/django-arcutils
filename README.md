@@ -38,8 +38,6 @@ Optionally, add your LDAP connection information:
 
 ## Features
 
-1. Monkey Patch `django.contrib.auth.forms.PasswordResetForm` so that it raises an error if the
-   email address is not found in the DB
 1. Adds all arcutils template tags to the builtin template tags
 1. `arcutils.will_be_deleted_with(obj)` yields a two tuple -- a model class, and a set of objects
    -- that would be deleted if obj were deleted. This is useful on your delete views so you can
