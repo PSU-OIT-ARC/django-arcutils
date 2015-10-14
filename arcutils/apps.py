@@ -30,14 +30,6 @@ class ARCUtilsConfig(AppConfig):
 
             PasswordResetForm.clean_email = _clean_email
 
-        # hook up the session clearer
-        CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS = getattr(settings, 'CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS', 100)
-        CLEAR_EXPIRED_SESSIONS_ENABLED = is_installed('django.contrib.sessions') and CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS is not None
-        if ARCUTILS_FEATURES.get('clear_expired_sessions') and CLEAR_EXPIRED_SESSIONS_ENABLED:
-            from .sessions import patch_sessions
-
-            patch_sessions(CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS)
-
         # add all the templatetag libraries we want available by default
         if ARCUTILS_FEATURES.get('templatetags'):
             from django.template.base import add_to_builtins

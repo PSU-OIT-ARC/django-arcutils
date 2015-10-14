@@ -75,10 +75,6 @@ Optionally, add your LDAP connection information:
    over the empty form in templates, without having a special case for it.
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if
    a form is being deleted, its validation errors are blanked out.
-1. arcutils will clear expired sessions after `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` requests.
-   The default is 100 requests. `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` can be set to `None` to
-   disable this feature. Note: the implementation is probabilistic, so there's no guarantee that
-   expired sessions will be cleared after exactly N requests.
 
 ### Logging
 

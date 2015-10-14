@@ -1,9 +1,7 @@
-from datetime import timedelta
 from doctest import DocTestSuite
-from mock import patch, Mock
+from mock import Mock
 from model_mommy.mommy import make
 from django.test import TestCase
-from django.utils.timezone import now
 from django.http import HttpRequest
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
@@ -12,8 +10,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import connection
 from django.template import Context, Template
-from django.contrib.sessions.backends.db import SessionStore
-from django.contrib.sessions.models import Session
 
 from . import colorize
 from .db import dictfetchall, will_be_deleted_with, ChoiceEnum
@@ -209,31 +205,3 @@ class TestCDNURLTag(TestCase):
         request = HttpRequest()
         output = template.render(Context({'request': request}))
         self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
-
-
-class TestExpiredSessionClearer(TestCase):
-    @patch("arcutils.sessions.random", return_value=0.5)
-    def test_clear_expired_sessions(self, random):
-        # create a session
-        s = SessionStore()
-        s['foo'] = "bar"
-        s.save()
-        key = s.session_key
-
-        # make it expired
-        s = Session.objects.get(pk=key)
-        s.expire_date = now() - timedelta(days=1)
-        s.save()
-
-        # this shouldn't get cleared even though it is expired since the probability is 0
-        with patch("arcutils.sessions.clear_expired_sessions.probability", 0):
-            response = self.client.get("login")
-            self.assertTrue(Session.objects.filter(pk=key).exists())
-            # make sure random was called
-            self.assertTrue(random.called)
-
-        # the session should get deleted now since the probability setting is
-        # greater than what random returns
-        with patch("arcutils.sessions.clear_expired_sessions.probability", 1):
-            response = self.client.get("login")
-            self.assertFalse(Session.objects.filter(pk=key).exists())
