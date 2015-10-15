@@ -27,11 +27,11 @@ settings.configure(
     ),
     MIDDLEWARE_CLASSES=[],
     LDAP={
-        "default": {
-            "host": "ldap://ldap-login.oit.pdx.edu",
-            "username": "",
-            "password": "",
-            "search_dn": "ou=people,dc=pdx,dc=edu",
+        'default': {
+            'host': 'ldap://ldap-login.oit.pdx.edu',
+            'username': '',
+            'password': '',
+            'search_dn': 'ou=people,dc=pdx,dc=edu',
         }
     },
     LOGGING_CONFIG='arcutils.logging.basic',
