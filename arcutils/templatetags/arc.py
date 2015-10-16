@@ -1,6 +1,7 @@
 import json
 
 from django import template
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 
@@ -13,9 +14,6 @@ except ImportError:
 register = template.Library()
 
 
-CDN_HOST = 'cdn.research.pdx.edu'
-
-
 @register.simple_tag
 def cdn_url(path, scheme=None):
     """Generate a CDN URL like '//cdn.research.pdx.edu/some/path'.
@@ -25,16 +23,46 @@ def cdn_url(path, scheme=None):
     scheme is preferable because the browser will automatically use the
     scheme that was used to load the page.
 
+    ``path`` can be a path or a key from the ``ARC['cdn']['paths']``
+    setting.
+
     Example::
 
         {% load arc %}
         <script src="{% cdn_url 'jquery/2.1.1/jquery-2.1.1.min.js %}"></script>
 
+    To inject a version from the ``ARC['versions']`` setting into the
+    URL, include ``{key}`` somewhere in ``path``. E.g.::
+
+        <script src="{% cdn_url 'jquery/{jquery}/jquery-{jquery}.min.js' %}</script>
+
+    Another option is to define paths via the ``ARC['cdn']['paths']``
+    setting. For example::
+
+        # In the project's settings:
+        ARC['cdn']['paths'] = {
+            'jquery-js': 'jquery/{jquery}/jquery-{jquery}.min.js',
+            ...
+        }
+
+        # In a template:
+        {% load arc %}
+        <script src="{% cdn_url 'jquery-js' %}"></script>
+
+    The latter form allows the CDN URL for a particular resource to be
+    defined in a single place for easy reuse and updating.
+
     """
-    url = '//{host}/{path}'.format(host=CDN_HOST, path=path.lstrip('/'))
+    arc_settings = getattr(settings, 'ARC', {})
+    cdn_settings = arc_settings.get('cdn', {})
+    host = cdn_settings.get('host', 'cdn.research.pdx.edu')
+    path = cdn_settings.get('paths', {}).get(path, path)
+    versions = arc_settings.get('versions', {})
+    path = path.format(**versions)
+    url = '//{host}/{path}'.format(host=host, path=path.lstrip('/'))
     if scheme is not None:
         url = '{scheme}:{url}'.format(scheme=scheme, url=url)
-    return url
+    return mark_safe(url)
 
 
 @register.filter
