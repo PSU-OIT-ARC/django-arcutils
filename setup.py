@@ -15,7 +15,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'stashward'
+        'django-local-settings>=1.0a8',
+        'stashward',
     ],
     extras_require={
         'ldap': [

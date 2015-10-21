@@ -2,7 +2,7 @@ all: sdist
 
 init:
 	virtualenv -p python3 .env
-	.env/bin/pip install -e .[dev]
+	.env/bin/pip install -f https://cdn.research.pdx.edu/pypi/dist/ -e .[dev]
 	$(MAKE) test
 
 test:
