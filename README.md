@@ -48,14 +48,9 @@ Optionally, add your LDAP connection information:
             A = 1
             B = 2
 
-            _choices = (
-                (A, 'Alpha'),
-                (B, 'Beta'),
-            )
-
         class SomeModel(models.Model):
 
-            foo = models.ChoiceField(choices=FooType)
+            foo = models.ChoiceField(choices=FooType.as_choices())
 
 1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
 1. `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the

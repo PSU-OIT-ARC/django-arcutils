@@ -2,7 +2,18 @@ import sys
 
 from setuptools import find_packages, setup
 
+
 VERSION = '2.0.dev0'
+
+
+install_requires = [
+    'django-local-settings>=1.0a8',
+    'stashward',
+]
+
+if sys.version_info[:2] < (3, 4):
+    install_requires.append('enum34')
+
 
 setup(
     name='django-arcutils',
@@ -14,10 +25,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'django-local-settings>=1.0a8',
-        'stashward',
-    ],
+    install_requires=install_requires,
     extras_require={
         'cas': [
             'django-cas-client>=1.2.0',

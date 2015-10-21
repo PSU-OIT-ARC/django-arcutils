@@ -57,20 +57,18 @@ class TestWillBeDeletedWith(TestCase):
 
 
 class TestChoiceEnum(TestCase):
+
     def setUp(self):
+
         class Foo(ChoiceEnum):
+
             alpha = 1
             beta = 2
 
-            _choices = (
-                (alpha, "Alpha"),
-                (beta, "Beta"),
-            )
-
         self.Foo = Foo
 
-    def test(self):
-        self.assertEqual(list(self.Foo), list(self.Foo._choices))
+    def test_choices(self):
+        self.assertEqual(self.Foo.as_choices(), [(1, 'Alpha'), (2, 'Beta')])
 
 
 class TestLdap(TestCase):

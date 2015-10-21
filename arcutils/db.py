@@ -1,4 +1,4 @@
-from django.utils.six import add_metaclass
+from enum import Enum
 
 
 def dictfetchall(cursor):
@@ -32,65 +32,65 @@ def will_be_deleted_with(obj):
         yield cls, list_of_items_to_be_deleted
 
 
-class IterableChoiceEnum(type):
+class ChoiceEnum(Enum):
 
-    def __init__(cls, name, bases, attrs):
-        cls._choices_dict = dict(cls)
+    """An enum type for use w/ the ``choices`` arg of model fields.
 
-    def __iter__(cls):
-        """Simply return the iterator of the _choices tuple"""
-        return iter(cls._choices)
+    This is based on the built-in Enum type in Python 3.4+. For Python
+    3.3, a back-ported version will be installed.
 
-    def __getitem__(cls, choice):
-        """Return choice description via item access.
+    Example usage::
 
-        Example::
+        class LayoutType(ChoiceEnum):
 
-            >>> class MyEnum(ChoiceEnum):
-            ...
-            ...     A = 1
-            ...     B = 2
-            ...
-            ...     _choices = (
-            ...         (A, 'Alpha'),
-            ...         (B, 'Beta'),
-            ...     )
-            ...
-            >>> MyEnum[MyEnum.A]
-            'Alpha'
+            text_only = 0
+            chart = 1
+            map = 2
+            image = 3
+
+
+        class Page(models.Model):
+
+            layout = models.IntegerField(
+                choices=LayoutType.as_choices(), default=LayoutType.text_only.value)
+
+    """
+
+    @classmethod
+    def as_choices(cls, as_dict=False):
+        """Return list of (value, label) pairs for use with ``choices``.
+
+        If ``as_dict`` is specified, a list of dictionaries with 'value'
+        and 'label' keys will be returned instead of a list of tuples.
+
+        Using the ``LayoutType`` example from the class docstring::
+
+            >>> LayoutType.as_choices()
+            [(0, 'Text only'), (1, 'Chart'), (2, 'Map'), (3, 'Image')]
 
         """
-        return cls._choices_dict[choice]
+        choices = [(choice.value, choice.label) for choice in cls]
+        if as_dict:
+            choices = [{'value': value, 'label': label} for (value, label) in choices]
+        return choices
 
-    def get(cls, choice, default=None):
-        try:
-            return cls[choice]
-        except KeyError:
-            return default
+    @property
+    def label(self):
+        """Get the label for a choice.
 
+        Using the ``LayoutType`` example from the class docstring::
 
-@add_metaclass(IterableChoiceEnum)
-class ChoiceEnum(object):
-    """
-    This creates an iterable *class* (as opposed to an iterable *instance* of a
-    class). Subclasses must define a class variable called `_choices` which is a
-    list of 2-tuples. Subclasses can be passed directly to a field as the
-    `choice` kwarg.
+            >>> LayoutType['image'].label
+            'Image'
+            >>> LayoutType.image.label
+            'Image'
+            >>> LayoutType(LayoutType.image).label
+            'Image'
 
-    For example:
+        """
+        parts = self.name.split('_')
+        parts[0] = parts[0].title()
+        return ' '.join(parts)
 
-    class FooType(ChoiceEnum):
-        A = 1
-        B = 2
-
-        _choices = (
-            (A, "Alpha"),
-            (B, "Beta"),
-        )
-
-
-    class SomeModel(models.Model):
-        foo = models.ChoiceField(choices=FooType)
-    """
-    _choices = ()
-    # http://stackoverflow.com/questions/5434401/python-is-it-possible-to-make-a-class-iterable-using-the-standard-syntax
+    def __str__(self):
+        return self.label
