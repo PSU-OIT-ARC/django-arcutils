@@ -16,6 +16,7 @@ doesn't use django-local-settings.
 """
 import base64
 import inspect
+import ipaddress
 import os
 import pkg_resources
 
@@ -23,6 +24,12 @@ from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, Se
 
 
 ARCUTILS_PACKAGE_DIR = pkg_resources.resource_filename('arcutils', '')
+
+
+# Considers any standard private IP address a valid internal IP address
+INTERNAL_IPS = type('INTERNAL_IPS', (), {
+    '__contains__': lambda self, addr: ipaddress.ip_address(addr).is_private,
+})()
 
 
 def init_settings(settings=None, local_settings=True, level=2):
