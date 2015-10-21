@@ -3,3 +3,5 @@ include LICENSE
 include README.md
 include arcutils/local.base.cfg
 include arcutils/PSUCA.crt
+recursive-include arcutils/static *
+recursive-include arcutils/templates *
