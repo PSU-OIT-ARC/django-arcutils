@@ -32,7 +32,7 @@ INTERNAL_IPS = type('INTERNAL_IPS', (), {
 })()
 
 
-def init_settings(settings=None, local_settings=True, level=2):
+def init_settings(settings=None, local_settings=True, quiet=False, level=2):
     """Initialize settings.
 
     Call this from the global scope of your project's settings module::
@@ -66,10 +66,10 @@ def init_settings(settings=None, local_settings=True, level=2):
     package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
     settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
     if local_settings:
-        init_local_settings(settings)
+        init_local_settings(settings, quiet)
 
 
-def init_local_settings(settings):
+def init_local_settings(settings, quiet):
     default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
@@ -86,7 +86,7 @@ def init_local_settings(settings):
     }
     for k, v in defaults.items():
         settings.setdefault(k, v)
-    settings.update(load_and_check_settings(settings))
+    settings.update(load_and_check_settings(settings, quiet=quiet))
 
 
 # Internal helper functions
