@@ -41,6 +41,11 @@ setup(
             'model_mommy',
         ],
     },
+    entry_points="""
+    [console_scripts]
+    arcutils = arcutils.__main__:main
+
+    """,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',

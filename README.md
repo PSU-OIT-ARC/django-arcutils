@@ -66,6 +66,10 @@ Optionally, add your LDAP connection information:
    over the empty form in templates, without having a special case for it.
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if
    a form is being deleted, its validation errors are blanked out.
+1. Console script: some ARCUtils functionality can be accessed via the `arcutils` console script
+   (or via `python -m arcutils`). Currently, there is one subcommand for running LDAP queries:
+   
+        arcutils ldap '(uid=wbaldwin)'
 
 ### Logging
 
