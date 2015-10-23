@@ -1,7 +1,9 @@
 import json
+import posixpath
 
 from django import template
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 
@@ -75,3 +77,62 @@ def markdown(content):
     if _markdown is None:
         raise ImproperlyConfigured('Markdown must be installed to use the markdown template filter')
     return mark_safe(_markdown.markdown(content))
+
+
+@register.simple_tag
+def require_block(app_name, *cdn_urls):
+    """Output <script> tags for loading a RequireJS entry point.
+
+    This chooses the appropriate scripts according to the ``DEBUG``
+    setting. In debug mode, this outputs the following tags::
+
+        <script src="/static/requireConfig.js"></script>
+        <script src="/static/vendor/requirejs/require.js"></script>
+        <script src="/static/{app_name}/main.js"></script>
+
+    In production, this outputs the following tags::
+
+        <script src="/static/vendor/almond/almond.js"></script>
+        ... CDN <script>s ...
+        <script src="/static/{app_name}/main-built.js"></script>
+
+    .. note:: These examples assume STATIC_URL is set to '/static/'.
+
+    requireConfig.js must be in the project's top level static directory
+    and contain RequireJS config like this::
+
+        var require = {
+            baseUrl: '/static',  // Same as STATIC_URL, minus trailing slash
+            paths: {
+                almond: 'vendor/almond/almond',
+                ng: 'vendor/angular/angular',
+                ...,
+                quickticket: '.'  // Replace quickticket with project name
+            }
+            shim: {
+                ng: {
+                    exports: 'angular'
+                },
+                ngResource: {
+                    deps: ['ng']
+                },
+                ...
+            }
+        }
+
+    """
+    debug = settings.DEBUG
+    file_name = 'main.js' if debug else 'main-built.js'
+    entry_point = posixpath.join(app_name, file_name)
+    scripts = []
+    if debug:
+        scripts.append(staticfiles_storage.url('requireConfig.js'))
+        scripts.append(staticfiles_storage.url('vendor/requirejs/require.js'))
+    else:
+        scripts.append(staticfiles_storage.url('vendor/almond/almond.js'))
+        for src in cdn_urls:
+            scripts.append(cdn_url(src))
+    scripts.append(staticfiles_storage.url(entry_point))
+    scripts = ['<script src="{src}"></script>'.format(src=s) for s in scripts]
+    scripts = '\n    '.join(scripts)
+    return mark_safe(scripts)
