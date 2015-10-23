@@ -54,13 +54,12 @@ Optionally, add your LDAP connection information:
 
 1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
 1. `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the
-   LDAP connection specified by the using parameter.
-1. `arcutils.ldap.parse_profile()` will parse out the first_name, last_name, email, and odin as
-   a dict from an ldap result.
+   LDAP connection specified by the using parameter. By default, each LDAP result is parsed into
+   a "profile", which is just a dict with user info pulled from the LDAP attributes:
 
-        results = ldapsearch('odin=mdj2')
-        dn, entry = results[0]
-        parse_profile(entry)
+        results = ldapsearch('(uid=mdj2)')
+        print(results[0])  # -> {'first_name': 'Matt', 'last_name': 'Johnson', ...}
+        
 
 1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that
    is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate

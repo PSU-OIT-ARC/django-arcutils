@@ -72,63 +72,64 @@ class TestChoiceEnum(TestCase):
 
 
 class TestLdap(TestCase):
+
     def test_connect(self):
-        conn = connect(using="default")
+        conn = connect(using='default')
         self.assertTrue(conn)
-        self.assertIn("_server", settings.LDAP['default'])
 
     def test_parse_profile(self):
         entry = {
-            "sn": ["Johnson"],
-            "givenName": ['Matt'],
-            "mail": ["mdj2@pdx.edu"],
-            "uid": ["mdj2"],
-            "ou": [
+            'sn': ['Johnson'],
+            'givenName': ['Matt'],
+            'mail': ['mdj2@pdx.edu'],
+            'uid': ['mdj2'],
+            'ou': [
                 'Academic & Research Computing - Office of Information Technology',
                 'Blurp - Bloop',
             ],
+            'psuPasswordExpireDate': ['20161031121314Z'],
         }
         result = parse_profile(entry)
-        self.assertEqual(result['first_name'], "Matt")
-        self.assertEqual(result['last_name'], "Johnson")
-        self.assertEqual(result['email'], "mdj2@pdx.edu")
+        self.assertEqual(result['first_name'], 'Matt')
+        self.assertEqual(result['last_name'], 'Johnson')
+        self.assertEqual(result['email_address'], 'mdj2@pdx.edu')
         self.assertEqual(result['ou'], 'Academic & Research Computing - Office of Information Technology')
         self.assertEqual(result['school_or_office'], 'Office of Information Technology')
         self.assertEqual(result['department'], 'Academic & Research Computing')
+        self.assertEqual(result['password_expiration_date'], '20161031T121314Z')
 
     def test_parse_email(self):
-        self.assertEqual("foo@bar.com", parse_email({"mail": ["foo@bar.com"]}))
-        self.assertEqual("foo@pdx.edu", parse_email({"uid": ["foo"]}))
+        self.assertEqual('foo@bar.com', parse_email({'mail': ['foo@bar.com']}))
+
+    def test_parse_email_from_uid(self):
+        self.assertEqual('foo@pdx.edu', parse_email({'uid': ['foo']}))
 
     def test_parse_name(self):
-        # test the last name login
-        self.assertEqual(("John", "Doe"), parse_name({
-            "sn": ["Doe"],
-            "givenName": ["John"]
+        self.assertEqual(('John', 'Doe'), parse_name({
+            'sn': ['Doe'],
+            'givenName': ['John']
         }))
-        self.assertEqual(("John", "Doe"), parse_name({
-            "preferredcn": ["John Doe"],
-            "givenName": ["John"]
+        self.assertEqual(('John', 'Doe'), parse_name({
+            'preferredcn': ['John Doe'],
+            'givenName': ['John']
         }))
-        self.assertEqual(("John", "Doe"), parse_name({
-            "cn": ["John Rake Doe"],
-            "givenName": ["John"]
+        self.assertEqual(('John', 'Doe'), parse_name({
+            'cn': ['John Rake Doe'],
+            'givenName': ['John']
         }))
-        self.assertEqual(("John", ""), parse_name({
-            "givenName": ["John"]
+        self.assertEqual(('John', ''), parse_name({
+            'givenName': ['John']
         }))
-
-        # test the first_name login
-        self.assertEqual(("John", "Doe"), parse_name({
-            "sn": ["Doe"],
-            "preferredcn": ["John Rake Doe"]
+        self.assertEqual(('John', 'Doe'), parse_name({
+            'sn': ['Doe'],
+            'preferredcn': ['John Rake Doe']
         }))
-        self.assertEqual(("John", "Doe"), parse_name({
-            "sn": ["Doe"],
-            "cn": ["John Rake Doe"]
+        self.assertEqual(('John', 'Doe'), parse_name({
+            'sn': ['Doe'],
+            'cn': ['John Rake Doe']
         }))
-        self.assertEqual(("", "Doe"), parse_name({
-            "sn": ["Doe"],
+        self.assertEqual(('', 'Doe'), parse_name({
+            'sn': ['Doe'],
         }))
 
 
