@@ -68,7 +68,7 @@ def default_response_callback(tree):
         return user
 
     is_staff = username in getattr(settings, 'STAFF', ())
-    is_superuser = username in getattr(settings, 'SUPERUSER', ())
+    is_superuser = username in getattr(settings, 'SUPERUSERS', ())
     user_args = {
         'username': username,
         'password': make_password(None),
