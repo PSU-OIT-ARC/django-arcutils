@@ -27,9 +27,10 @@ ARCUTILS_PACKAGE_DIR = pkg_resources.resource_filename('arcutils', '')
 
 
 # Considers any standard private IP address a valid internal IP address
-INTERNAL_IPS = type('INTERNAL_IPS', (), {
-    '__contains__': lambda self, addr: ipaddress.ip_address(addr).is_private,
-})()
+def _is_internal_ip_address(self, addr):
+    addr = ipaddress.ip_address(addr)
+    return addr.is_loopback or addr.is_private
+INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_address))()
 
 
 def init_settings(settings=None, local_settings=True, quiet=False, level=2):
