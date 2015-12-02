@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils.http import is_safe_url
 
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -35,6 +36,8 @@ class BaseView(APIView):
             location = request.data.get(field_name)
         if not location:
             location = request.META.get('HTTP_REFERER')
+        if not is_safe_url(location):
+            location = None
         if not location:
             location = get_setting('default_redirect_url', '/')
         return location
