@@ -31,7 +31,7 @@ settings.configure(
             'host': 'ldap://ldap-login.oit.pdx.edu',
             'username': '',
             'password': '',
-            'search_dn': 'ou=people,dc=pdx,dc=edu',
+            'search_base': 'ou=people,dc=pdx,dc=edu',
         }
     },
     LOGGING_CONFIG='arcutils.logging.basic',

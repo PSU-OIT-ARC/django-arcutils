@@ -31,7 +31,7 @@ Optionally, add your LDAP connection information:
             'host': 'ldap://ldap-bulk.oit.pdx.edu',
             'username': 'rethinkwebsite,ou=service,dc=pdx,dc=edu',
             'password': 'foobar',
-            'search_dn': 'ou=people,dc=pdx,dc=edu',
+            'search_base': 'ou=people,dc=pdx,dc=edu',
             'ca_file': '/path/to/ca_file.crt',
         }
     }

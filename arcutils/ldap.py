@@ -7,7 +7,7 @@ This module assumes an LDAP setting like so::
             'host': 'ldap://ldap-bulk.oit.pdx.edu',
             'username': 'rethinkwebsite,ou=service,dc=pdx,dc=edu',
             'password': 'foobar',
-            'search_dn': 'ou=people,dc=pdx,dc=edu',
+            'search_base': 'ou=people,dc=pdx,dc=edu',
             'ca_file': '/path/to/ca_file.crt',
         }
     }
@@ -45,7 +45,8 @@ def connect(using='default'):
     return ldap3.Connection(server, auto_bind=True, user=username, password=password, lazy=True)
 
 
-def ldapsearch(query, using='default', parse=True, attributes=ldap3.ALL_ATTRIBUTES, **kwargs):
+def ldapsearch(query, using='default', search_base=None, parse=True,
+               attributes=ldap3.ALL_ATTRIBUTES, **kwargs):
     """Performs an LDAP search and returns the results.
 
     If there are results, they will be parsed via :func:`parse_profile`
@@ -68,10 +69,12 @@ def ldapsearch(query, using='default', parse=True, attributes=ldap3.ALL_ATTRIBUT
     # XXX: This creates a new connection for every search; should we be
     #      using a connection pool?
     connection = connect(using)
-    config = settings.LDAP[using]
+    if search_base is None:
+        config = settings.LDAP[using]
+        search_base = config['search_base']
     with connection:
         result = connection.search(
-            search_base=config['search_dn'],
+            search_base=search_base,
             search_filter=query,
             search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
             attributes=attributes,
