@@ -3,15 +3,23 @@
     cas.middleware.CASMiddleware
 
 """
+import logging
+from xml.etree import ElementTree
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import FieldDoesNotExist
+
+
+log = logging.getLogger(__name__)
 
 
 # Map user object field names to CAS XML field names; these are
 # attributes we'll try to extract from the CAS response in
 # response_callback().
 CAS_ATTR_MAP = (
+    ('display_name', 'cas:DISPLAY_NAME'),
     ('first_name', 'cas:GIVEN_NAME'),
     ('last_name', 'cas:SN'),
     ('email', 'cas:MAIL'),
@@ -56,9 +64,17 @@ def default_response_callback(tree):
         </cas:serviceResponse>
 
     """
+    log.debug(ElementTree.tostring(tree).decode('utf-8'))
+
     user_model = get_user_model()
-    success = get_success(tree)
-    username = get_username(success)
+
+    success = tree.find('cas:authenticationSuccess', CAS_NS_MAP)
+    username = success.find('cas:user', CAS_NS_MAP).text.strip()
+    attributes = success.find('cas:attributes', CAS_NS_MAP)
+
+    def get_attribute(cas_name, default=None):
+        value = attributes.find(cas_name, CAS_NS_MAP)
+        return default if value is None else value.text.strip()
 
     try:
         user = user_model.objects.get(username=username)
@@ -67,36 +83,29 @@ def default_response_callback(tree):
     else:
         return user
 
-    is_staff = username in getattr(settings, 'STAFF', ())
     is_superuser = username in getattr(settings, 'SUPERUSERS', ())
+    is_staff = username in getattr(settings, 'STAFF', ())
+    is_staff = is_staff or is_superuser
+
     user_args = {
         'username': username,
         'password': make_password(None),
-        'is_staff': is_staff or is_superuser,
+        'is_staff': is_staff,
         'is_superuser': is_superuser,
+        # This default email address will be overridden if there's an
+        # email address in the CAS attributes.
+        'email': '{username}@pdx.edu'.format(username=username)
     }
 
-    cas_attrs = get_attributes(success)
-
-    def set_arg_from_cas_attr(name, cas_name, destination):
-        value = cas_attrs.find(cas_name, CAS_NS_MAP)
-        if value is not None:
-            destination[name] = value.text.strip()
-
-    for n, c in CAS_ATTR_MAP:
-        set_arg_from_cas_attr(n, c, user_args)
+    for name, cas_name in CAS_ATTR_MAP:
+        try:
+            user_model._meta.get_field(name)
+        except FieldDoesNotExist:
+            pass
+        else:
+            value = get_attribute(cas_name)
+            if value is not None:
+                user_args[name] = value
 
     user = user_model.objects.create(**user_args)
     return user
-
-
-def get_success(tree):
-    return tree.find('cas:authenticationSuccess', CAS_NS_MAP)
-
-
-def get_username(success):
-    return success.find('cas:user', CAS_NS_MAP).text.strip()
-
-
-def get_attributes(success):
-    return success.find('cas:attributes', CAS_NS_MAP)
