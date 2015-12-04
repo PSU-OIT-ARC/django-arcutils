@@ -8,7 +8,9 @@ This module assumes an LDAP setting like so::
             'username': 'rethinkwebsite,ou=service,dc=pdx,dc=edu',
             'password': 'foobar',
             'search_base': 'ou=people,dc=pdx,dc=edu',
-            'ca_file': '/path/to/ca_file.crt',
+            'tls': {
+                'ca_certs_file': '/path/to/ca_file.crt',
+            }
         }
     }
 
@@ -20,6 +22,8 @@ import ssl
 from django.conf import settings
 
 import ldap3
+
+from .path import abs_path
 
 
 def escape(s):
@@ -35,11 +39,26 @@ def escape(s):
 def connect(using='default'):
     """Connect to the LDAP server indicated by ``using``."""
     config = settings.LDAP[using]
-    if config.get('tls'):
-        tls = ldap3.Tls(ca_certs_file=config.get('ca_file'), validate=ssl.CERT_REQUIRED)
+    host = config['host']
+    port = config.get('port')
+    use_ssl = config.get('use_ssl', False)
+    tls_config = config.get('tls')
+    if use_ssl and tls_config:
+        ca_certs_file = tls_config.get('ca_certs_file')
+        if ca_certs_file:
+            ca_certs_file = abs_path(ca_certs_file)
+        validate = tls_config.get('validate', 'CERT_REQUIRED')
+        validate = getattr(ssl, validate)
+        version = tls_config.get('version')
+        if version:
+            version = getattr(ssl, version)
+        tls = ldap3.Tls(ca_certs_file=ca_certs_file, validate=validate, version=version)
     else:
+        # If use_ssl is True but no TLS settings are specified, the
+        # ldap3 library will use a default TLS configuration, which is
+        # probably not what you want.
         tls = None
-    server = ldap3.Server(config['host'], use_ssl=True, tls=tls)
+    server = ldap3.Server(host, port=port, use_ssl=use_ssl, tls=tls)
     username = config.get('username')
     password = config.get('password')
     return ldap3.Connection(server, auto_bind=True, user=username, password=password, lazy=True)

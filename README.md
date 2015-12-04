@@ -32,7 +32,9 @@ Optionally, add your LDAP connection information:
             'username': 'rethinkwebsite,ou=service,dc=pdx,dc=edu',
             'password': 'foobar',
             'search_base': 'ou=people,dc=pdx,dc=edu',
-            'ca_file': '/path/to/ca_file.crt',
+            'tls': {
+                'ca_certs_file': '/path/to/ca_file.crt',
+            }
         }
     }
 

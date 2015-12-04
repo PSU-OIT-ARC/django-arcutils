@@ -31,6 +31,7 @@ setup(
             'django-cas-client>=1.2.0',
         ],
         'ldap': [
+            'certifi>=2015.11.20.1',
             'ldap3>=0.9.9.2',
         ],
         'dev': [
