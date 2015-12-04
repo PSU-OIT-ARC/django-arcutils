@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.utils.http import is_safe_url
 
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -8,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from arcutils.renderers import TemplateHTMLContextDictRenderer
+from arcutils.response import get_redirect_location
 
 from .perms import can_masquerade, can_masquerade_as
 from .settings import get_setting, get_session_key, get_redirect_field_name
@@ -30,17 +30,9 @@ class BaseView(APIView):
         return Response(status=status.HTTP_303_SEE_OTHER, headers={'location': location})
 
     def get_redirect_location(self, request):
-        field_name = get_redirect_field_name()
-        location = request.query_params.get(field_name)
-        if not location:
-            location = request.data.get(field_name)
-        if not location:
-            location = request.META.get('HTTP_REFERER')
-        if not is_safe_url(location):
-            location = None
-        if not location:
-            location = get_setting('default_redirect_url', '/')
-        return location
+        redirect_field_name = get_redirect_field_name()
+        default = get_setting('default_redirect_url', '/')
+        return get_redirect_location(request, redirect_field_name, default)
 
 
 class MasqueradeSelectView(BaseView):
