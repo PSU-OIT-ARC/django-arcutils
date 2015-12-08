@@ -35,7 +35,7 @@ setup(
             'ldap3>=1.0.2',
         ],
         'dev': [
-            'django>=1.7',
+            'django>=1.7,<1.9',
             'flake8',
             'ldap3',
             'mock',
