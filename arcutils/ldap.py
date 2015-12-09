@@ -105,6 +105,24 @@ def ldapsearch(query, using='default', search_base=None, parse=True,
     return connection.response
 
 
+def ldapsearch_by_email(email, **kwargs):
+    """Perform LDAP search by ``email``.
+
+    This looks for the ``email`` address in various LDAP fields.
+
+    """
+    # This odd formatting allows filters to be easily added or removed
+    query = (
+        '(|'
+        '(mail={email})'
+        '(mailLocalAddress={email})'
+        '(mailRoutingAddress={email})'
+        ')'
+        .format(email=email)
+    )
+    return ldapsearch(query, **kwargs)
+
+
 def parse_profile(attributes):
     """Parse fields from LDAP attributes into a dict.
 
