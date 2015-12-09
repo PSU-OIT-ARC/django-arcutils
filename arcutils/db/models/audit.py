@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from ..threadlocals import get_current_user
+from arcutils.threadlocals import get_current_user
 
 
 class AuditModel(models.Model):
