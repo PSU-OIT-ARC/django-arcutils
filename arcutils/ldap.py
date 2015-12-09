@@ -200,9 +200,22 @@ def parse_name(attributes):
     return first_name, last_name
 
 
-def parse_email(attributes):
-    """Get email address from LDAP attributes."""
-    email = _get_attribute(attributes, 'mail')
+def parse_email(attributes, field='mail'):
+    """Get preferred email address from LDAP attributes.
+
+    By default, this pulls the address from the ``mail`` field, which
+    (I think) is the user's preferred email address.
+
+    Other options for ``field`` are "mailRoutingAddress" (canonical) and
+    "mailLocalAddress" (aliases).
+
+    """
+    allowed_fields = ('mail', 'mailLocalAddress', 'mailRoutingAddress')
+    if field not in allowed_fields:
+        raise ValueError(
+            'Unknown email address field: "{field}"; must be one of: {allowed_fields}'
+            .format_map(locals()))
+    email = _get_attribute(attributes, field)
     if not email:
         email = '{uid}@pdx.edu'.format(uid=_get_attribute(attributes, 'uid'))
     return email
