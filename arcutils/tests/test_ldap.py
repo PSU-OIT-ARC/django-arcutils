@@ -14,6 +14,8 @@ class TestLdap(TestCase):
             'sn': ['Johnson'],
             'givenName': ['Matt'],
             'mail': ['mdj2@pdx.edu'],
+            'mailLocalAddress': ['matt.johnson@pdx.edu'],
+            'mailRoutingAddress': ['mdj2@pdx.edu'],
             'uid': ['mdj2'],
             'ou': [
                 'Academic & Research Computing - Office of Information Technology',
@@ -25,6 +27,7 @@ class TestLdap(TestCase):
         self.assertEqual(result['first_name'], 'Matt')
         self.assertEqual(result['last_name'], 'Johnson')
         self.assertEqual(result['email_address'], 'mdj2@pdx.edu')
+        self.assertEqual(result['email_addresses'], ['mdj2@pdx.edu', 'matt.johnson@pdx.edu'])
         self.assertEqual(result['ou'], 'Academic & Research Computing - Office of Information Technology')
         self.assertEqual(result['school_or_office'], 'Office of Information Technology')
         self.assertEqual(result['department'], 'Academic & Research Computing')

@@ -135,8 +135,9 @@ def parse_profile(attributes):
         - ou (Organizational unit, unparsed)
         - school_or_office
         - department
-        - email_address (primary address)
-        - email_addresses (all addresses)
+        - email_address (preferred address)
+        - canonical_email_address (from mailRoutingAddress)
+        - email_addresses (all addresses, in this order: preferred, canonical, aliases)
         - odin (ODIN username)
         - phone number
         - phone extension
@@ -174,7 +175,15 @@ def parse_profile(attributes):
         ou = school_or_office = department = None
 
     odin = get('uid')
-    email_address = parse_email(attributes)
+
+    preferred_email_address = parse_email(attributes)
+    canonical_email_address = get('mailRoutingAddress')
+    email_addresses = [preferred_email_address]
+    additional_email_addresses = get('mailRoutingAddress', True) + get('mailLocalAddress', True)
+    for a in additional_email_addresses:
+        if a not in email_addresses:
+            email_addresses.append(a)
+
     phone_number = parse_phone_number(attributes)
     extension = phone_number[-6:] if phone_number else None
 
@@ -186,8 +195,9 @@ def parse_profile(attributes):
         'ou': ou,
         'school_or_office': school_or_office,
         'department': department,
-        'email_address': email_address,
-        'email_addresses': get('mailLocalAddress', True),
+        'email_address': preferred_email_address,
+        'email_addresses': email_addresses,
+        'canonical_email_address': canonical_email_address,
         'odin': odin,
         'phone_number': phone_number,
         'extension': extension,
