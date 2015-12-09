@@ -243,7 +243,8 @@ def _reformat_datetime(dt):
 def _get_attribute(attributes, key, all=False):
     """Safely get the LDAP attribute specified by ``key``.
 
-    If the attribute doesn't exist, ``None`` will be returned.
+    If the attribute doesn't exist, ``None`` will be returned if
+    ``all=False`` and ``[]`` will be returned if ``all=True``.
 
     If the attribute does exist, its first value will be returned by
     default. If ``all=True``, the complete list of values will be
@@ -257,6 +258,8 @@ def _get_attribute(attributes, key, all=False):
     discarded. If the list is empty after this, ``None`` will be
     returned if ``all=False``.
 
+    .. note:: A list is always returned when ``all`` is set.
+
     """
     if key in attributes:
         attr = attributes[key]
@@ -268,5 +271,5 @@ def _get_attribute(attributes, key, all=False):
             except IndexError:
                 attr = None
     else:
-        attr = None
+        attr = [] if all else None
     return attr
