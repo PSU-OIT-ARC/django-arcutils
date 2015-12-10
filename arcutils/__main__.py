@@ -22,6 +22,7 @@ def main(argv=None):
     ldap_parser.add_argument('query')
     ldap_parser.add_argument('--parse', default=True, action='store_true', dest='parse')
     ldap_parser.add_argument('--no-parse', default=True, action='store_false', dest='parse')
+    ldap_parser.add_argument('--using', default='default')
 
     args = parser.parse_args(argv)
     if hasattr(args, 'command'):
@@ -35,7 +36,7 @@ def ldap(args):
     q = args.query
     parse = args.parse
     try:
-        results = ldapsearch(q, parse=parse)
+        results = ldapsearch(q, using=args.using, parse=parse)
     except LDAPInvalidFilterError:
         printer.error('Invalid LDAP filter: {q}'.format(q=q))
         printer.error('Is the query wrapped in parens?')
