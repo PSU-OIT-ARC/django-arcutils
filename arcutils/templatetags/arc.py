@@ -12,6 +12,8 @@ try:
 except ImportError:
     _markdown = None
 
+from arcutils.settings import get_setting
+
 
 register = template.Library()
 
@@ -55,11 +57,9 @@ def cdn_url(path, scheme=None):
     defined in a single place for easy reuse and updating.
 
     """
-    arc_settings = getattr(settings, 'ARC', {})
-    cdn_settings = arc_settings.get('cdn', {})
-    host = cdn_settings.get('host', 'cdn.research.pdx.edu')
-    path = cdn_settings.get('paths', {}).get(path, path)
-    versions = arc_settings.get('versions', {})
+    host = get_setting('ARC.cdn.host', 'cdn.research.pdx.edu')
+    path = get_setting('ARC.cdn.paths.%s' % path, path)
+    versions = get_setting('ARC.versions', {})
     path = path.format(**versions)
     url = '//{host}/{path}'.format(host=host, path=path.lstrip('/'))
     if scheme is not None:

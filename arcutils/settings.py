@@ -90,6 +90,72 @@ def init_local_settings(settings, quiet):
     settings.update(load_and_check_settings(settings, quiet=quiet))
 
 
+NOT_SET = object()
+
+
+class SettingNotFoundError(Exception):
+
+    pass
+
+
+def get_setting(key, default=NOT_SET, _settings=None):
+    """Get setting for ``key``, falling back to ``default`` if passed.
+
+    ``key`` should be a string like 'ARC.cdn.hosts' or 'X.Y.0'. The key
+    is split on dots into path segments, then the settings are traversed
+    like this:
+
+        - Set current value to django.conf.settings.{first segment}
+        - For each other segment
+            - Get current_value[segment] if current value is a dict
+            - Get current_value[int(segment)] if current value is a list
+
+    Only dicts, list, and tuples will be traversed. If a segment
+    contains some other type of value, a ``ValueError`` will be raised.
+    Note that we don't return the default in this case because this
+    means an existing setting is being accessed incorrectly.
+
+    If a non-int index is given for a list or tuple segment, this will
+    also raise a ``ValueError``.
+
+    If the setting isn't found, the ``default`` value will be returned
+    if specified; otherwise, a ``SettingsNotFoundError`` will be raised.
+
+    ``_settings`` can be used to inject a mock settings object in
+    testing.
+
+    """
+    from django.conf import settings
+
+    if _settings:
+        settings = _settings
+
+    root, *path = key.split('.')
+    setting = getattr(settings, root, NOT_SET)
+
+    for segment in path:
+        if setting is NOT_SET:
+            break
+        if isinstance(setting, dict):
+            setting = setting.get(segment, NOT_SET)
+        elif isinstance(setting, (list, tuple)):
+            index = int(segment)
+            try:
+                setting = setting[index]
+            except IndexError:
+                setting = NOT_SET
+        else:
+            raise ValueError('Cannot traverse into setting of type %s' % type(setting))
+
+    if setting is NOT_SET:
+        if default is NOT_SET:
+            raise SettingNotFoundError('Could not find setting for key "%s"' % key)
+        else:
+            setting = default
+
+    return setting
+
+
 # Internal helper functions
 
 
