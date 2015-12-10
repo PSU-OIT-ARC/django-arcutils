@@ -20,6 +20,7 @@ import re
 import ssl
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 import ldap3
 
@@ -39,10 +40,17 @@ def escape(s):
 def connect(using='default'):
     """Connect to the LDAP server indicated by ``using``."""
     config = settings.LDAP[using]
-    host = config['host']
+    host = config.get('host')
+    hosts = config.get('hosts')
     port = config.get('port')
     use_ssl = config.get('use_ssl', False)
     tls_config = config.get('tls')
+
+    if host and hosts:
+        raise ImproperlyConfigured('LDAP: You can only specify one of `host` or `hosts`')
+    if not (host or hosts):
+        raise ImproperlyConfigured('LDAP: You must specify one of `host` or `hosts`')
+
     if use_ssl and tls_config:
         ca_certs_file = tls_config.get('ca_certs_file')
         if ca_certs_file:
@@ -58,7 +66,19 @@ def connect(using='default'):
         # ldap3 library will use a default TLS configuration, which is
         # probably not what you want.
         tls = None
-    server = ldap3.Server(host, port=port, use_ssl=use_ssl, tls=tls)
+
+    server_args = {
+        'port': port,
+        'use_ssl': use_ssl,
+        'tls': tls,
+    }
+
+    if host:
+        server = ldap3.Server(host, **server_args)
+    else:
+        hosts = [ldap3.Server(h, **server_args) for h in hosts]
+        server = ldap3.ServerPool(hosts)
+
     username = config.get('username')
     password = config.get('password')
     return ldap3.Connection(server, auto_bind=True, user=username, password=password, lazy=True)
