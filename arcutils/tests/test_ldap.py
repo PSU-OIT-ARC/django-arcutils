@@ -1,13 +1,15 @@
 from django.test import TestCase
 
+import ldap3
+
 from arcutils.ldap import parse_profile, parse_email, parse_name, connect
 
 
 class TestLdap(TestCase):
 
     def test_connect(self):
-        conn = connect(using='default')
-        self.assertTrue(conn)
+        cxn = connect(using='default')
+        self.assertIsInstance(cxn, ldap3.Connection)
 
     def test_parse_profile(self):
         entry = {
