@@ -84,7 +84,7 @@ def connect(using='default'):
     return ldap3.Connection(server, auto_bind=True, user=username, password=password, lazy=True)
 
 
-def ldapsearch(query, using='default', search_base=None, parse=True,
+def ldapsearch(query, connection=None, using='default', search_base=None, parse=True,
                attributes=ldap3.ALL_ATTRIBUTES, **kwargs):
     """Performs an LDAP search and returns the results.
 
@@ -98,8 +98,11 @@ def ldapsearch(query, using='default', search_base=None, parse=True,
 
         '(uid=bob)'
 
-    ``using`` specifies which LDAP settings to use from the ``LDAP``
-    settings dict.
+    An LDAP ``connection`` object can be passed, and it will be used as
+    is.
+
+    If a ``connection`` isn't passed, one will be constructed from the
+    ``LDAP`` settings indicated by ``using``.
 
     ``attributes`` and all other keyword args are sent directly to
     :meth:`ldap3.Connection.search`.
@@ -107,7 +110,8 @@ def ldapsearch(query, using='default', search_base=None, parse=True,
     """
     # XXX: This creates a new connection for every search; should we be
     #      using a connection pool?
-    connection = connect(using)
+    if connection is None:
+        connection = connect(using)
     if search_base is None:
         config = settings.LDAP[using]
         search_base = config['search_base']
