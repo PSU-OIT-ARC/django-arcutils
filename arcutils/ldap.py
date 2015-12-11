@@ -25,6 +25,7 @@ from django.core.exceptions import ImproperlyConfigured
 import ldap3
 
 from .path import abs_path
+from .registry import get_registry
 
 
 def escape(s):
@@ -101,17 +102,20 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
     An LDAP ``connection`` object can be passed, and it will be used as
     is.
 
-    If a ``connection`` isn't passed, one will be constructed from the
-    ``LDAP`` settings indicated by ``using``.
+    If a ``connection`` isn't passed, we first look for one in the
+    component registry (registered under ``ldap3.Connection``). If
+    a connection object isn't found in the registry, one will be
+    constructed from the ``LDAP`` settings indicated by ``using``.
 
     ``attributes`` and all other keyword args are sent directly to
     :meth:`ldap3.Connection.search`.
 
     """
-    # XXX: This creates a new connection for every search; should we be
-    #      using a connection pool?
     if connection is None:
-        connection = connect(using)
+        registry = get_registry()
+        connection = registry.get_component(ldap3.Connection, name=using)
+        if connection is None:
+            connection = connect(using)
     if search_base is None:
         config = settings.LDAP[using]
         search_base = config['search_base']
