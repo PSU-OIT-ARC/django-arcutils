@@ -16,6 +16,7 @@ This module assumes an LDAP setting like so::
 
 """
 import functools
+import logging
 import re
 import ssl
 
@@ -26,6 +27,9 @@ import ldap3
 
 from .path import abs_path
 from .registry import get_registry
+
+
+log = logging.getLogger(__name__)
 
 
 def escape(s):
@@ -118,6 +122,9 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
         connection = registry.get_component(ldap3.Connection, name=using)
         if connection is None:
             connection = connect(using)
+            log.debug('Created a new LDAP connection for "%s"' % using)
+        else:
+            log.debug('Using LDAP connection "%s" from registry' % using)
     if search_base is None:
         config = settings.LDAP[using]
         search_base = config['search_base']
