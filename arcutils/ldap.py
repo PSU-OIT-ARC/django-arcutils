@@ -121,13 +121,12 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
     if search_base is None:
         config = settings.LDAP[using]
         search_base = config['search_base']
-    with connection:
-        result = connection.search(
-            search_base=search_base,
-            search_filter=query,
-            search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
-            attributes=attributes,
-            **kwargs)
+    result = connection.search(
+        search_base=search_base,
+        search_filter=query,
+        search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
+        attributes=attributes,
+        **kwargs)
     if not result:
         return []
     if parse:
