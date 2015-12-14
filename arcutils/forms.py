@@ -1,6 +1,6 @@
 from django.forms.models import BaseModelFormSet
 from django.forms.formsets import BaseFormSet
-from django.forms.util import ErrorDict
+from django.forms.utils import ErrorDict
 
 
 # add some helpful methods to the formset

@@ -1,6 +1,6 @@
 from mock import Mock
 
-from django.forms.util import ErrorDict
+from django.forms.utils import ErrorDict
 from django.test import TestCase
 
 from arcutils.forms import FormSetMixin, BaseFormSet, BaseModelFormSet
