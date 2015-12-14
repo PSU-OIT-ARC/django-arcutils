@@ -73,18 +73,6 @@ Optionally, add your LDAP connection information:
    
         arcutils ldap '(uid=wbaldwin)'
 
-### Logging
-
-`arcutils.logging.basic` configures basic logging to the console, and pipes logs to
-`LOGSTASH_ADDRESS` using the logstash-forwarder protocol when DEBUG is off. Add `LOGGING_CONFIG
-= 'arcutils.logging.basic'` to use. Set the `LOGSTASH_ADDRESS` to something like 'localhost:5000'
-during development. It defaults to 'logs.rc.pdx.edu:5043'. The logstash-forwarder protocol requires
-SSL, so you must specify the path to a CA file using the `LOGSTASH_CA_CERTS` setting. This package
-includes the PSUCA.crt file, which is the default.
-
-`arcutils.logging.basic` also configures error email logging; for this to work, the `SERVER_EMAIL`
-setting *must* be set to a valid value.
-
 ## Testing
 
     pip install -e .[dev]

@@ -34,7 +34,6 @@ settings.configure(
             'search_base': 'ou=people,dc=pdx,dc=edu',
         }
     },
-    LOGGING_CONFIG='arcutils.logging.basic',
 )
 
 setup()
