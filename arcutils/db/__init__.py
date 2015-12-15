@@ -54,6 +54,19 @@ class ChoiceEnum(Enum):
             layout = models.IntegerField(
                 choices=LayoutType.as_choices(), default=LayoutType.text_only.value)
 
+    You can instead use text values if that's more appropriate::
+
+        class Status(ChoiceEnum):
+
+            new = 'new'
+            open = 'open'
+            resolved = 'resolved'
+
+        class Ticket(models.Model):
+
+            status = models.CharField(
+                max_length=255, choices=Status.as_choices(), default=Status.new.value)
+
     """
 
     @classmethod
