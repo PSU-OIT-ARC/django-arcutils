@@ -1,32 +1,44 @@
+"""Create a WSGI application.
+
+This wraps Django's :func:`django.core.wsgi.get_wsgi_application` to do
+our standard boilerplate setup.
+
+To use this in an ARC project, *copy* the contents of this file into the
+project's ``wsgi`` module (replacing whatever's already there) and add
+the following at the bottom::
+
+    root = os.path.dirname(os.path.dirname(__file__))
+    settings_module = '{package}.settings'
+    application = create_wsgi_application(root, settings_module)
+
+.. note:: These lines must be in the global scope. Also, make sure to
+          set ``{package}`` to the project's top level package name.
+
+.. note:: We can't import :func:`.create_wsgi_application` into the
+          project's ``wsgi`` module in production because ``arcutils``
+          isn't on ``sys.path`` until *after* `create_wsgi_application`
+          is called (i.e., it's a bootstrapping issue).
+
+"""
 import os
 import site
 import sys
 
 
-def create_wsgi_application(settings_module, here, root=None, local_settings_file=None):
-    """Create a WSGI application.
+def create_wsgi_application(root, settings_module=None, local_settings_file=None):
+    """Create a WSGI application anchored at ``root``.
 
-    This wraps Django's :func:`django.core.wsgi.get_wsgi_application` to
-    do our standard boilerplate setup.
+    ``root`` must contain a virtualenv at ``./.env``.
 
-    To use this in an ARC project, replace the contents of its wsgi.py
-    with this (replacing '{package}' with the project's actual top level
-    package name)::
+    ``settings_module`` is only used if the ``DJANGO_SETTINGS_MODULE``
+    environment variable is not already set.
 
-        from arcutils.wsgi import create_wsgi_application
-        application = create_wsgi_application('{package}.settings', __file__)
-
-    It's necessary to pass ``here`` so we can figure out where the root
-    directory is. It's assumed that the root directory is always one
-    directory up from wherever wsgi.py is located. Alternatively, you
-    can pass a ``root`` directory explicitly.
+    Likewise, ``local_settings_file`` is only used if the environment
+    variable ``LOCAL_SETTINGS_FILE`` is not already set. The default
+    value for this is ``{root}/local.cfg``. If a project doesn't use
+    ``django-local-settings``, this will have no effect.
 
     """
-    if root is None:
-        if os.path.isfile(here):
-            here = os.path.dirname(here)
-        root = os.path.dirname(here)
-
     if local_settings_file is None:
         local_settings_file = os.path.join(root, 'local.cfg')
 
