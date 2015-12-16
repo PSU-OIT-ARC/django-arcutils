@@ -257,10 +257,10 @@ class Registry:
         return self.has_component(arg.type, arg.name)
 
     def __getitem__(self, arg):
-        arg = RegistryKey.from_arg(arg)
-        component = self.get_component(arg.type, arg.name, self._none)
+        key = RegistryKey.from_arg(arg)
+        component = self.get_component(key.type, key.name, self._none)
         if component is self._none:
-            raise KeyError(arg)
+            raise KeyError(key)
         return component
 
     def __setitem__(self, arg, component):
