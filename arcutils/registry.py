@@ -35,7 +35,7 @@ from django.utils.module_loading import import_string
 from .settings import get_setting
 
 
-DEFAULT_REGISTRY = '__arc_default_registry__'
+DEFAULT_REGISTRY = '{prefix}.default_registry'.format(prefix=__name__)
 
 
 class RegistryError(Exception):
