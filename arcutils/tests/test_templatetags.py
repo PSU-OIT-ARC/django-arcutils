@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.http import HttpRequest
 from django.template import Context, Template
 from django.test import TestCase
 
-from arcutils.templatetags.arc import cdn_url
+from arcutils.templatetags.arc import cdn_url, google_analytics
 
 
 class TestCDNURLTag(TestCase):
@@ -28,3 +29,52 @@ class TestCDNURLTag(TestCase):
         request = HttpRequest()
         output = template.render(Context({'request': request}))
         self.assertEqual(output, 'http://cdn.research.pdx.edu/x/y/z')
+
+
+class TestGoogleAnalyticsTag(TestCase):
+
+    tracking_id = 'UA-XXXXX-Y'
+
+    def test_ga_script_tag_is_returned_with_defaults(self):
+        output = google_analytics(self.tracking_id).strip()
+        self.assertTrue(output.startswith('<script>'))
+        self.assertTrue(output.endswith('</script>'))
+        self.assertIn(self.tracking_id, output)
+        output_lower = output.lower()
+        self.assertRegex(output_lower, r'%s.+//\s+tracking id' % self.tracking_id.lower())
+        self.assertRegex(output_lower, r'auto.+//\s+cookie domain')
+        self.assertRegex(output_lower, r'undefined.+//\s+tracker name')
+        self.assertRegex(output_lower, r'undefined.+//\s+fields')
+
+    def test_ga_script_tag_is_returned_with_options(self):
+        output = google_analytics(
+            self.tracking_id,
+            cookie_domain='example.com',
+            tracker_name='example',
+            fields={'example': 'example'},
+        ).strip()
+        self.assertTrue(output.startswith('<script>'))
+        self.assertTrue(output.endswith('</script>'))
+        self.assertIn(self.tracking_id, output)
+        output_lower = output.lower()
+        self.assertRegex(output_lower, r'example\.com.+//\s+cookie domain')
+        self.assertRegex(output_lower, r'example.+//\s+tracker name')
+        self.assertRegex(output_lower, r'\{"example": "example"\}.+//\s+fields')
+
+    def test_html_placeholder_is_returned_in_debug_mode(self):
+        debug = settings.DEBUG
+        settings.DEBUG = True
+        output = google_analytics(self.tracking_id).strip()
+        self.assertTrue(output.startswith('<!--'))
+        self.assertTrue(output.endswith('-->'))
+        self.assertNotIn(self.tracking_id, output)
+        settings.DEBUG = debug
+
+    def test_html_placeholder_is_returned_when_no_tracking_id_specified(self):
+        debug = settings.DEBUG
+        settings.DEBUG = False
+        output = google_analytics()
+        self.assertTrue(output.startswith('<!--'))
+        self.assertTrue(output.endswith('-->'))
+        self.assertNotIn(self.tracking_id, output)
+        settings.DEBUG = debug
