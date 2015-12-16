@@ -77,6 +77,12 @@ class RegistryKey:
     def __hash__(self):
         return hash((self.type, self.name))
 
+    def __repr__(self):
+        return '<{0.__class__.__name__} type={0.type.__name__} name={0.name}>'.format(self)
+
+    def __str__(self):
+        return '{0.type}:{0.name}'.format(self)
+
 
 class FakeLock:
 
