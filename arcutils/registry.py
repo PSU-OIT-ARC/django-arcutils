@@ -219,9 +219,6 @@ class Registry:
 
     def _find_component(self, type_, name=None):
         """Find ``component`` with key ``(type_, name)``."""
-        # If another thread is currently adding or removing a component,
-        # wait until the component is added or removed in case it's the
-        # component being requested.
         key = RegistryKey(type_, name)
         if key in self._components:
             return self._components[key]
