@@ -139,7 +139,8 @@ class Registry:
 
     _none = object()  # Used where None is a valid value
 
-    def __init__(self,  use_locking=True, safe=True):
+    def __init__(self, name,  use_locking=True, safe=True):
+        self.name = name
         self._components = {}
         self._lock = RLock() if use_locking else FakeLock()
         self._safe = safe
@@ -316,7 +317,7 @@ def add_registry(name, registry_type=None, **kwargs) -> Registry:
             registry_type = get_setting('ARC.registry.type', Registry)
         if isinstance(registry_type, str):
             registry_type = import_string(registry_type)
-        registries[name] = registry_type(**kwargs)
+        registries[name] = registry_type(name, **kwargs)
         return registries[name]
 
 
