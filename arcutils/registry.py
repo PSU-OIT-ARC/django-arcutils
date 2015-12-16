@@ -104,7 +104,7 @@ class Registry:
         class SomeAppConfig(django.apps.AppConfig):
 
             def ready():
-                registry = get_registry()  # Get the default registry
+                registry = get_registry(use_locking=False)  # Get the default registry
                 ldap_connection = Connection(...)  # OIT LDAP connection
                 ad_connection = Connection(...)  # AD connection
                 registry.add_component(ldap_connection, Connection, 'default')
@@ -120,6 +120,20 @@ class Registry:
             cxn = registry.get_component(ldap3.Connection, 'ad')
             cxn.search(search_term)
             ...
+
+    By default, all registry operations hold a common lock so that
+    components can be safely added and removed. In the case where
+    component registration happens in an already-locked scope (as is the
+    case when Django calls ``AppConfig.ready()``) and components won't be
+    removed (which would typically be a very rare operation), locking
+    isn't necessary, and the ``use_locking`` flag can be set to
+    ``False`` to avoid locking, which may be beneficial to performance
+    in some cases.
+
+    TODO: Add a ``close_registration()`` method? This would allow
+          locking during the component registration phase but then allow
+          unlocked access to components. It would also be a nice way to
+          make a registry immutable (or at least not easily mutable).
 
     """
 
