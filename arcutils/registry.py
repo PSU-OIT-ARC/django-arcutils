@@ -43,6 +43,11 @@ class RegistryError(Exception):
     pass
 
 
+class RegistryClosedError(RegistryError):
+
+    pass
+
+
 class ComponentExistsError(RegistryError, KeyError):
 
     pass
@@ -136,10 +141,16 @@ class Registry:
     ``False`` to avoid locking, which may be beneficial to performance
     in some cases.
 
-    TODO: Add a ``close_registration()`` method? This would allow
-          locking during the component registration phase but then allow
-          unlocked access to components. It would also be a nice way to
-          make a registry immutable (or at least not easily mutable).
+    To make a registry immutable(ish) after all components have been
+    registered, call :meth:`close_registration`. This allows for locking
+    in the component registration phase while allowing for concurrent,
+    un(b)locked access to components in application code.
+
+    When registration is closed, all mutating methods will raise a
+    :exc:`RegistryClosedError`. Further attempts to close registration
+    will also raise such an error.
+
+    .. note:: Closing registration is experimental and needs tests.
 
     """
 
@@ -151,6 +162,7 @@ class Registry:
         self._lock = RLock() if use_locking else FakeLock()
         self._safe = safe
         self._factories = set()
+        self._open = True
 
     def add_component(self, component, type_, name=None, safe=None):
         """Add ``component`` with key ``(type_, name)``.
@@ -230,6 +242,31 @@ class Registry:
     def has_component(self, type_, name=None):
         with self._lock:
             return self._find_component(type_, name) is not self._none
+
+    def close_registration(self):
+        """Close registration (disallow adding & removing of components).
+
+        XXX: This is experimental
+        TODO: Write tests
+
+        """
+        with self._lock:
+            if not self._open:
+                raise RegistryClosedError(
+                    'Cannot close registration for {0.name}: already closed'.format(self))
+            self._open = False
+            self.add_component = self._registration_closed
+            self.add_factory = self._registration_closed
+            self.remove_component = self._registration_closed
+            if not isinstance(self._lock, FakeLock):
+                self._lock = FakeLock()
+
+    def _registration_closed(self, *args, **kwargs):
+        raise RegistryClosedError(
+            'Registration has been closed for {0.name}, '
+            'so you can no longer add or remove components'
+            .format(self)
+        )
 
     def _factory_to_component(self, obj, type_, name):
         if obj in self._factories:
