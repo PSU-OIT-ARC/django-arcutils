@@ -32,6 +32,7 @@ from threading import RLock
 
 from django.utils.module_loading import import_string
 
+from .const import NO_DEFAULT
 from .settings import get_setting
 
 
@@ -154,8 +155,6 @@ class Registry:
 
     """
 
-    _none = object()  # Used where None is a valid value
-
     def __init__(self, name,  use_locking=True):
         self.name = name
         self._components = {}
@@ -202,7 +201,7 @@ class Registry:
             self._factories.add(factory)
             return self.add_component(factory, *args, **kwargs)
 
-    def remove_component(self, type_, name=None, default=_none):
+    def remove_component(self, type_, name=None, default=NO_DEFAULT):
         """Remove component with key ``(type_, name)`` if it exists.
 
         Returns the removed component, or ``default`` if the component
@@ -215,9 +214,9 @@ class Registry:
         with self._lock:
             component = self._find_component(type_, name)
             key = RegistryKey(type_, name)
-            if component is not self._none:
+            if component is not NO_DEFAULT:
                 del self._components[key]
-            elif default is self._none:
+            elif default is NO_DEFAULT:
                 raise ComponentDoesNotExistError(key)
             else:
                 component = default
@@ -227,11 +226,11 @@ class Registry:
         with self._lock:
             component = self._find_component(type_, name)
             component = self._factory_to_component(component, type_, name)
-            return default if component is self._none else component
+            return default if component is NO_DEFAULT else component
 
     def has_component(self, type_, name=None):
         with self._lock:
-            return self._find_component(type_, name) is not self._none
+            return self._find_component(type_, name) is not NO_DEFAULT
 
     def close_registration(self):
         """Close registration (disallow adding & removing of components).
@@ -274,7 +273,7 @@ class Registry:
         for k in self._components.keys():
             if issubclass(k.type, type_) and k.name == name:
                 return self._components[k]
-        return self._none
+        return NO_DEFAULT
 
     def items(self):
         return self._components.items()
@@ -285,8 +284,8 @@ class Registry:
 
     def __getitem__(self, arg):
         key = RegistryKey.from_arg(arg)
-        component = self.get_component(key.type, key.name, self._none)
-        if component is self._none:
+        component = self.get_component(key.type, key.name, NO_DEFAULT)
+        if component is NO_DEFAULT:
             raise ComponentDoesNotExistError(key)
         return component
 
