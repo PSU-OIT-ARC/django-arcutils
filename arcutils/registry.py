@@ -43,12 +43,12 @@ class RegistryError(Exception):
     pass
 
 
-class ComponentExistsError(RegistryError):
+class ComponentExistsError(RegistryError, KeyError):
 
     pass
 
 
-class ComponentDoesNotExistError(RegistryError):
+class ComponentDoesNotExistError(RegistryError, KeyError):
 
     pass
 
@@ -177,7 +177,7 @@ class Registry:
                 if safe:
                     return False
                 else:
-                    raise ComponentExistsError('Component with key %r exists' % key)
+                    raise ComponentExistsError(key)
             self._components[key] = component
             return True
 
@@ -217,7 +217,7 @@ class Registry:
                 if safe:
                     return False
                 else:
-                    raise ComponentDoesNotExistError('Component with key %r does not exist' % key)
+                    raise ComponentDoesNotExistError(key)
             del self._components[key]
             return True
 
@@ -260,7 +260,7 @@ class Registry:
         key = RegistryKey.from_arg(arg)
         component = self.get_component(key.type, key.name, self._none)
         if component is self._none:
-            raise KeyError(key)
+            raise ComponentDoesNotExistError(key)
         return component
 
     def __setitem__(self, arg, component):
