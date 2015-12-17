@@ -156,27 +156,22 @@ class Registry:
 
     _none = object()  # Used where None is a valid value
 
-    def __init__(self, name,  use_locking=True, safe=True):
+    def __init__(self, name,  use_locking=True):
         self.name = name
         self._components = {}
         self._lock = RLock() if use_locking else FakeLock()
-        self._safe = safe
         self._factories = set()
         self._open = True
 
-    def add_component(self, component, type_, name=None, safe=None):
+    def add_component(self, component, type_, name=None, replace=False):
         """Add ``component`` with key ``(type_, name)``.
 
         If a component has already been registered with a given key, the
-        default is to do nothing--that's what ``safe`` indicates. If
-        ``safe`` is ``False``, a ``ComponentExistsError`` will be raised
-        instead.
+        default is to raise a ``ComponentExistsError``. Pass
+        ``replace=True`` to replace an existing component.
 
-        To replace a component, first remove it and then add the new
-        component.
-
-        Returns ``True`` or ``False`` indicating whether the component
-        was added or not.
+        When a component is successfully added, it will be returned
+        (since that seems more useful than returning nothing).
 
         """
         # Keep multiple threads from registering a component with the
@@ -185,13 +180,10 @@ class Registry:
             has_component = self.has_component(type_, name)
             key = RegistryKey(type_, name)
             if has_component:
-                safe = safe if safe is not None else self._safe
-                if safe:
-                    return False
-                else:
+                if not replace:
                     raise ComponentExistsError(key)
             self._components[key] = component
-            return True
+            return component
 
     def add_factory(self, factory, *args, **kwargs):
         """Provides a lazy way to instantiate a component.
@@ -210,28 +202,26 @@ class Registry:
             self._factories.add(factory)
             return self.add_component(factory, *args, **kwargs)
 
-    def remove_component(self, type_, name=None, safe=True):
+    def remove_component(self, type_, name=None, default=_none):
         """Remove component with key ``(type_, name)`` if it exists.
 
-        If no component is registered with a given key, the default is
-        to do nothing--that's what ``safe`` indicates. If ``safe`` is
-        ``False``, a ``ComponentDoesNotExistError`` will be raised
-        instead.
+        Returns the removed component, or ``default`` if the component
+        doesn't exist.
 
-        Returns ``True`` or ``False`` indicating whether the component
-        was removed or not.
+        If the component doesn't exist and no ``default`` is passed, a
+        :exc:`ComponentDoesNotExistError` will be raised.
 
         """
         with self._lock:
-            has_component = self.has_component(type_, name)
+            component = self._find_component(type_, name)
             key = RegistryKey(type_, name)
-            if not has_component:
-                if safe:
-                    return False
-                else:
-                    raise ComponentDoesNotExistError(key)
-            del self._components[key]
-            return True
+            if component is not self._none:
+                del self._components[key]
+            elif default is self._none:
+                raise ComponentDoesNotExistError(key)
+            else:
+                component = default
+            return component
 
     def get_component(self, type_, name=None, default=None):
         with self._lock:

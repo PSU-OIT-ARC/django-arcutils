@@ -3,6 +3,7 @@ from unittest import TestCase
 from arcutils.registry import (
     Registry,
     RegistryKey,
+    ComponentExistsError,
     delete_registry,
     get_registries,
     get_registry,
@@ -31,15 +32,35 @@ class TestRegistry(TestCase):
         component = object()
         self.assertRaises(TypeError, registry.add_component, component, 'key')
 
-    def test_adding_same_component_twice_with_same_key_is_safe(self):
+    def test_adding_a_component_returns_the_component(self):
         registry = self.get_registry()
         Base = type('Base', (), {})
         Type = type('Type', (Base,), {})
         instance = Type()
-        added = registry.add_component(instance, Type)
-        self.assertTrue(added)
-        added = registry.add_component(instance, Type)
-        self.assertFalse(added)
+        component = registry.add_component(instance, Type)
+        self.assertIs(component, instance)
+
+    def test_replacing_a_component_removes_it_and_adds_and_returns_the_new_component(self):
+        registry = self.get_registry()
+        instance_1 = object()
+        registry[object] = instance_1
+        self.assertIs(registry[object], instance_1)
+        instance_2 = object()
+        registry.add_component(instance_2, object, replace=True)
+        self.assertIs(registry[object], instance_2)
+
+    def test_adding_the_same_component_twice_with_same_key_causes_an_error(self):
+        registry = self.get_registry()
+        Type = type('Type', (), {})
+        instance = Type()
+        registry.add_component(instance, Type)
+        self.assertRaises(ComponentExistsError, registry.add_component, instance, Type)
+
+    def test_removing_a_nonexistent_component_returns_passed_default(self):
+        registry = self.get_registry()
+        default = object()
+        component = registry.remove_component(object, default=default)
+        self.assertIs(component, default)
 
     def test_register_under_subclass(self):
         registry = self.get_registry()
