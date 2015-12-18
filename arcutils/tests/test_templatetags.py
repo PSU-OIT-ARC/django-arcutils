@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.http import HttpRequest
 from django.template import Context, Template
 from django.test import TestCase
@@ -62,19 +61,15 @@ class TestGoogleAnalyticsTag(TestCase):
         self.assertRegex(output_lower, r'\{"example": "example"\}.+//\s+fields')
 
     def test_html_placeholder_is_returned_in_debug_mode(self):
-        debug = settings.DEBUG
-        settings.DEBUG = True
-        output = google_analytics(self.tracking_id).strip()
-        self.assertTrue(output.startswith('<!--'))
-        self.assertTrue(output.endswith('-->'))
-        self.assertNotIn(self.tracking_id, output)
-        settings.DEBUG = debug
+        with self.settings(DEBUG=True):
+            output = google_analytics(self.tracking_id).strip()
+            self.assertTrue(output.startswith('<!--'))
+            self.assertTrue(output.endswith('-->'))
+            self.assertNotIn(self.tracking_id, output)
 
     def test_html_placeholder_is_returned_when_no_tracking_id_specified(self):
-        debug = settings.DEBUG
-        settings.DEBUG = False
-        output = google_analytics()
-        self.assertTrue(output.startswith('<!--'))
-        self.assertTrue(output.endswith('-->'))
-        self.assertNotIn(self.tracking_id, output)
-        settings.DEBUG = debug
+        with self.settings(DEBUG=False):
+            output = google_analytics()
+            self.assertTrue(output.startswith('<!--'))
+            self.assertTrue(output.endswith('-->'))
+            self.assertNotIn(self.tracking_id, output)
