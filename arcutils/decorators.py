@@ -33,16 +33,25 @@ class cached_property:
 
     """
 
-    def __init__(self, fget_or_dependencies, *dependencies):
-        if callable(fget_or_dependencies):
-            self._set_fget(fget_or_dependencies)
-            self.dependencies = ()
+    def __init__(self, fget_or_dependency, *dependencies):
+        # This handles all of these cases:
+        #
+        # 1. @cached_property
+        # 2. @cached_property('dependency', ...)
+        # 3. cached_property(method)
+        # 4. cached_property(method, 'dependency', ...)
+        # 5. cached_property('dependency', ...)(method)
+        if callable(fget_or_dependency):
+            self._set_fget(fget_or_dependency)
         else:
-            dependencies = (fget_or_dependencies,) + dependencies
+            dependencies = (fget_or_dependency,) + dependencies
+        if dependencies:
             if all(isinstance(item, str) for item in dependencies):
                 self.dependencies = set(dependencies)
             else:
                 raise TypeError('@cached_property dependencies must be strings', dependencies)
+        else:
+            self.dependencies = dependencies
 
     def __call__(self, fget):
         # This will be invoked only when a cached_property has

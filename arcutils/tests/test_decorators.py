@@ -24,10 +24,11 @@ class TestCachedProperty(TestCase):
                 counts['prop_with_dep'] += 1
                 return values['prop_with_dep']
 
-            @cached_property('attr', 'thing')
             def prop_with_deps(self):
                 counts['prop_with_deps'] += 1
                 return values['prop_with_deps']
+
+            prop_with_deps = cached_property(prop_with_deps, 'attr', 'thing')
 
             @cached_property('prop')
             def prop_with_prop_dep(self):
