@@ -1,7 +1,7 @@
 all: sdist
 
 init:
-	test -d .env && rm -rf .env
+	test -d .env && rm -rf .env || true
 	virtualenv -p python3 .env
 	.env/bin/pip install -r requirements.txt
 	$(MAKE) test
