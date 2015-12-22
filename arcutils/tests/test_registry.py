@@ -4,6 +4,7 @@ from arcutils.registry import (
     Registry,
     RegistryKey,
     ComponentExistsError,
+    ComponentDoesNotExistError,
     delete_registry,
     get_registries,
     get_registry,
@@ -56,6 +57,25 @@ class TestRegistry(TestCase):
         instance = Type()
         registry.add_component(instance, Type)
         self.assertRaises(ComponentExistsError, registry.add_component, instance, Type)
+
+    def test_removing_a_component_removes_and_returns_the_component(self):
+        registry = self.get_registry()
+        components = registry._components
+        Type = type('Type', (), {})
+        component = Type()
+        self.assertNotIn(RegistryKey(Type), components)
+        self.assertNotIn(Type, registry)
+        registry[Type] = component
+        self.assertIn(RegistryKey(Type), components)
+        self.assertIn(Type, registry)
+        obj = registry.remove_component(Type)
+        self.assertIs(obj, component)
+        self.assertNotIn(RegistryKey(Type), components)
+        self.assertNotIn(Type, registry)
+
+    def test_removing_a_nonexistent_component_raises_an_error(self):
+        registry = self.get_registry()
+        self.assertRaises(ComponentDoesNotExistError, registry.remove_component, object)
 
     def test_removing_a_nonexistent_component_returns_passed_default(self):
         registry = self.get_registry()
