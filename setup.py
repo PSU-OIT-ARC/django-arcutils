@@ -36,6 +36,7 @@ setup(
         ],
         'dev': [
             'django>=1.7,<1.9',
+            'djangorestframework>3.3',
             'flake8',
             'ldap3',
             'mock',
