@@ -278,6 +278,9 @@ class Registry:
     def items(self):
         return self._components.items()
 
+    def __bool__(self):
+        return bool(self._components)
+
     def __contains__(self, arg):
         arg = RegistryKey.from_arg(arg)
         return self.has_component(arg.type, arg.name)

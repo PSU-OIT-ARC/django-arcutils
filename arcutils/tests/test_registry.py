@@ -26,6 +26,7 @@ class TestRegistry(TestCase):
         self.assertNotIn(self.registry_name, registries)
         self.assertIsInstance(self.get_registry(), Registry)
         self.assertIn(self.registry_name, registries)
+        self.assertFalse(self.get_registry())
 
     def test_components_must_be_registered_as_types(self):
         registry = self.get_registry()
