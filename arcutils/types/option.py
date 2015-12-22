@@ -148,6 +148,7 @@ class Option:
             raise TypeError('Cannot unwrap Null')
         return raise_or_call_and_return(default)
 
+    # > indicates pushing the value out of the Option
     __gt__ = unwrap
 
     def __call__(self, some=lambda v: v, null=lambda: Null):
