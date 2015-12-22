@@ -92,10 +92,10 @@ class Option:
     def is_null(self):
         return self is Null
 
-    # Methods that run and action then return the original Option
+    # Methods that run an action then return the original Option
 
     def and_do(self, action):
-        """Do ``action`` if :class:`Some`; always return ``self``.
+        """Do ``action()`` if :class:`Some`; always return ``self``.
 
         If ``self`` is a :class:`Some`, call ``action`` with
         :attr:`value` and return ``self``. The return value of
@@ -110,7 +110,7 @@ class Option:
         return self
 
     def or_do(self, action):
-        """Do ``action`` if :const:`Null`; always return ``self``.
+        """Do ``action()`` if :const:`Null`; always return ``self``.
 
         If ``self`` is :const:`Null`, call ``action`` and return
         ``self``. The return value of ``action`` is discarded.
@@ -124,14 +124,6 @@ class Option:
         return self
 
     # Methods that unwrap an Option and return a value
-
-    @staticmethod
-    def _raise_or_return(value):
-        is_exc = isinstance(value, BaseException)
-        is_exc = is_exc or (isinstance(value, type) and issubclass(value, BaseException))
-        if is_exc:
-            raise value
-        return value
 
     def unwrap(self, default=None):
         """Return value if :class:`Some`; else return ``default()``."""
@@ -147,7 +139,6 @@ class Option:
         """Resolve the value of an :class:`Option`.
 
         By default, this will return :attr:`value` if this is a
-        :class:`Some` or :const:`Null` if this is :const:`Null`.
         :class:`Some` or :const:`Null` if this is :const:`Null`.
 
         If ``some`` is passed, it will be called with :attr:`value` if
@@ -192,7 +183,7 @@ class Option:
             raise TypeError('default must be callable')
         option = default()
         if not isinstance(option, Option):
-            raise TypeError('instead must return an Option')
+            raise TypeError('default must return an Option')
         return option
 
     __or__ = or_
@@ -220,6 +211,16 @@ class Option:
         return option
 
     __and__ = and_
+
+    # Utilities
+
+    @staticmethod
+    def _raise_or_return(value):
+        is_exc = isinstance(value, BaseException)
+        is_exc = is_exc or (isinstance(value, type) and issubclass(value, BaseException))
+        if is_exc:
+            raise value
+        return value
 
 
 Some = type('Some', (Option,), {})
