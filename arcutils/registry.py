@@ -28,12 +28,13 @@ project with a Django app config class like this::
             ...
 
 """
+from collections import namedtuple
 from threading import RLock
 
 from django.utils.module_loading import import_string
 
-from .const import NO_DEFAULT
 from .settings import get_setting
+from .types import Option, Some, Null
 
 
 DEFAULT_REGISTRY = '{prefix}.default_registry'.format(prefix=__name__)
@@ -57,6 +58,9 @@ class ComponentExistsError(RegistryError, KeyError):
 class ComponentDoesNotExistError(RegistryError, KeyError):
 
     pass
+
+
+FoundComponent = namedtuple('FoundComponent', ('key', 'component'))
 
 
 class RegistryKey:
@@ -201,7 +205,7 @@ class Registry:
             self._factories.add(factory)
             return self.add_component(factory, *args, **kwargs)
 
-    def remove_component(self, type_, name=None, default=NO_DEFAULT):
+    def remove_component(self, type_, name=None, default=ComponentDoesNotExistError):
         """Remove component with key ``(type_, name)`` if it exists.
 
         Returns the removed component, or ``default`` if the component
@@ -211,26 +215,21 @@ class Registry:
         :exc:`ComponentDoesNotExistError` will be raised.
 
         """
-        with self._lock:
-            component = self._find_component(type_, name)
-            key = RegistryKey(type_, name)
-            if component is not NO_DEFAULT:
-                del self._components[key]
-            elif default is NO_DEFAULT:
-                raise ComponentDoesNotExistError(key)
-            else:
-                component = default
-            return component
+        if default is ComponentDoesNotExistError:
+            default = ComponentDoesNotExistError(RegistryKey(type_, name))
+        with self._lock, self._find_component(type_, name) as option:
+            return option & (lambda v: Some(self._components.pop(v.key))) > (lambda: default)
 
     def get_component(self, type_, name=None, default=None):
-        with self._lock:
-            component = self._find_component(type_, name)
-            component = self._factory_to_component(component, type_, name)
-            return default if component is NO_DEFAULT else component
+        with self._lock, self._find_component(type_, name) as option:
+            return option(
+                some=lambda v: self._factory_to_component(v.component, v.key.type, v.key.name),
+                null=lambda: default
+            )
 
     def has_component(self, type_, name=None):
-        with self._lock:
-            return self._find_component(type_, name) is not NO_DEFAULT
+        with self._lock, self._find_component(type_, name) as option:
+            return option(some=lambda v: True, null=lambda: False)
 
     def close_registration(self):
         """Close registration (disallow adding & removing of components).
@@ -264,16 +263,22 @@ class Registry:
             self._components[RegistryKey(type_, name)] = obj
         return obj
 
-    def _find_component(self, type_, name=None):
-        """Find ``component`` with key ``(type_, name)``."""
+    def _find_component(self, type_, name=None) -> Option:
+        """Find ``component`` with key ``(type_, name)``.
+
+        If the component is found, a wrapped :class:`FoundComponent`
+        will be returned (which consists of the key where the component
+        was found along with the component itself).
+
+        """
         key = RegistryKey(type_, name)
         if key in self._components:
-            return self._components[key]
+            return Some(FoundComponent(key, self._components[key]))
         # Try to find a component registered as a subclass of type_.
         for k in self._components.keys():
             if issubclass(k.type, type_) and k.name == name:
-                return self._components[k]
-        return NO_DEFAULT
+                return Some(FoundComponent(k, self._components[k]))
+        return Null
 
     def items(self):
         return self._components.items()
@@ -287,10 +292,7 @@ class Registry:
 
     def __getitem__(self, arg):
         key = RegistryKey.from_arg(arg)
-        component = self.get_component(key.type, key.name, NO_DEFAULT)
-        if component is NO_DEFAULT:
-            raise ComponentDoesNotExistError(key)
-        return component
+        return self.get_component(key.type, key.name, ComponentDoesNotExistError(key))
 
     def __setitem__(self, arg, component):
         arg = RegistryKey.from_arg(arg)
