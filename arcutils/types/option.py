@@ -97,41 +97,56 @@ class Option:
     def and_do(self, action):
         """Do ``action()`` if :class:`Some`; always return ``self``.
 
-        If ``self`` is a :class:`Some`, call ``action`` with
-        :attr:`value` and return ``self``. The return value of
-        ``action`` is discarded.
+        If ``self`` is a :class:`Some`, ``action`` will be called with
+        :attr:`value` unless ``action`` is an exception, in which case
+        it will be raised directly.
 
-        If ``self`` is :const:`Null`, do not call ``action`` but still
-        return ``self``.
+        The return value of ``action`` will be discarded unless it's an
+        exception, in which case it will be raised.
+
+        If ``self`` is :const:`Null`, ``action`` will not be called.
+
+        Always return ``self`` unless an exception is raised.
 
         """
         if self:
-            action(self.value)
+            raise_or_call_and_return(action, self.value)
         return self
 
     def or_do(self, action):
         """Do ``action()`` if :const:`Null`; always return ``self``.
 
-        If ``self`` is :const:`Null`, call ``action`` and return
-        ``self``. The return value of ``action`` is discarded.
+        If ``self`` is :const:`Null`, ``action`` will be called with no
+        args unless ``action`` is an exception, in which case it will
+        be raised directly.
 
-        If ``self`` is a :class:`Some`, do not call ``action`` but still
-        return ``self``.
+        The return value of ``action`` will be discarded unless it's an
+        exception, in which case it will be raised.
+
+        If ``self`` is a :class:`Some`, ``action`` will not be called.
+
+        Always return ``self`` unless an exception is raised.
 
         """
         if not self:
-            action()
+            raise_or_call_and_return(action)
         return self
 
     # Methods that unwrap an Option and return a value
 
     def unwrap(self, default=None):
-        """Return value if :class:`Some`; else return ``default()``."""
+        """Return value if :class:`Some`; else return ``default()``.
+
+        If ``default`` is an exception, it will be raised directly. If
+        ``default()`` returns an exception, that exception will be
+        raised.
+
+        """
         if self:
-            return self.value
+            return raise_or_return(self.value)
         if default is None:
             raise TypeError('Cannot unwrap Null')
-        return self._raise_or_return(default())
+        return raise_or_call_and_return(default)
 
     __gt__ = unwrap
 
@@ -142,11 +157,12 @@ class Option:
         :class:`Some` or :const:`Null` if this is :const:`Null`.
 
         If ``some`` is passed, it will be called with :attr:`value` if
-        ``self`` is a :class:`Some`.
+        ``self`` is a :class:`Some`. If ``some`` is or returns an
+        exception, that exception will be raised.
 
         If ``null`` is passed, it will be called with no args if ``self``
-        is :const:`Null`. If ``null()`` returns an exception, it will be
-        raised.
+        is :const:`Null`. If ``null`` is or returns an exception, that
+        exception will be raised.
 
         The idea behind this is to provide a nice syntax that sort-of
         looks like pattern matching in languages like Rust.
@@ -160,7 +176,9 @@ class Option:
                 )
 
         """
-        return some(self.value) if self else self._raise_or_return(null())
+        if self:
+            return raise_or_call_and_return(some, self.value)
+        return raise_or_call_and_return(null)
 
     # Methods that may return the original Option or a different one
 
@@ -170,18 +188,20 @@ class Option:
         ``default`` can be...
 
         - an :class:`Option`
+        - an exception, which will be raised directly
         - a callable that takes no args & returns an :class:`Option`
-        - an exception, which will be raised
+        - a callable that takes no args & returns an exception, which
+          will be raised
 
         """
         if self:
             return self
-        self._raise_or_return(default)
+        raise_or_return(default)
         if isinstance(default, Option):
             return default
         if not callable(default):
             raise TypeError('default must be callable')
-        option = default()
+        option = raise_or_return(default())
         if not isinstance(option, Option):
             raise TypeError('default must return an Option')
         return option
@@ -194,34 +214,46 @@ class Option:
         ``instead`` can be...
 
         - an :class:`Option`
+        - an exception, which will be raised directly
         - a callable that takes one arg & returns an :class:`Option`
-        - an exception, which will be raised
+        - a callable that takes one & returns an exception, which
+          will be raised
 
         """
         if not self:
             return self
-        self._raise_or_return(instead)
+        raise_or_return(instead)
         if isinstance(instead, Option):
             return instead
         if not callable(instead):
             raise TypeError('instead must be callable')
-        option = instead(self.value)
+        option = raise_or_return(instead(self.value))
         if not isinstance(option, Option):
             raise TypeError('instead must return an Option')
         return option
 
     __and__ = and_
 
-    # Utilities
-
-    @staticmethod
-    def _raise_or_return(value):
-        is_exc = isinstance(value, BaseException)
-        is_exc = is_exc or (isinstance(value, type) and issubclass(value, BaseException))
-        if is_exc:
-            raise value
-        return value
-
 
 Some = type('Some', (Option,), {})
 Null = type('Null', (Option,), {})(None)
+
+
+def raise_or_return(value):
+    """Raise ``value`` if it's an exception; else return it."""
+    is_exc = isinstance(value, BaseException)
+    is_exc = is_exc or (isinstance(value, type) and issubclass(value, BaseException))
+    if is_exc:
+        raise value
+    return value
+
+
+def raise_or_call_and_return(callable_, *args, **kwargs):
+    """Raise ``callable_`` if it's an exception; else call it.
+
+    The result of ``callable_(*args, **kwargs)`` will be returned unless
+    the result is an exception, in which case the result will be raised.
+
+    """
+    callable_ = raise_or_return(callable_)
+    return raise_or_return(callable_(*args, **kwargs))
