@@ -234,6 +234,9 @@ class Option:
 
     __and__ = and_
 
+    def __str__(self):
+        return 'Some({0.value!r})'.format(self) if self else 'Null'
+
 
 Some = type('Some', (Option,), {})
 Null = type('Null', (Option,), {})(None)
