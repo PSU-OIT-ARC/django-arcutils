@@ -296,6 +296,10 @@ class Registry:
         arg = RegistryKey.from_arg(arg)
         self.add_component(component, arg.type, arg.name)
 
+    def __delitem__(self, arg):
+        arg = RegistryKey.from_arg(arg)
+        self.remove_component(arg.type, arg.name)
+
     def __iter__(self):
         return iter(self._components)
 

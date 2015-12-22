@@ -83,6 +83,14 @@ class TestRegistry(TestCase):
         component = registry.remove_component(object, default=default)
         self.assertIs(component, default)
 
+    def test_removing_a_component_using_dict_syntax(self):
+        registry = self.get_registry()
+        self.assertNotIn(object, registry)
+        registry[object] = object()
+        self.assertIn(object, registry)
+        del registry[object]
+        self.assertNotIn(object, registry)
+
     def test_register_under_subclass(self):
         registry = self.get_registry()
         Base = type('Base', (), {})
