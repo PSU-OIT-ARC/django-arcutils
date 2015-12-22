@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from arcutils.renderers import TemplateHTMLContextDictRenderer
+from arcutils.drf import TemplateHTMLContextDictRenderer
 from arcutils.response import get_redirect_location
 
 from .perms import can_masquerade, can_masquerade_as
