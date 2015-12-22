@@ -179,12 +179,10 @@ class Registry:
         """
         # Keep multiple threads from registering a component with the
         # same key at the same time.
-        with self._lock:
-            has_component = self.has_component(type_, name)
+        with self._lock, self._find_component(type_, name) as option:
             key = RegistryKey(type_, name)
-            if has_component:
-                if not replace:
-                    raise ComponentExistsError(key)
+            if option and not replace:
+                raise ComponentExistsError(key)
             self._components[key] = component
             return component
 
