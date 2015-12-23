@@ -197,8 +197,6 @@ class Option:
         raise_or_return(default)
         if isinstance(default, Option):
             return default
-        if not callable(default):
-            raise TypeError('default must be callable')
         option = raise_or_return(default())
         if not isinstance(option, Option):
             raise TypeError('default must return an Option')
@@ -221,8 +219,6 @@ class Option:
         raise_or_return(instead)
         if isinstance(instead, Option):
             return instead
-        if not callable(instead):
-            raise TypeError('instead must be callable')
         option = raise_or_return(instead(self.value))
         if not isinstance(option, Option):
             raise TypeError('instead must return an Option')
