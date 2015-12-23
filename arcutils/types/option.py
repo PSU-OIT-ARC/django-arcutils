@@ -148,9 +148,6 @@ class Option:
             raise TypeError('Cannot unwrap Null')
         return raise_or_call_and_return(default)
 
-    # > indicates pushing the value out of the Option
-    __gt__ = unwrap
-
     def __call__(self, some=lambda v: v, null=lambda: Null):
         """Resolve the value of an :class:`Option`.
 
@@ -207,8 +204,6 @@ class Option:
             raise TypeError('default must return an Option')
         return option
 
-    __or__ = or_
-
     def and_(self, instead):
         """Return ``self`` if it's :const:`Null` else ``instead(self.value)``.
 
@@ -232,8 +227,6 @@ class Option:
         if not isinstance(option, Option):
             raise TypeError('instead must return an Option')
         return option
-
-    __and__ = and_
 
     def __str__(self):
         return 'Some({0.value!r})'.format(self) if self else 'Null'

@@ -216,7 +216,7 @@ class Registry:
         if default is ComponentDoesNotExistError:
             default = ComponentDoesNotExistError(RegistryKey(type_, name))
         with self._lock, self._find_component(type_, name) as option:
-            return option & (lambda v: Some(self._components.pop(v.key))) > (lambda: default)
+            return option.and_(lambda v: Some(self._components.pop(v.key))).unwrap(lambda: default)
 
     def get_component(self, type_, name=None, default=None):
         with self._lock, self._find_component(type_, name) as option:
