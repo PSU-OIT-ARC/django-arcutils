@@ -262,11 +262,16 @@ class Registry:
         return obj
 
     def _find_component(self, type_, name=None) -> Option:
-        """Find ``component`` with key ``(type_, name)``.
+        """Find component with key ``(type_, name)``.
 
-        If the component is found, a wrapped :class:`FoundComponent`
-        will be returned (which consists of the key where the component
-        was found along with the component itself).
+        If a component isn't found with that exact key, we look for a
+        component registered as a subclass of ``type_`` with ``name``.
+        So if a component was registered under ``(dict, 'my_stuff')``,
+        ``_find_component(object, 'my_stuff')`` will find it.
+
+        If a component is found, a wrapped :class:`FoundComponent` will
+        be returned (which consists of the key where the component was
+        found along with the component itself).
 
         """
         key = RegistryKey(type_, name)
