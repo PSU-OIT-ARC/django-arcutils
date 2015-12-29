@@ -167,7 +167,7 @@ def parse_profile(attributes):
         - email_address (preferred address)
         - canonical_email_address (from mailRoutingAddress)
         - email_addresses (all addresses, in this order: preferred, canonical, aliases)
-        - odin (ODIN username)
+        - username (ODIN username)
         - phone number
         - phone extension
         - room number
@@ -179,7 +179,7 @@ def parse_profile(attributes):
         >>> results = ldapsearch('(uid=mdj2)', parse=False)
         >>> attributes = results[0]['attributes']
         >>> parse_profile(attributes)
-        {'first_name': 'Matthew', 'last_name': 'Johnson', 'odin': 'mdj2', ...}
+        {'first_name': 'Matthew', 'last_name': 'Johnson', 'username': 'mdj2', ...}
 
     """
     get = functools.partial(_get_attribute, attributes)
@@ -203,7 +203,7 @@ def parse_profile(attributes):
     else:
         ou = school_or_office = department = None
 
-    odin = get('uid')
+    username = get('uid')
 
     preferred_email_address = parse_email(attributes)
     canonical_email_address = get('mailRoutingAddress')
@@ -227,7 +227,8 @@ def parse_profile(attributes):
         'email_address': preferred_email_address,
         'email_addresses': email_addresses,
         'canonical_email_address': canonical_email_address,
-        'odin': odin,
+        'odin': username,  # deprecated
+        'username': username,
         'phone_number': phone_number,
         'extension': extension,
         'room_number': get('roomNumber'),
