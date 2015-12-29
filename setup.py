@@ -7,7 +7,7 @@ VERSION = '2.0.dev0'
 
 
 install_requires = [
-    'django-local-settings>=1.0a10',
+    'django-local-settings>=1.0a12',
     'stashward',
 ]
 
