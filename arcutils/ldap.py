@@ -14,6 +14,9 @@ This module assumes an LDAP setting like so::
         }
     }
 
+TODO: Incorporate the ldap3 library's abstraction layer:
+      http://ldap3.readthedocs.org./abstraction.html
+
 """
 import functools
 import re
