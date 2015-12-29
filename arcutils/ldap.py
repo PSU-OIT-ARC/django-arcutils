@@ -18,11 +18,13 @@ This module assumes an LDAP setting like so::
 import functools
 import re
 import ssl
+from collections import defaultdict
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 import ldap3
+from ldap3.utils.dn import parse_dn as _parse_dn
 
 from .path import abs_path
 from .registry import get_registry
@@ -173,6 +175,7 @@ def parse_profile(attributes):
         - room number
         - roles
         - password_expiration_date
+        - member_of (AD groups; only populated when querying AD)
 
     Usage::
 
@@ -234,6 +237,7 @@ def parse_profile(attributes):
         'room_number': get('roomNumber') or get('physicalDeliveryOfficeName'),
         'roles': get('eduPersonAffiliation', True),
         'password_expiration_date': _reformat_datetime(get('psuPasswordExpireDate')),
+        'member_of': parse_member_of(attributes)
     }
 
 
@@ -306,6 +310,44 @@ def parse_phone_number(attributes):
         while '--' in phone_number:
             phone_number = phone_number.replace('--', '-')
     return phone_number
+
+
+def parse_member_of(attributes):
+    """Parse AD ``memberOf`` field into a list of dicts.
+
+    The ``memberOf`` field contains items with this format::
+
+        CN=AAA,OU=BBB,DC=PSU,DC=DS,DC=PDX,DC=EDU
+        CN=XXX,OU=YYY,DC=PSU,DC=DS,DC=PDX,DC=EDU
+
+    And this function will return a list of dicts like this::
+
+        [{'name': 'AAA'}, {'name': 'BBB'}]
+
+    """
+    member_of = _get_attribute(attributes, 'memberOf', True)
+    member_of = [parse_dn(m) for m in member_of]
+    member_of = [{'name': dn['cn'][0]} for dn in member_of]
+    return member_of
+
+
+def parse_dn(string):
+    """Parse a DN into a dict.
+
+    For example::
+
+        >>> parse_dn('CN=ABC,OU=XYZ,DC=PSU,DC=DS,DC=PDX,DC=EDU')
+        {'cn': ['ABC'], 'dc': ['PSU', 'DS', 'PDX', 'EDU'], 'ou': ['XYZ']}
+
+    Note that the keys get lower-cased for consistent access, but the
+    values are left as is.
+
+    """
+    dn = defaultdict(list)
+    for parts in _parse_dn(string):
+        k, v, *rest = parts
+        dn[k.lower()].append(v)
+    return dict(dn)
 
 
 def _reformat_datetime(dt):
