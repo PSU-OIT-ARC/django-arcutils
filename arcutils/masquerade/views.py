@@ -42,13 +42,15 @@ class MasqueradeSelectView(BaseView):
     context_object_name = 'masquerade'
 
     def get(self, request):
-        if not can_masquerade(request.user):
+        user = request.user
+        if not can_masquerade(user):
             raise PermissionDenied('You are not allowed to masquerade as another user')
         user_model = get_user_model()
-        users = user_model.objects.all().order_by('first_name', 'last_name', 'email')
-        users = [u for u in users if can_masquerade_as(request.user, u)]
+        q = user_model.objects.exclude(pk=user.pk).order_by('first_name', 'last_name', 'email')
+        users = [u for u in q if can_masquerade_as(user, u)]
         return Response({
             'users': users,
+            'other_users_count': q.count(),  # excludes request.user
             get_redirect_field_name(): self.get_redirect_location(request),
         })
 
