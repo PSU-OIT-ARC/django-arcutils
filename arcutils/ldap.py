@@ -185,13 +185,13 @@ def parse_profile(attributes):
     get = functools.partial(_get_attribute, attributes)
 
     first_name, last_name = parse_name(attributes)
-    full_name = get('preferredcn') or get('cn') or ''
+    full_name = get('preferredcn') or get('displayName') or get('cn') or ''
     full_name = full_name.split(',', 1)[0]
     title = get('title')
 
     # XXX: This part is wonky. I'm not sure how many OU parts there can
     #      be or what there proper names are (school vs office, etc).
-    ou = get('ou')
+    ou = get('ou') or get('department')
     if ou:
         ou_parts = ou.split(' - ', 1)
         if len(ou_parts) == 1:
@@ -203,10 +203,10 @@ def parse_profile(attributes):
     else:
         ou = school_or_office = department = None
 
-    username = get('uid')
+    username = get('uid') or get('name')
 
     preferred_email_address = parse_email(attributes)
-    canonical_email_address = get('mailRoutingAddress')
+    canonical_email_address = get('mailRoutingAddress') or get('mail')
     email_addresses = [preferred_email_address]
     additional_email_addresses = get('mailRoutingAddress', True) + get('mailLocalAddress', True)
     for a in additional_email_addresses:
@@ -231,7 +231,7 @@ def parse_profile(attributes):
         'username': username,
         'phone_number': phone_number,
         'extension': extension,
-        'room_number': get('roomNumber'),
+        'room_number': get('roomNumber') or get('physicalDeliveryOfficeName'),
         'roles': get('eduPersonAffiliation', True),
         'password_expiration_date': _reformat_datetime(get('psuPasswordExpireDate')),
     }
@@ -247,14 +247,21 @@ def parse_name(attributes):
 
     """
     get = functools.partial(_get_attribute, attributes)
-    first_name = get('givenName') or get('preferredcn') or get('cn') or ''
-    first_name = first_name.split(' ')[0]
+
+    # We try to extract the first and/or last name from this if
+    # necessary.
+    fallback = get('preferredcn') or get('displayName') or get('cn') or ''
+
+    first_name = get('givenName')
+    if not first_name:
+        first_name = fallback.split(' ')[0]
+
     surname = get('sn')
     if surname:
         last_name = surname.split(',', 1)[0]
     else:
-        last_name = get('preferredcn') or get('cn') or ''
-        last_name = last_name.split(',', 1)[0].split(' ')[-1]
+        last_name = fallback.split(',', 1)[0].split(' ')[-1]
+
     return first_name, last_name
 
 
