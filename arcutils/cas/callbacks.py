@@ -4,12 +4,15 @@
 
 """
 import logging
+from operator import setitem
 from xml.etree import ElementTree
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import FieldDoesNotExist
+
+from arcutils.types.option import Some, Null
 
 
 log = logging.getLogger(__name__)
@@ -65,16 +68,20 @@ def default_response_callback(tree):
 
     """
     log.debug(ElementTree.tostring(tree).decode('utf-8'))
+    cas_data = parse_cas_tree(tree)
+    return get_or_create_user(cas_data)
 
+
+def get_or_create_user(data):
+    """Get user or create from CAS data.
+
+    ``data`` must contain a 'username' key. It may also contain other
+    user attributes, which will be set when creating a user (attributes
+    that don't correspond to fields on the user model will be ignored).
+
+    """
     user_model = get_user_model()
-
-    success = tree.find('cas:authenticationSuccess', CAS_NS_MAP)
-    username = success.find('cas:user', CAS_NS_MAP).text.strip()
-    attributes = success.find('cas:attributes', CAS_NS_MAP)
-
-    def get_attribute(cas_name, default=None):
-        value = attributes.find(cas_name, CAS_NS_MAP)
-        return default if value is None else value.text.strip()
+    username = data['username']
 
     try:
         user = user_model.objects.get(username=username)
@@ -83,29 +90,56 @@ def default_response_callback(tree):
     else:
         return user
 
-    is_superuser = username in getattr(settings, 'SUPERUSERS', ())
-    is_staff = username in getattr(settings, 'STAFF', ())
-    is_staff = is_staff or is_superuser
-
+    # These defaults may be overridden by ``data``.
     user_args = {
-        'username': username,
-        'password': make_password(None),
-        'is_staff': is_staff,
-        'is_superuser': is_superuser,
-        # This default email address will be overridden if there's an
-        # email address in the CAS attributes.
-        'email': '{username}@pdx.edu'.format(username=username)
+        'email': '{username}@pdx.edu'.format(username=username),
     }
 
-    for name, cas_name in CAS_ATTR_MAP:
+    for name, value in data.items():
         try:
             user_model._meta.get_field(name)
         except FieldDoesNotExist:
             pass
         else:
-            value = get_attribute(cas_name)
-            if value is not None:
-                user_args[name] = value
+            user_args[name] = value
+
+    is_superuser = username in getattr(settings, 'SUPERUSERS', ())
+    is_staff = username in getattr(settings, 'STAFF', ())
+    is_staff = is_staff or is_superuser
+
+    user_args.update({
+        'password': make_password(None),
+        'is_staff': is_staff,
+        'is_superuser': is_superuser,
+    })
 
     user = user_model.objects.create(**user_args)
     return user
+
+
+def parse_cas_tree(tree):
+    """Pull data out of ElementTree ```tree`` into a dict.
+
+    This maps the CAS attributes to normalized names using
+    :const:`CAS_ATTR_MAP`.
+
+    The dict will also include a ``username`` entry.
+
+    """
+    success = tree.find('cas:authenticationSuccess', CAS_NS_MAP)
+    username = success.find('cas:user', CAS_NS_MAP).text.strip()
+    attributes = success.find('cas:attributes', CAS_NS_MAP)
+    cas_data = {}
+    for name, cas_name in CAS_ATTR_MAP:
+        with _get_cas_attr(attributes, cas_name) as option:
+            option(some=lambda v: setitem(cas_data, name, v))
+    cas_data['username'] = username
+    return cas_data
+
+
+def _get_cas_attr(attributes, cas_name, default=Null):
+    value = attributes.find(cas_name, CAS_NS_MAP)
+    if value is None:
+        return Some(default) if default is not Null else Some(default)
+    value = value.text.strip()
+    return Some(value) if value else Null
