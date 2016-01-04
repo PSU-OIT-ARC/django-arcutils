@@ -10,11 +10,11 @@ Hook them into your app like so::
     ]
 
 """
-import cas
-
 from django.conf.urls import url
 
+from . import views
+
 urlpatterns = [
-    url(r'^login$', cas.views.login, name='login'),
-    url(r'^logout$', cas.views.logout, name='logout'),
+    url(r'^login$', views.login, name='login'),
+    url(r'^logout$', views.logout, name='logout'),
 ]
