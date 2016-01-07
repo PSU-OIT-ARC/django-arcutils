@@ -27,9 +27,6 @@ setup(
     zip_safe=False,
     install_requires=install_requires,
     extras_require={
-        'cas': [
-            'django-cas-client>=1.2.0',
-        ],
         'ldap': [
             'certifi>=2015.11.20.1',
             'ldap3>=1.0.3',

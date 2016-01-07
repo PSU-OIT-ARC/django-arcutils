@@ -1,2 +1,2 @@
 -f https://cdn.research.pdx.edu/pypi/dist/
--e .[dev,cas,ldap]
+-e .[dev,ldap]
