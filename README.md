@@ -40,10 +40,10 @@ Optionally, add your LDAP connection information:
 
 ## Features
 
-1. `arcutils.will_be_deleted_with(obj)` yields a two tuple -- a model class, and a set of objects
-   -- that would be deleted if obj were deleted. This is useful on your delete views so you can
-   list the objects that will be deleted in a cascading manner.
-1. `arcutils.ChoiceEnum`
+1. `arcutils.db.will_be_deleted_with(obj)` 2-tuples of
+   `(model class of objects in set, set of objects that will be deleted along with obj)`. This can
+   used in delete views to list the objects that will be deleted in a cascading manner.
+1. `arcutils.db.ChoiceEnum`
 
         class FooType(ChoiceEnum):
 
@@ -54,7 +54,7 @@ Optionally, add your LDAP connection information:
 
             foo = models.ChoiceField(choices=FooType.as_choices())
 
-1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
+1. `arcutils.db.dictfetchall`: pass a cursor and get the rows back as a dict
 1. `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the
    LDAP connection specified by the using parameter. By default, each LDAP result is parsed into
    a "profile", which is just a dict with user info pulled from the LDAP attributes:
@@ -63,11 +63,12 @@ Optionally, add your LDAP connection information:
         print(results[0])  # -> {'first_name': 'Matt', 'last_name': 'Johnson', ...}
         
 
-1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that
-   is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate
-   over the empty form in templates, without having a special case for it.
-1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if
-   a form is being deleted, its validation errors are blanked out.
+1. `arcutils.forms.BaseFormSet` and `arcutils.forms.BaseModelFormSet` have an
+   `iter_with_empty_form_first()` method that is is basically
+   `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form
+   in templates without having a special case for it.
+1. `arcutils.forms.BaseFormSet` and `arcutils.forms.BaseModelFormSet` override the `clean` method
+   so that if a form is being deleted, its validation errors are blanked out.
 1. Console script: some ARCUtils functionality can be accessed via the `arcutils` console script
    (or via `python -m arcutils`). Currently, there is one subcommand for running LDAP queries:
    
