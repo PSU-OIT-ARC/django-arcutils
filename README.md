@@ -11,6 +11,10 @@ To work on this package, run `make init`; this will create a virtualenv for you,
 package in editable mode, and run the tests. Take a look at the Makefile to see the actual commands
 that are run.
 
+## Testing
+
+Run `make test`.
+
 ## Usage
 
 _The following assumes your package has a setup.py that uses setuptools' `setup()` and that you are
@@ -82,7 +86,6 @@ To use the LDAP features, you will need at least a minimal set of LDAP settings:
         results = ldapsearch('(uid=mdj2)')
         print(results[0])  # -> {'first_name': 'Matt', 'last_name': 'Johnson', ...}
 
-## Testing
+### Settings - arcutils.settings
 
-    pip install -e .[dev]
-    ./runtests.py
+TODO: Write this section.
