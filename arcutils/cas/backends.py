@@ -22,7 +22,7 @@ class CASBackend:
     """CAS authentication backend."""
 
     def authenticate(self, ticket, service):
-        username = self._verify_ticket(ticket, service)
+        username = self._validate_ticket(ticket, service)
         if username:
             user_model = get_user_model()
             try:
@@ -37,32 +37,32 @@ class CASBackend:
             user = None
         return user
 
-    def _verify_ticket(self, ticket, service, suffix=None):
-        path = get_setting('CAS.verify_path')
+    def _validate_ticket(self, ticket, service, suffix=None):
+        path = get_setting('CAS.validate_path')
         params = {'ticket': ticket, 'service': service}
         url = make_cas_url(path, **params)
 
-        log.debug('Verifying CAS ticket: {url}'.format(url=url))
+        log.debug('Validating CAS ticket: {url}'.format(url=url))
 
         with urlopen(url) as fp:
             response = fp.read()
 
         tree = ElementTree.fromstring(response)
-        log.debug(ElementTree.tostring(tree, encoding='unicode'))
+        log.debug('CAS response:\n%s', ElementTree.tostring(tree, encoding='unicode'))
 
         if tree is None:
             raise ValueError('Unexpected CAS response:\n{response}'.format(response=response))
         success = tree_find(tree, 'cas:authenticationSuccess')
 
         if success:
-            log.debug('CAS ticket verified: {url}'.format(url=url))
+            log.debug('CAS ticket validated: {url}'.format(url=url))
             log.debug('Calling CAS response callbacks...')
             cas_data = parse_cas_tree(tree)
             for callback in self._response_callbacks:
                 callback(cas_data)
             return cas_data['username']
         else:
-            message = 'CAS ticket not verified: {url}\n{detail}'
+            message = 'CAS ticket not validated: {url}\n{detail}'
             failure = tree_find(tree, 'cas:authenticationFailure')
             if failure:
                 detail = failure.text.strip()

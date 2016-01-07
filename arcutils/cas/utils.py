@@ -2,6 +2,8 @@ import posixpath
 from operator import setitem
 from urllib.parse import urlencode, urljoin
 
+from django.core.urlresolvers import reverse
+
 from arcutils.response import REDIRECT_FIELD_NAME, get_redirect_location
 from arcutils.settings import get_setting
 from arcutils.types.option import Some, Null
@@ -16,11 +18,11 @@ CAS_NS_MAP = {
 # attributes we'll try to extract from the CAS response in
 # response_callback().
 CAS_ATTR_MAP = (
-    ('username', 'cas:UID'),
-    ('display_name', 'cas:DISPLAY_NAME'),
-    ('first_name', 'cas:GIVEN_NAME'),
-    ('last_name', 'cas:SN'),
-    ('email', 'cas:MAIL'),
+    ('username', 'cas:uid'),
+    ('display_name', 'cas:display_name'),
+    ('first_name', 'cas:given_name'),
+    ('last_name', 'cas:sn'),
+    ('email', 'cas:mail'),
 )
 
 
@@ -69,30 +71,38 @@ def parse_cas_tree(tree):
     return cas_data
 
 
-def login_url(request, next=None):
-    # Include next location as a parameter in the service URL sent to
-    # CAS so that when CAS redirects back to the app after login, we
-    # know where to send the user.
-    params = request.GET.copy()
-    params[REDIRECT_FIELD_NAME] = next or redirect_url(request)
-    service_path = '?'.join((request.path, params.urlencode()))
-    service_url = request.build_absolute_uri(service_path)
+def login_url(request):
+    """Return CAS login URL with service parameter.
 
+    Something like this::
+
+        https://cas.host.example.com/login?service={service_url()}
+
+    """
     path = get_setting('CAS.login_path', 'login')
-    params = {'service': service_url}
+    params = {'service': service_url(request)}
     return make_cas_url(path, **params)
 
 
-def logout_url(request, next=None):
+def logout_url(request):
+    """Return CAS logout URL.
+
+    Something like this::
+
+        https://cas.host.example.com/logout
+
+    """
     path = get_setting('CAS.logout_path', 'logout')
-    params = {}
-    if next is not None:
-        next = request.build_absolute_uri(next)
-        params = {'url': next}
-    return make_cas_url(path, **params)
+    return make_cas_url(path)
 
 
 def make_cas_url(*path, **params):
+    """Tack ``path`` segments and query ``params`` onto base CAS URL.
+
+    If ``path`` starts with a slash or contains a segment that does, the
+    path prefix of the base CAS URL will be overwritten.
+
+    """
     base_url = get_setting('CAS.base_url')
     path = posixpath.join(*path)
     url = urljoin(base_url, path)
@@ -103,6 +113,30 @@ def make_cas_url(*path, **params):
 
 
 def redirect_url(request):
+    """Return CAS redirect URL.
+
+    This is used to figure out where to send the user after login or
+    logout.
+
+    If the ``CAS.redirect_url`` setting is set, that will be used;
+    otherwise, fall back to ``next`` parameter, referrer, or /.
+
+    """
     default = get_setting('CAS.redirect_url', default=None)
     url = get_redirect_location(request, default=default)
+    return url
+
+
+def service_url(request):
+    """Return service URL/ID.
+
+    The service URL is both a unique identifier *and* where CAS
+    redirects to after successful login.
+
+    In this context, "service" refers to the application that is using
+    CAS for login.
+
+    """
+    path = reverse('cas-validate')
+    url = request.build_absolute_uri(path)
     return url
