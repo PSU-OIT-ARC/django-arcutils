@@ -1,45 +1,46 @@
 from django.db import connection
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from model_mommy.mommy import make
-
 from arcutils.db import dictfetchall, will_be_deleted_with, ChoiceEnum
+from arcutils.test.user import UserMixin
 
 
-class TestDictFetchAll(TestCase):
-    def setUp(self):
-        make(get_user_model())
-        make(get_user_model())
+class TestDictFetchAll(UserMixin, TestCase):
 
     def test(self):
+        user1 = self.create_user(username='user1')
+        user2 = self.create_user(username='user2')
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM auth_user")
+        cursor.execute('SELECT * FROM auth_user ORDER BY username')
         results = dictfetchall(cursor)
-        results[0]['last_name']
-        results[1]['last_name']
+        self.assertEqual(len(results), 2)
+        self.assertIn('username', results[0])
+        self.assertEqual(results[0]['username'], user1.username)
+        self.assertIn('username', results[1])
+        self.assertEqual(results[1]['username'], user2.username)
 
 
-class TestWillBeDeletedWith(TestCase):
-    def setUp(self):
-        self.group_a = make(Group)
-        self.group_b = make(Group)
-        self.user = make(get_user_model())
+class TestWillBeDeletedWith(UserMixin, TestCase):
 
-        self.group_a.user_set.add(self.user)
-        self.group_b.user_set.add(self.user)
+    def test_will_be_deleted_with(self):
+        user = self.create_user(username='user', groups=('group-a', 'group-b'))
+        self.create_user(username='xxx', groups=('group-a'))
+        self.create_user(username='yyy', groups=('group-a'))
 
-        self.group_a.user_set.add(make(get_user_model()))
-        self.group_a.user_set.add(make(get_user_model()))
+        results = will_be_deleted_with(user)
+        record_type, records = next(results)
 
-    def test(self):
-        results = list(will_be_deleted_with(self.user))
-        # make sure the object we are deleting isn't included
-        for cls, result_set in results:
-            self.assertNotIn(self.user, result_set)
+        # The user shouldn't be in the list of additional objects to be
+        # deleted.
+        self.assertNotIn(user, records)
 
-        self.assertEqual(len(results[0][1]), 2)
+        # When the user is deleted, the associated records in
+        # auth_user_groups should be deleted too.
+        self.assertEqual(record_type._meta.db_table, 'auth_user_groups')
+        self.assertEqual(len(records), 2)
+        for r in records:
+            self.assertEqual(r.user, user)
 
 
 class TestChoiceEnum(TestCase):
