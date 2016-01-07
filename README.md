@@ -5,6 +5,16 @@
 This package provides utilities that are commonly needed in ARC Django projects. It supports Python
 3.3+ and Django 1.7+.
 
+## General Note
+
+If ARCUtils contains a specific type of functionality that is needed in an ARC project, it is
+generally preferable to use the ARCUtils functionality instead of another package, since the entire
+purpose of ARCUtils is to encapsulate the configuration and functionality needed by many or most
+ARC projects.
+
+On the other hand (and this is a note to self as much as to anyone else), we should _avoid_ adding
+functionality to ARCUtils whenever possible.
+
 ## Development
 
 To work on this package, run `make init`; this will create a virtualenv for you, install the
@@ -29,6 +39,9 @@ To use this package in a Django project, do the following:
 - To use template tags, add `'arcutils'` to `INSTALLED_APPS`
 
 ## Features
+
+NOTE: Many features have not been documented yet :( To get an idea of all the available features,
+take a look a the modules and packages in the top level `arcutils` package directory.
 
 ### CAS - arcutils.cas
 
