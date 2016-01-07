@@ -1,4 +1,4 @@
-from mock import Mock
+from unittest.mock import Mock
 
 from django.forms.utils import ErrorDict
 from django.test import TestCase
