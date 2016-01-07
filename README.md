@@ -1,4 +1,4 @@
-# ARC Utils
+# ARCUtils
 
 [![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=master)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
 
