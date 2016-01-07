@@ -37,7 +37,6 @@ setup(
             'flake8',
             'ldap3',
             'mock',
-            'model_mommy',
         ],
     },
     entry_points="""
