@@ -12,6 +12,7 @@ try:
 except ImportError:
     _markdown = None
 
+from arcutils.exc import ARCUtilsDeprecationWarning
 from arcutils.settings import get_setting
 
 
@@ -201,3 +202,23 @@ def require_block(app_name, *cdn_urls):
     scripts = ['<script src="{src}"></script>'.format(src=s) for s in scripts]
     scripts = '\n    '.join(scripts)
     return mark_safe(scripts)
+
+
+# Legacy template tags. DO NOT use in new code. These are here to ease
+# the migration from ARCUtils v1 to v2.
+
+
+@register.simple_tag(takes_context=True)
+def add_get(context, **params):
+    ARCUtilsDeprecationWarning.warn('The add_get template tag is deprecated')
+    request = context['request']
+    request_params = request.GET.copy()
+    for name, value in params.items():
+        request_params[name] = value
+    return '?{query_string}'.format(query_string=request_params.urlencode())
+
+
+@register.filter
+def model_name(model):
+    ARCUtilsDeprecationWarning.warn('The model_name template filter is deprecated')
+    return model._meta.verbose_name.title()
