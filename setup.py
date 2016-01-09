@@ -3,7 +3,7 @@ import sys
 from setuptools import find_packages, setup
 
 
-VERSION = '2.0.dev0'
+VERSION = '2.0a1'
 
 
 install_requires = [
