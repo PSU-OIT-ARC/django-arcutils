@@ -45,7 +45,15 @@ take a look a the modules and packages in the top level `arcutils` package direc
 
 ### CAS - arcutils.cas
 
-TODO: Write this section.
+CAS is used when a project needs to log users in with their PSU accounts. The basic setup is
+straightforward:
+
+- Add `"arcutils.cas.backends.CASModelBackend"` to the project's `AUTHENTICATION_BACKENDS` (in most
+  cases, this will be the only value in `AUTHENTICATION_BACKENDS`)
+- Include CAS URLs in the project's root URLconf: `url(r'^account/', include(arcutils.cas.urls))`
+
+By default, the first time a user logs in, a `User` record (with no password) will be created in the
+project's database.
 
 ### Database - arcutils.db
 
