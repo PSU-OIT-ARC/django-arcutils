@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 def get_or_create_user(cas_data):
-    """If user does not exist, create from CAS response.
+    """If user does not exist, create from CAS response data.
 
     ``cas_data`` must contain a 'username' key. It may also contain
     other user attributes, which will be set when creating a user

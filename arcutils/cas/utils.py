@@ -4,7 +4,7 @@ from urllib.parse import urlencode, urljoin
 
 from django.core.urlresolvers import reverse
 
-from arcutils.response import REDIRECT_FIELD_NAME, get_redirect_location
+from arcutils.response import get_redirect_location
 from arcutils.settings import get_setting
 from arcutils.types.option import Some, Null
 
@@ -14,9 +14,9 @@ CAS_NS_MAP = {
 }
 
 
-# Map user object field names to CAS XML field names; these are
-# attributes we'll try to extract from the CAS response in
-# response_callback().
+# Map user object field names to CAS XML attribute names. The CAS
+# attributes are extracted from the CAS XML response and passed to
+# response callbacks.
 CAS_ATTR_MAP = (
     ('username', 'cas:uid'),
     ('display_name', 'cas:display_name'),
@@ -52,11 +52,11 @@ def parse_cas_tree(tree):
             <cas:authenticationSuccess>
                 <cas:user>wbaldwin</cas:user>
                 <cas:attributes>
-                    <cas:UID>wbaldwin</cas:UID>
-                    <cas:DISPLAY_NAME>Wyatt Baldwin</cas:DISPLAY_NAME>
-                    <cas:GIVEN_NAME>Wyatt</cas:GIVEN_NAME>
-                    <cas:SN>Baldwin</cas:SN>
-                    <cas:MAIL>wbaldwin@pdx.edu</cas:MAIL>
+                    <cas:uid>wbaldwin</cas:uid>
+                    <cas:display_name>Wyatt Baldwin</cas:display_name>
+                    <cas:given_name>Wyatt</cas:given_name>
+                    <cas:sn>Baldwin</cas:sn>
+                    <cas:mail>wbaldwin@pdx.edu</cas:mail>
                 </cas:attributes>
             </cas:authenticationSuccess>
         </cas:serviceResponse>
