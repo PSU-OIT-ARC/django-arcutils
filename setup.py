@@ -3,7 +3,8 @@ import sys
 from setuptools import find_packages, setup
 
 
-VERSION = '2.0a1'
+with open('VERSION') as version_fp:
+    VERSION = version_fp.read().strip()
 
 
 install_requires = [
