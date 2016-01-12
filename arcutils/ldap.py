@@ -52,6 +52,8 @@ def connect(using='default'):
     use_ssl = config.get('use_ssl', False)
     tls_config = config.get('tls')
     read_only = config.get('read_only', True)
+    strategy = config.get('strategy')
+    strategy = getattr(ldap3, strategy) if strategy else ldap3.RESTARTABLE
 
     if host and hosts:
         raise ImproperlyConfigured('LDAP: You can only specify one of `host` or `hosts`')
@@ -89,7 +91,8 @@ def connect(using='default'):
     username = config.get('username')
     password = config.get('password')
     return ldap3.Connection(
-        server, auto_bind=True, user=username, password=password, lazy=True, read_only=read_only)
+        server, auto_bind=True, user=username, password=password, lazy=True, read_only=read_only,
+        client_strategy=strategy)
 
 
 def ldapsearch(query, connection=None, using='default', search_base=None, parse=True,
