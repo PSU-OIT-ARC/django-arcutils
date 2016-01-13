@@ -96,6 +96,9 @@ def connect(using='default'):
         'client_strategy': strategy,
         'lazy': config.get('lazy', True),
         'read_only': config.get('read_only', True),
+        'pool_name': config.get('pool_name'),
+        'pool_size': config.get('pool_size'),
+        'pool_lifetime': config.get('pool_lifetime'),
     }
 
     return ldap3.Connection(server, **client_args)
@@ -141,11 +144,15 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
         search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
         attributes=attributes,
         **kwargs)
-    if not result:
-        return []
-    if parse:
-        return [parse_profile(r['attributes']) for r in connection.response]
-    return connection.response
+
+    if connection.strategy.sync:
+        if not result:
+            return []
+        response = connection.response
+    else:
+        response, _ = connection.get_response(result)
+
+    return [parse_profile(r['attributes']) for r in response] if parse else response
 
 
 def ldapsearch_by_email(email, **kwargs):
