@@ -1,18 +1,18 @@
 """LDAP functionality.
 
-This module assumes an LDAP setting like so::
+This module assumes that a project has at least these minimal LDAP
+settings::
 
     LDAP = {
         'default': {
             'host': 'ldap://ldap-bulk.oit.pdx.edu',
-            'username': 'rethinkwebsite,ou=service,dc=pdx,dc=edu',
-            'password': 'foobar',
             'search_base': 'ou=people,dc=pdx,dc=edu',
-            'tls': {
-                'ca_certs_file': '/path/to/ca_file.crt',
-            }
         }
     }
+
+Depending on the project, a username and password or other settings may
+also be requred. There's a bit of documentation on this in the base
+local settings file (local.base.cfg).
 
 TODO: Incorporate the ldap3 library's abstraction layer:
       http://ldap3.readthedocs.org./abstraction.html
