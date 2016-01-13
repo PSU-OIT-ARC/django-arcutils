@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from arcutils.registry import (
+    ComponentFactory,
     Registry,
     RegistryKey,
     ComponentExistsError,
@@ -141,6 +142,8 @@ class TestRegistry(TestCase):
         component = Type()
         factory = lambda: component
         registry.add_factory(factory, Type)
-        self.assertIs(registry._components[RegistryKey(Type)], factory)
+        component_factory = registry._components[RegistryKey(Type)]
+        self.assertIsInstance(component_factory, ComponentFactory)
+        self.assertIs(component_factory.factory, factory)
         retrieved_component = registry.get_component(Type)
         self.assertIs(retrieved_component, component)

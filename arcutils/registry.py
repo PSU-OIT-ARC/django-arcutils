@@ -29,7 +29,7 @@ project with a Django app config class like this::
 
 """
 from collections import namedtuple
-from threading import RLock
+from threading import Lock, RLock
 
 from django.utils.module_loading import import_string
 
@@ -103,6 +103,26 @@ class FakeLock:
         pass
 
 
+class ComponentFactory:
+
+    def __init__(self, factory):
+        # None is potentially a valid component value, so we use an
+        # Option here.
+        self.component = Null
+        self.factory = factory
+        self.lock = Lock()
+
+    def __call__(self):
+        # This needs to be atomic so that two threads don't attempt to
+        # materialize this factory at the same time, which could lead to
+        # the component being created twice, which could be problematic
+        # in some cases.
+        with self.lock:
+            if not self.component:
+                self.component = Some(self.factory())
+        return self.component.unwrap()
+
+
 class Registry:
 
     """A component registry where components are registered by type.
@@ -163,7 +183,6 @@ class Registry:
         self.name = name
         self._components = {}
         self._lock = RLock() if use_locking else FakeLock()
-        self._factories = set()
         self._open = True
 
     def add_component(self, component, type_, name=None, replace=False):
@@ -200,8 +219,7 @@ class Registry:
 
         """
         with self._lock:
-            self._factories.add(factory)
-            return self.add_component(factory, *args, **kwargs)
+            return self.add_component(ComponentFactory(factory), *args, **kwargs)
 
     def remove_component(self, type_, name=None, default=ComponentDoesNotExistError):
         """Remove component with key ``(type_, name)`` if it exists.
@@ -255,10 +273,21 @@ class Registry:
         )
 
     def _factory_to_component(self, obj, type_, name):
-        if obj in self._factories:
-            self._factories.remove(obj)
-            obj = obj()
-            self._components[RegistryKey(type_, name)] = obj
+        """Materialize ``obj`` to component if ``obj`` is a factory.
+
+        If ``obj`` is a :class:`ComponentFactory`, materialize it to a
+        component by calling its factory then replacing the factory with
+        the component in the registry. The materialized component is
+        then returned.
+
+        Otherwise, return ``obj`` directly.
+
+        """
+        if isinstance(obj, ComponentFactory):
+            # NOTE: The call to obj blocks while the component is being
+            #       created, which keeps the component from being
+            #       created twice.
+            obj = self._components[RegistryKey(type_, name)] = obj()
         return obj
 
     def _find_component(self, type_, name=None) -> Option:
