@@ -46,19 +46,17 @@ def escape(s):
 def connect(using='default'):
     """Connect to the LDAP server indicated by ``using``."""
     config = settings.LDAP[using]
+
     host = config.get('host')
     hosts = config.get('hosts')
-    port = config.get('port')
-    use_ssl = config.get('use_ssl', False)
-    tls_config = config.get('tls')
-    read_only = config.get('read_only', True)
-    strategy = config.get('strategy')
-    strategy = getattr(ldap3, strategy) if strategy else ldap3.RESTARTABLE
 
     if host and hosts:
         raise ImproperlyConfigured('LDAP: You can only specify one of `host` or `hosts`')
     if not (host or hosts):
         raise ImproperlyConfigured('LDAP: You must specify one of `host` or `hosts`')
+
+    use_ssl = config.get('use_ssl', False)
+    tls_config = config.get('tls')
 
     if use_ssl and tls_config:
         ca_certs_file = tls_config.get('ca_certs_file')
@@ -77,7 +75,7 @@ def connect(using='default'):
         tls = None
 
     server_args = {
-        'port': port,
+        'port': config.get('port'),
         'use_ssl': use_ssl,
         'tls': tls,
     }
@@ -88,11 +86,19 @@ def connect(using='default'):
         hosts = [ldap3.Server(h, **server_args) for h in hosts]
         server = ldap3.ServerPool(hosts)
 
-    username = config.get('username')
-    password = config.get('password')
-    return ldap3.Connection(
-        server, auto_bind=True, user=username, password=password, lazy=True, read_only=read_only,
-        client_strategy=strategy)
+    strategy = config.get('strategy')
+    strategy = getattr(ldap3, strategy) if strategy else ldap3.RESTARTABLE
+
+    client_args = {
+        'user': config.get('username'),
+        'password': config.get('password'),
+        'auto_bind': config.get('auto_bind', True),
+        'client_strategy': strategy,
+        'lazy': config.get('lazy', True),
+        'read_only': config.get('read_only', True),
+    }
+
+    return ldap3.Connection(server, **client_args)
 
 
 def ldapsearch(query, connection=None, using='default', search_base=None, parse=True,
