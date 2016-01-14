@@ -130,14 +130,15 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
     :meth:`ldap3.Connection.search`.
 
     """
+    config = settings.LDAP[using]
+    search_base = search_base or config['search_base']
+
     if connection is None:
         registry = get_registry()
         connection = registry.get_component(ldap3.Connection, name=using)
         if connection is None:
             connection = connect(using)
-    if search_base is None:
-        config = settings.LDAP[using]
-        search_base = config['search_base']
+
     result = connection.search(
         search_base=search_base,
         search_filter=query,
@@ -146,9 +147,7 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
         **kwargs)
 
     if connection.strategy.sync:
-        if not result:
-            return []
-        response = connection.response
+        response = connection.response if result else []
     else:
         response, _ = connection.get_response(result)
 
