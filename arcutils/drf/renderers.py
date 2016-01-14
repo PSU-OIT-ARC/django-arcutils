@@ -7,37 +7,64 @@ class TemplateHTMLContextDictRenderer(TemplateHTMLRenderer):
 
     """Wrap serialized data in a dictionary for use in templates.
 
-    Otherwise, the serialized data gets dumped into the template context
-    without any namespacing.
+    Otherwise, the serialized data will get dumped into the template
+    context without any namespacing.
 
-    The serialized data will be wrapped in a context dictionary like so
-    if the data is a list::
+    The serialized data will be wrapped in a context dictionary like
+    this if the data is a list (or any other sequence type)::
 
         {'object_list': data}
 
-    Or like this if the data is a dict::
+    or like this if the data is a dict (or any other non-sequence
+    type)::
 
         {'object': data}
 
-    To use a different context object name, set ``context_object_name``
-    on the relevant view class::
+    To use a different wrapper name, set ``context_object_name`` on the
+    relevant view class::
 
         class PantsView(ListAPIView):
 
-            # Access data via pants instead of object_list in template
+            # Access data via ``pants`` instead of ``object_list`` in
+            # template.
             context_object_name = 'pants'
             template_name = 'pants/list.html'
 
-    .. note:: If ``context_object_name`` is set to a name that's set by
-              a context processor (like ``request`` or ``user``), the
-              serialized data will be shadowed and unavailable in the
-              template.
+    For view classes that have some methods that return lists and others
+    that return objects (e.g., ``ViewSets``), lists can be wrapped using
+    a different name by setting ``context_object_list_name``::
+
+        class HorseViewSet(ViewSet):
+
+            context_object_name = 'horse'
+            context_object_list_name = 'horses'
+
+    .. note:: If ``context_object_list_name`` or ``context_object_name``
+              is set to a name that's also set by a context processor
+              (like ``request`` or ``user``), the serialized data will
+              be shadowed and inaccessible in the template.
 
     """
 
+    context_object_name = 'object'
+    context_object_list_name = 'object_list'
+
     def resolve_context(self, data, request, response):
-        view = response.renderer_context['view']
-        default_name = 'object_list' if isinstance(data, Sequence) else 'object'
-        context_object_name = getattr(view, 'context_object_name', default_name)
-        data = {context_object_name: data}
+        wrapper_name = self.get_wrapper_name(data, request, response)
+        data = {wrapper_name: data}
         return super().resolve_context(data, request, response)
+
+    def get_wrapper_name(self, data, request, response):
+        view = response.renderer_context['view']
+        if isinstance(data, Sequence):
+            name = (
+                getattr(view, 'context_object_list_name', None) or
+                getattr(view, 'context_object_name', None) or
+                self.context_object_list_name
+            )
+        else:
+            name = (
+                getattr(view, 'context_object_name', None) or
+                self.context_object_name
+            )
+        return name
