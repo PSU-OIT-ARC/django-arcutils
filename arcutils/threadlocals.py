@@ -69,7 +69,7 @@ def get_current_user(default=None):
     return getattr(request, 'user', default)
 
 
-class ThreadLocalMiddleware(object):
+class ThreadLocalMiddleware:
 
     def process_request(self, request):
         _thread_local_storage.put('request', request)

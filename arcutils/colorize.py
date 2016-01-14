@@ -60,7 +60,7 @@ COLOR_MAP = {
 }
 
 
-class _Base(object):
+class _Base:
 
     def __new__(cls, color_map=None):
         """Dynamically generate convenience methods.

@@ -3,7 +3,7 @@ from unittest import TestCase
 from arcutils.settings import NOT_SET, SettingNotFoundError, get_setting
 
 
-class Settings(object):
+class Settings:
 
     pass
 

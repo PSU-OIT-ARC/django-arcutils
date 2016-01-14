@@ -4,7 +4,7 @@ from django.forms.utils import ErrorDict
 
 
 # add some helpful methods to the formset
-class FormSetMixin(object):
+class FormSetMixin:
     def iter_with_empty_form_first(self):
         """
         Iterates over the forms in this formset, but the first form yielded

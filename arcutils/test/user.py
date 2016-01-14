@@ -9,7 +9,7 @@ class CouldNotLogInError(Exception):
     pass
 
 
-class UserMixin(object):
+class UserMixin:
 
     @cached_property
     def user_model(self):
