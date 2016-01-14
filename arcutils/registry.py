@@ -239,7 +239,7 @@ class Registry:
     def get_component(self, type_, name=None, default=None):
         with self._lock, self._find_component(type_, name) as option:
             return option(
-                some=lambda v: self._factory_to_component(v.component, v.key.type, v.key.name),
+                some=lambda v: self._factory_to_component(v.component, v.key),
                 null=lambda: default
             )
 
@@ -272,7 +272,7 @@ class Registry:
             .format(self)
         )
 
-    def _factory_to_component(self, obj, type_, name):
+    def _factory_to_component(self, obj, key):
         """Materialize ``obj`` to component if ``obj`` is a factory.
 
         If ``obj`` is a :class:`ComponentFactory`, materialize it to a
@@ -287,7 +287,7 @@ class Registry:
             # NOTE: The call to obj blocks while the component is being
             #       created, which keeps the component from being
             #       created twice.
-            obj = self._components[RegistryKey(type_, name)] = obj()
+            obj = self._components[key] = obj()
         return obj
 
     def _find_component(self, type_, name=None) -> Option:
@@ -341,7 +341,7 @@ class Registry:
         s = []
         with self._lock:
             for k, v in self.items():
-                v = self._factory_to_component(v, k.type, k.name)
+                v = self._factory_to_component(v, k)
                 s.append('{k.type!r}, {k.name!r} => {v!r}'.format(k=k, v=v))
         return '\n'.join(s)
 
