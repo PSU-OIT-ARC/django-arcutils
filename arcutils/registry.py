@@ -63,33 +63,14 @@ class ComponentDoesNotExistError(RegistryError, KeyError):
 FoundComponent = namedtuple('FoundComponent', ('key', 'component'))
 
 
-class RegistryKey:
+class RegistryKey(namedtuple('RegistryKey', ('type', 'name'))):
 
-    # When a RegistryKey is instantiated with a (type, name) pair that's
-    # in the cache, the cached instance will returned. Otherwise, a new
-    # instance will be created and cached.
-    _cache = {}
-    _cache_lock = Lock()
-
-    def __init__(self, type_, name=None):
-        if not self.__cached:
-            if not isinstance(type_, type):
-                raise TypeError('Expected a type; got an instance of %s' % type(type_))
-            self.key = (type_, name)
-            self.type = type_
-            self.name = name
+    __slots__ = ()
 
     def __new__(cls, type_, name=None):
-        key = (type_, name)
-        with cls._cache_lock:
-            if key not in cls._cache:
-                instance = super().__new__(cls)
-                instance.__cached = False
-                cls._cache[key] = instance
-            else:
-                instance = cls._cache[key]
-                instance.__cached = True
-        return instance
+        if not isinstance(type_, type):
+            raise TypeError('Expected a type; got an instance of {0.__class__}'.format(type_))
+        return super().__new__(cls, type_, name)
 
     @classmethod
     def from_arg(cls, arg):
@@ -100,12 +81,6 @@ class RegistryKey:
         else:
             raise TypeError('Expected a type or a 2-tuple; got a %r instead' % arg)
         return RegistryKey(type_, name)
-
-    def __repr__(self):
-        return '<{0.__class__.__name__} type={0.type.__name__} name={0.name}>'.format(self)
-
-    def __str__(self):
-        return '{0.type}:{0.name}'.format(self)
 
 
 class FakeLock:
