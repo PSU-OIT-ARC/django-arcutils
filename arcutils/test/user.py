@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
+from arcutils.decorators import cached_property
+
 
 class CouldNotLogInError(Exception):
 
@@ -9,8 +11,17 @@ class CouldNotLogInError(Exception):
 
 class UserMixin(object):
 
+    @cached_property
+    def user_model(self):
+        return get_user_model()
+
+    @cached_property('user_model')
+    def username_field(self):
+        return self.user_model.USERNAME_FIELD
+
     def create_user(self, username='foo', password='hunter2', groups=None, **kwargs):
-        user = get_user_model()(username=username, **kwargs)
+        kwargs[self.username_field] = username
+        user = self.user_model(**kwargs)
         user.set_password(password)
         user.save()
         if groups is not None:
