@@ -1,37 +1,64 @@
-from unittest.mock import Mock
-
-from django.forms.utils import ErrorDict
 from django.test import TestCase
+from django.forms.utils import ErrorDict
 
-from arcutils.forms import FormSetMixin, BaseFormSet, BaseModelFormSet
+from arcutils.forms import FormSetMixin
+
+
+class Form:
+
+    pass
+
+
+class EmptyForm(Form):
+
+    pass
+
+
+class BaseFormSet:
+
+    # Mocks Django's BaseFormSet
+
+    def __init__(self, forms=[]):
+        self.empty_form = EmptyForm()
+        self.forms = forms or [Form(), Form()]
+
+    def __iter__(self):
+        return iter(self.forms)
+
+    def clean(self):
+        pass
+
+
+class FormSet(FormSetMixin, BaseFormSet):
+
+    pass
 
 
 class TestFormSetMixin(TestCase):
+
     def test_iter_with_empty_form_first(self):
-        """Ensure it chains the empty_form with the rest of the iterable"""
-        fs = FormSetMixin()
-        fs.empty_form = 1
-        FormSetMixin.__iter__ = lambda cls: iter([2, 3, 4])
-        self.assertEqual([1, 2, 3, 4], list(fs.iter_with_empty_form_first()))
+        """Ensure the empty form is included first."""
+        formset = FormSet()
+        forms = list(formset.iter_with_empty_form_first())
+        self.assertEqual(len(forms), 3)
+        self.assertIsInstance(forms[0], EmptyForm)
+        self.assertIsInstance(forms[1], Form)
+        self.assertIsInstance(forms[2], Form)
 
     def test_clean(self):
-        fs = FormSetMixin()
-        form_a = Mock()
-        form_a.cleaned_data = {"DELETE": True}
-        form_a._errors = ErrorDict({"name": "That's not a valid name"})
+        form_a = Form()
+        form_a.cleaned_data = {'DELETE': True}
+        form_a._errors = ErrorDict(name='That is not a valid name')
 
-        form_b = Mock()
-        form_b.cleaned_data = {"name": "John"}
+        form_b = Form()
+        form_b.cleaned_data = {'name': 'John'}
         form_b._errors = ErrorDict()
 
-        form_c = Mock()
+        form_c = Form()
         form_c.cleaned_data = {}
-        form_c._errors = ErrorDict({"name": "That's not a valid name"})
+        form_c._errors = ErrorDict(name='That is not a valid name')
 
-        fs.forms = [form_a, form_b, form_c]
-        fs.clean()
+        formset = FormSet(forms=[form_a, form_b, form_c])
+        formset.clean()
+
         self.assertEqual(form_a._errors, ErrorDict())
-
-    def test_inheritance(self):
-        self.assertTrue(issubclass(BaseFormSet, FormSetMixin))
-        self.assertTrue(issubclass(BaseModelFormSet, FormSetMixin))
