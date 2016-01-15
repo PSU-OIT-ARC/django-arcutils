@@ -139,12 +139,13 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
         if connection is None:
             connection = connect(using)
 
-    result = connection.search(
-        search_base=search_base,
-        search_filter=query,
-        search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
-        attributes=attributes,
-        **kwargs)
+    with connection:
+        result = connection.search(
+            search_base=search_base,
+            search_filter=query,
+            search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
+            attributes=attributes,
+            **kwargs)
 
     if connection.strategy.sync:
         response = connection.response if result else []
