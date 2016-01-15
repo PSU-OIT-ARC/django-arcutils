@@ -92,7 +92,7 @@ def connect(using='default'):
     client_args = {
         'user': config.get('username'),
         'password': config.get('password'),
-        'auto_bind': config.get('auto_bind', True),
+        'auto_bind': config.get('auto_bind', False),
         'client_strategy': strategy,
         'lazy': config.get('lazy', True),
         'read_only': config.get('read_only', True),
