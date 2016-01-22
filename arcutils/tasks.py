@@ -121,6 +121,10 @@ class DailyTasksProcess(multiprocessing.Process):
         self.lock_file.write('\n')
         self.lock_file.flush()
         try:
+            if self.scheduler.empty():
+                raise RuntimeError(
+                    'No tasks have been added; one or more tasks must be added via add_task() '
+                    'before start() is called')
             self.scheduler.run()
         finally:
             fcntl.flock(self.lock_file, fcntl.LOCK_UN)
