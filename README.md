@@ -110,3 +110,8 @@ To use the LDAP features, you will need at least a minimal set of LDAP settings:
 ### Settings - arcutils.settings
 
 TODO: Write this section.
+
+
+### Tasks - arcutils.tasks
+
+Implements a simple daily task runner as an alternative to cron or Celery.
