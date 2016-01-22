@@ -43,9 +43,10 @@ class DailyTasksProcess(multiprocessing.Process):
               called before adding tasks to ensure the environment is
               fully configured before any tasks are run.
 
-    .. note:: In production, multiple mod_wsgi processes are started,
-              and each of them will execute the code above, but only
-              *one* of those processes actually run tasks.
+    .. note:: In production, multiple mod_wsgi processes may be started,
+              and each of them will execute the code as shown above, but
+              only *one* of those mod_wsgi process will initialize a
+              :class:`DailyTasksProcess` to run the specified tasks.
 
     """
 
