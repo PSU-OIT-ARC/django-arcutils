@@ -103,10 +103,12 @@ class DailyTasksProcess(multiprocessing.Process):
 
         log.info('First run of %s will be at %s', task, scheduled_time)
 
+        kwargs = {} if kwargs is None else kwargs
+
         def action():
             nonlocal scheduled_time
             log.info('Running %s...', task)
-            task(*args, **(kwargs or {}))
+            task(*args, **kwargs)
             scheduled_time += ONE_DAY
             log.info('Rescheduling %s for %s', task, scheduled_time)
             self.scheduler.enterabs(scheduled_time.timestamp(), None, action)
