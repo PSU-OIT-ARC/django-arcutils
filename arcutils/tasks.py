@@ -68,6 +68,7 @@ class DailyTasksProcess(multiprocessing.Process):
             # Already locked; some other process is running daily tasks.
             self.add_task = self._noop
             self.start = self._noop
+            self.lock_file.close()
         else:
             self.scheduler = sched.scheduler(time.time)
 
