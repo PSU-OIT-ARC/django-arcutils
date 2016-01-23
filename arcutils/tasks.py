@@ -114,7 +114,7 @@ class DailyTasksProcess(multiprocessing.Process):
 
         def action():
             nonlocal scheduled_time
-            log.info('Running %s...', name)
+            log.info('Running task %s with %s and %s...', name, args, kwargs)
             task(*args, **kwargs)
             scheduled_time += ONE_DAY
             log.info('Rescheduling %s for %s', name, scheduled_time)
