@@ -76,7 +76,7 @@ class DailyTasksProcess(multiprocessing.Process):
     def log(self, *args, **kwargs):
         return logging.getLogger(__name__)
 
-    def add_task(self, task, hour, minute=0, args=(), kwargs=None):
+    def add_task(self, task, hour, minute=0, args=(), kwargs=None, name=None):
         """Add a task to be run daily at the given hour and minute.
 
         ``hour`` must be an int between 0 and 23 (inclusive).
@@ -85,9 +85,15 @@ class DailyTasksProcess(multiprocessing.Process):
 
         ``task`` will be called as ``task(*args, **kwargs)``.
 
+        ``name`` is a display name for the task; it's shown in log
+        messages. If a ``name`` isn't passed, this will default to
+        ``task.__name__``.
+
         """
+        name = name or task.__name__
+
         log = self.log
-        log.info('Adding daily task %s at %d:%d', task, hour, minute)
+        log.info('Adding daily task %s at %d:%d', name, hour, minute)
 
         assert isinstance(hour, int), 'hour must be an int'
         assert 0 <= hour < 24, 'hour must be in [0, 23]'
@@ -102,16 +108,16 @@ class DailyTasksProcess(multiprocessing.Process):
         if scheduled_time <= now:
             scheduled_time += ONE_DAY
 
-        log.info('First run of %s will be at %s', task, scheduled_time)
+        log.info('First run of %s will be at %s', name, scheduled_time)
 
         kwargs = {} if kwargs is None else kwargs
 
         def action():
             nonlocal scheduled_time
-            log.info('Running %s...', task)
+            log.info('Running %s...', name)
             task(*args, **kwargs)
             scheduled_time += ONE_DAY
-            log.info('Rescheduling %s for %s', task, scheduled_time)
+            log.info('Rescheduling %s for %s', name, scheduled_time)
             self.scheduler.enterabs(scheduled_time.timestamp(), None, action)
 
         self.scheduler.enterabs(scheduled_time.timestamp(), None, action)
