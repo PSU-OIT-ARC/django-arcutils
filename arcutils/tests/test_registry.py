@@ -6,13 +6,14 @@ from arcutils.registry import (
     RegistryKey,
     ComponentExistsError,
     ComponentDoesNotExistError,
+    add_registry,
     delete_registry,
     get_registries,
     get_registry,
 )
 
 
-class TestRegistry(TestCase):
+class RegistryTestCase(TestCase):
 
     def setUp(self):
         self.registry_name = '__arc_test__'
@@ -20,15 +21,38 @@ class TestRegistry(TestCase):
     def tearDown(self):
         delete_registry(self.registry_name)
 
-    def get_registry(self):
-        return get_registry(self.registry_name)
+    def get_registries(self):
+        return get_registries()
+
+    def add_registry(self, name=None):
+        return add_registry(name or self.registry_name)
+
+    def get_registry(self, name=None):
+        return get_registry(name or self.registry_name)
+
+
+class TestRegistries(RegistryTestCase):
 
     def test_get_registry_creates_registry(self):
+        self.assertNotIn(self.registry_name, self.get_registries())
+        registry = self.get_registry()
+        self.assertIn(self.registry_name, self.get_registries())
+        self.assertIsInstance(registry, Registry)
+
+    def test_getting_the_same_registry_multiple_times_returns_the_same_registry(self):
         registries = get_registries()
         self.assertNotIn(self.registry_name, registries)
-        self.assertIsInstance(self.get_registry(), Registry)
-        self.assertIn(self.registry_name, registries)
-        self.assertFalse(self.get_registry())
+        registry = self.get_registry()
+        self.assertIs(self.get_registry(), registry)
+
+    def test_adding_a_registry_with_the_name_of_an_existing_registry_replaces_the_original(self):
+        registries = get_registries()
+        self.assertNotIn(self.registry_name, registries)
+        registry = self.add_registry(self.registry_name)
+        self.assertIsNot(self.add_registry(self.registry_name), registry)
+
+
+class TestRegistry(RegistryTestCase):
 
     def test_components_must_be_registered_as_types(self):
         registry = self.get_registry()
