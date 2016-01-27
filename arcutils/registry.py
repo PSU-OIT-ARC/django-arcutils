@@ -370,11 +370,13 @@ def add_registry(name, registry_type=None, **kwargs) -> Registry:
     Generally, you wouldn't call this directly from within project code.
     In most cases, you will only use :func:`.get_registry`.
 
+    .. note:: If you add a registry with the same name as an existing
+              registry, the existing registry will be replaced with the
+              new registry.
+
     """
     registries = get_registries()
     with _registry_lock:
-        if name in registries:
-            return registry_type[name]
         if registry_type is None:
             registry_type = get_setting('ARC.registry.type', Registry)
         if isinstance(registry_type, str):
