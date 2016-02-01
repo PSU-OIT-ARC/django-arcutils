@@ -10,26 +10,36 @@ def dictfetchall(cursor):
     ]
 
 
-def will_be_deleted_with(obj):
-    """
-    Pass in any Django model object that you intend to delete.
-    This will iterate over all the model classes that would be affected by the
-    deletion, yielding a two-tuple: the model class, and a set of all the
-    objects of that type that would be deleted.
-    """
-    from django.contrib.admin.util import NestedObjects
-    collector = NestedObjects(using="default")
-    collector.collect([obj])
-    # the collector returns a list of all objects in the database that
-    # would be deleted if `obj` were deleted.
-    for cls, list_of_items_to_be_deleted in collector.data.items():
-        # remove obj itself from the list
-        if cls == obj.__class__:
-            list_of_items_to_be_deleted = set(item for item in list_of_items_to_be_deleted if item.pk != obj.pk)
-            if len(list_of_items_to_be_deleted) == 0:
-                continue
+def will_be_deleted_with(instance):
+    """Get items that would be deleted along with model ``instance``.
 
-        yield cls, list_of_items_to_be_deleted
+    Pass in any Django model instance that you intend to delete and get
+    an iterator of related objects that would also be deleted.
+
+    Since this is implemented as a generator, if you want a list of
+    items, you'll need to do ``list(will_be_deleted_with(instance))``.
+
+    Args:
+        instance: A Django ORM instance
+
+    Returns:
+        pairs: (model class, items of that class that will be deleted)
+
+    """
+    # XXX: Not sure why this import can't be moved to module scope.
+    from django.contrib.admin.util import NestedObjects
+    # The collector returns a list of all objects in the database that
+    # would be deleted if `obj` were deleted.
+    collector = NestedObjects(using='default')
+    collector.collect([instance])
+    for cls, items_to_delete in collector.data.items():
+        # XXX: Not sure the collector will ever include the original
+        # XXX: instance, but this check was in the original version and
+        # XXX: I don't have time to verify at the moment.
+        if instance in items_to_delete:
+            items_to_delete.remove(instance)
+        if items_to_delete:
+            yield cls, items_to_delete
 
 
 class ChoiceEnum(Enum):
