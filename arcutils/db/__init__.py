@@ -2,7 +2,7 @@ from enum import Enum
 
 
 def dictfetchall(cursor):
-    "Returns all rows from a cursor as a dict"
+    """Return all rows from cursor as a list of dicts."""
     desc = cursor.description
     return [
         dict(zip([col[0] for col in desc], row))
