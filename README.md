@@ -1,97 +1,117 @@
-# ARC Utils
+# ARCUtils
 
 [![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=master)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
 
-## Install
+This package provides utilities that are commonly needed in ARC Django projects. It supports Python
+3.3+ and Django 1.7+.
 
-    pip install -e git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
+## General Note
 
-with ldap
+If ARCUtils contains a specific type of functionality that is needed in an ARC project, it is
+generally preferable to use the ARCUtils functionality instead of another package, since the entire
+purpose of ARCUtils is to encapsulate the configuration and functionality needed by many or most
+ARC projects.
 
-    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[ldap]
+On the other hand (and this is a note to self as much as to anyone else), we should _avoid_ adding
+functionality to ARCUtils whenever possible.
 
-with testing
+## Development
 
-    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[test]
-
-Add to settings file:
-
-    INSTALLED_APPS = (
-        'arcutils',
-    )
-
-In **Django 1.6 and worse** you must add this after Django apps have been loaded (for example, in a models.py file):
-
-    from arcutils.apps import ARCUtilsConfig
-    ARCUtilsConfig().ready()
-
-
-Optionally, add your LDAP connection information
-
-    LDAP = {
-        "default": {
-            "host": "ldap://ldap-bulk.oit.pdx.edu",
-            "username": "rethinkwebsite,ou=service,dc=pdx,dc=edu",
-            "password": "foobar",
-            "search_dn": "ou=people,dc=pdx,dc=edu",
-            "ca_file": "/path/to/ca_file.crt",
-        }
-    }
-
-
-## Features
-
-1. Monkey Patch `django.contrib.auth.forms.PasswordResetForm` so that it raises an error if the email address is not found in the DB
-1. Adds the `bootstrap` template tag and all arcutils template tags to the builtin template tags
-1. `arcutils.will_be_deleted_with(obj)` yields a two tuple -- a model class, and a set of objects -- that would be deleted if obj were deleted. This is useful on your delete views so you can list the objects that will be deleted in a cascading manner.
-1. `arcutils.ChoiceEnum`
-```python
-class FooType(ChoiceEnum):
-    A = 1
-    B = 2
-
-    _choices = (
-        (A, "Alpha"),
-        (B, "Beta"),
-    )
-
-# in your model somewhere
-
-class SomeModel(models.Model):
-    foo = models.ChoiceField(choices=FooType)
-
-```
-1. `arcutils.dictfetchall` pass a cursor, and get the rows back as a dict
-1. `arcutils.ldap.escape` is an alias for `ldap.filter.escape_filter_chars`
-1. `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the LDAP connection specified by the using parameter.
-1. `arcutils.ldap.parse_profile()` will parse out the first_name, last_name, email, and odin as a dict from an ldap result.
-```python
-results = ldapsearch("odin=mdj2")
-dn, entry = results[0]
-parse_profile(entry)
-```
-1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` have an iter_with_empty_form_first() that is is basically `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form in templates, without having a special case for it.
-1. `arcutils.BaseFormSet` and `arcutils.BaseModelFormSet` override the clean method, so that if a form is being deleted, its validation errors are blanked out.
-1. arcutils will clear expired sessions after `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` requests.
-   The default is 100 requests. `CLEAR_EXPIRED_SESSIONS_AFTER_N_REQUESTS` can be set to `None` to
-   disable this feature. Note: the implementation is probabilistic, so there's no guarantee that
-   expired sessions will be cleared after exactly N requests.
-
-### Logging
-
-`arcutils.logging.basic` configures basic logging to the console, and pipes
-logs to `LOGSTASH_ADDRESS` using the logstash-forwarder protocol when DEBUG is
-off. Add `LOGGING_CONFIG = 'arcutils.logging.basic'` to use. Set the
-`LOGSTASH_ADDRESS` to something like 'localhost:5000' during development. It
-defaults to 'logs.rc.pdx.edu:5043'. The logstash-forwarder protocol requires
-SSL, so you must specify the path to a CA file using the `LOGSTASH_CA_CERTS`
-setting. This package includes the PSUCA.crt file, which is the default.
-
-`arcutils.logging.basic` also configures error email logging; for this to work, the `SERVER_EMAIL`
-setting *must* be set to a valid value.
-
+To work on this package, run `make init`; this will create a virtualenv for you, install the
+package in editable mode, and run the tests. Take a look at the Makefile to see the actual commands
+that are run.
 
 ## Testing
 
-    pip install model_mommy django mock python3-ldap
-    ./runtests.py
+Run `make test`.
+
+## Usage
+
+_The following assumes your package has a setup.py that uses setuptools' `setup()` and that you are
+using pip. You will need to specify `--find-links http://cdn.research.pdx.edu/pypi/dist/` when
+running `pip install` (it's easiest to add `--find-links ...` to the top of the project's
+requirements.txt)._
+
+To use this package in a Django project, do the following:
+
+- Add `'django-arcutils'` to `install_requires` in setup.py
+- To use the LDAP features, add `'django-arcutils[ldap]'` to `install_requires`
+- To use template tags, add `'arcutils'` to `INSTALLED_APPS`
+
+## Features
+
+NOTE: Many features have not been documented yet :( To get an idea of all the available features,
+take a look a the modules and packages in the top level `arcutils` package directory.
+
+### CAS - arcutils.cas
+
+CAS is used when a project needs to log users in with their PSU accounts. The basic setup is
+straightforward:
+
+- Add `"arcutils.cas.backends.CASModelBackend"` to the project's `AUTHENTICATION_BACKENDS` (in most
+  cases, this will be the only value in `AUTHENTICATION_BACKENDS`)
+- Include CAS URLs in the project's root URLconf: `url(r'^account/', include(arcutils.cas.urls))`
+
+By default, the first time a user logs in, a `User` record (with no password) will be created in the
+project's database.
+
+### Database - arcutils.db
+
+- `ChoiceEnum`
+
+        class FooType(ChoiceEnum):
+
+            A = 1
+            B = 2
+
+        class SomeModel(models.Model):
+
+            foo = models.ChoiceField(choices=FooType.as_choices())
+
+- `will_be_deleted_with(obj)` returns 2-tuples of
+  `(model class of objects in set, set of objects that will be deleted along with obj)`. This can
+  be used in delete views to list the objects that will be deleted in a cascading manner.
+
+- `arcutils.db.dictfetchall`: pass a cursor and get the rows back as a dict
+
+### Forms - arcutils.forms
+
+- `arcutils.forms.BaseFormSet` and `arcutils.forms.BaseModelFormSet` have an
+  `iter_with_empty_form_first()` method that is is basically
+  `([formset.empty_form] + formset.forms)`. This makes it convenient to iterate over the empty form
+  in templates without having a special case for it.
+
+- `arcutils.forms.BaseFormSet` and `arcutils.forms.BaseModelFormSet` override the `clean` method
+  so that if a form is being deleted, its validation errors are blanked out.
+
+- Console script: some ARCUtils functionality can be accessed via the `arcutils` console script
+  (or via `python -m arcutils`). Currently, there is one subcommand for running LDAP queries:
+
+        arcutils ldap '(uid=wbaldwin)'
+
+### LDAP - arcutils.ldap
+
+To use the LDAP features, you will need at least a minimal set of LDAP settings:
+
+    LDAP = {
+        'default': {
+            'host': 'ldap://ldap-bulk.oit.pdx.edu',
+            'search_base': 'ou=people,dc=pdx,dc=edu',
+        }
+    }
+
+- `arcutils.ldap.ldapsearch(query, using='default', **kwargs)` performs an LDAP search using the
+  LDAP connection specified by the using parameter. By default, each LDAP result is parsed into
+  a "profile", which is just a dict with user info pulled from the LDAP attributes:
+
+        results = ldapsearch('(uid=mdj2)')
+        print(results[0])  # -> {'first_name': 'Matt', 'last_name': 'Johnson', ...}
+
+### Settings - arcutils.settings
+
+TODO: Write this section.
+
+
+### Tasks - arcutils.tasks
+
+Implements a simple daily task runner as an alternative to cron or Celery.

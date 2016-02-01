@@ -22,8 +22,6 @@ instance of :class:`.Colorizer` or :class:`ColorPrinter` with your own
 color map.
 
 """
-from __future__ import print_function
-
 import sys
 
 
@@ -62,7 +60,7 @@ COLOR_MAP = {
 }
 
 
-class _Base(object):
+class _Base:
 
     def __new__(cls, color_map=None):
         """Dynamically generate convenience methods.

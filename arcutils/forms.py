@@ -1,35 +1,36 @@
-from django.forms.models import BaseModelFormSet
-from django.forms.formsets import BaseFormSet
-from django.forms.util import ErrorDict
+import itertools
+
+from django.forms import models
+from django.forms import formsets
+from django.forms.utils import ErrorDict
 
 
-# add some helpful methods to the formset
-class FormSetMixin(object):
+class FormSetMixin:
+
+    """Adds a couple helpful methods to FormSets."""
+
     def iter_with_empty_form_first(self):
+        """Yield an empty form and then the forms in the FormSet.
+
+        This simplifies formset logic in templates, since the empty form
+        is no longer a special case.
+
         """
-        Iterates over the forms in this formset, but the first form yielded
-        is the empty one. This simplifies the logic in templates, since the
-        empty_form is no longer a special case
-        """
-        yield self.empty_form
-        for form in iter(self):
-            yield form
+        return itertools.chain((self.empty_form,), self)
 
     def clean(self):
-        """
-        When cleaning, if the form is being deleted, any errors on it should be
-        ignored
-        """
-        for form in self.forms:
-            # this form is being deleted, so overwrite the errors
-            if form.cleaned_data.get("DELETE"):
+        """Ignore errors on forms that are being deleted."""
+        for form in self:
+            if form.cleaned_data.get('DELETE'):
                 form._errors = ErrorDict()
+        super().clean()
 
 
-# add the FormSetMixin to the base FormSet classes
-class BaseFormSet(FormSetMixin, BaseFormSet):
+class BaseFormSet(FormSetMixin, formsets.BaseFormSet):
+
     pass
 
 
-class BaseModelFormSet(FormSetMixin, BaseModelFormSet):
+class BaseModelFormSet(FormSetMixin, models.BaseModelFormSet):
+
     pass

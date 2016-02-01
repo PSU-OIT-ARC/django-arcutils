@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+{% load arc %}
+{% load staticfiles %}
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        {% block viewport %}
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% endblock %}
+
+        <title>{% block title %}{{ PROJECT.title }}{% endblock %}</title>
+
+        <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
+
+        {% block css %}
+            <link rel="stylesheet" href="{% cdn_url '/bootstrap/{bootstrap}/css/bootstrap.min.css' %}">
+        {% endblock %}
+    </head>
+    <body>
+        {% block body %}
+            <div class="container">
+                <div class="pull-right">
+                    {% if request.user.is_authenticated %}
+                        Hello, {{ request.user.get_full_name }}
+                        <a href="{% url 'logout' %}">Log out</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">Log in</a>
+                    {% endif %}
+                </div>
+
+                <h1>{{ PROJECT.title }}</h1>
+            </div>
+        {% endblock %}
+
+        {% block js %}
+            {# Scripts should be added here instead of in <head>. #}
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,2 @@
+This package contains Django REST Framework (DRF) related classes, utilities, etc. If your project
+doesn't make use of DRF, this package can be safely ignored.
