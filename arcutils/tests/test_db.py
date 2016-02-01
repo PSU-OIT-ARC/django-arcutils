@@ -1,6 +1,5 @@
 from django.db import connection
 from django.test import TestCase
-from django.contrib.auth.models import Group
 
 from arcutils.db import dictfetchall, will_be_deleted_with, ChoiceEnum
 from arcutils.test.user import UserMixin
