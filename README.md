@@ -1,26 +1,56 @@
 # ARC Utils
 
-[![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=master)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
+[![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=1.x-maint)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
 
-## Install
+This package provides utilities that are commonly needed in ARC Django
+projects. It supports Python & Django versions:
 
-    pip install -e git://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
+- Python 2.6: Django 1.6
+- Python 2.7: Django 1.7 & 1.8
+- Python 3.3: Django 1.7 & 1.8
 
-with ldap
+## Deprecation Notice
 
-    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[ldap]
+The 1.x version of ARCUtils is deprecated. New projects should use
+version 2. Projects using 1.x should upgrade to version 2 as soon as
+possible, assuming it's practical to do so (e.g., projects that aren't
+in active development shouldn't be proactively upgraded).
 
-with testing
+## Development
 
-    pip install git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[test]
+To work on this package, run `make init`; this will create a Python
+2 virtualenv for you, install the package in editable mode, and run the
+tests. Take a look at the Makefile to see the actual commands that are
+run.
 
-Add to settings file:
+## Testing
 
-    INSTALLED_APPS = (
-        'arcutils',
-    )
+Run `make test`.
 
-In **Django 1.6 and worse** you must add this after Django apps have been loaded (for example, in a models.py file):
+## Usage
+
+To use this package in a Django project, do the following:
+
+- Add `-f http://cdn.research.pdx.edu/pypi/dist/` to the top of the
+  project's `requirements.txt` (this is required in all cases)
+- If the project is set up as a distutils/setuptools package (i.e., it
+  has a `setup.py`):
+  - Add `django-arcutils>=1.x,<2.0` to `install_requires`
+  - To use the LDAP features, add `django-arcutils>=1.x,<2.0[ldap]` to
+    `install_requires` instead
+- If the project is not a distutils/setuptools package:
+  - Add the django-arcutils dependencies to the project's
+    `requirements.txt` instead of `install_requires`
+- Add `arcutils` to `INSTALLED_APPS`
+
+NOTE: The `1.x` in the requirements above will need to be replaced with
+      a concrete version like `1.1.1`. The `<2.0` part is also very
+      important; without it, the latest 2.x version will be installed,
+      which _won't work_ for projects that are currently using version
+      1.x.
+
+In **Django 1.6 and worse** you must add this after Django apps have
+been loaded (for example, in a models.py file):
 
     from arcutils.apps import ARCUtilsConfig
     ARCUtilsConfig().ready()
@@ -89,9 +119,3 @@ setting. This package includes the PSUCA.crt file, which is the default.
 
 `arcutils.logging.basic` also configures error email logging; for this to work, the `SERVER_EMAIL`
 setting *must* be set to a valid value.
-
-
-## Testing
-
-    pip install model_mommy django mock python3-ldap
-    ./runtests.py
