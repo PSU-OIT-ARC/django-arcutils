@@ -55,7 +55,6 @@ been loaded (for example, in a models.py file):
     from arcutils.apps import ARCUtilsConfig
     ARCUtilsConfig().ready()
 
-
 Optionally, add your LDAP connection information
 
     LDAP = {
@@ -67,7 +66,6 @@ Optionally, add your LDAP connection information
             "ca_file": "/path/to/ca_file.crt",
         }
     }
-
 
 ## Features
 
