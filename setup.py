@@ -3,7 +3,8 @@ import sys
 from setuptools import find_packages, setup
 
 
-PY3 = sys.version_info[:2] >= (3, 0)
+PY_VERSION = sys.version_info[:2]
+DJANGO_VERSION = '>=1.7,<1.9' if PY_VERSION >= (2, 7) else '>=1.6,<1.7'
 
 
 with open('VERSION') as version_fp:
@@ -28,7 +29,7 @@ setup(
             'ldap3',
         ],
         'test': [
-            'django' if PY3 else 'django<1.7',
+            'django%s' % DJANGO_VERSION,
             'flake8',
             'ldap3',
             'mock',
