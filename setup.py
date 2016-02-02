@@ -6,9 +6,13 @@ from setuptools import find_packages, setup
 PY3 = sys.version_info[:2] >= (3, 0)
 
 
+with open('VERSION') as version_fp:
+    VERSION = version_fp.read().strip()
+
+
 setup(
     name='django-arcutils',
-    version='1.2.0.dev0',
+    version=VERSION,
     url='https://github.com/PSU-OIT-ARC/django-arcutils',
     author='PSU - OIT - ARC',
     author_email='consultants@pdx.edu',
