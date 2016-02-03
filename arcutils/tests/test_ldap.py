@@ -2,7 +2,13 @@ from unittest import TestCase
 
 import ldap3
 
-from arcutils.ldap import parse_profile, parse_email, parse_name, connect
+from arcutils.ldap import (
+    connect,
+    parse_email,
+    parse_name,
+    parse_phone_number,
+    parse_profile,
+)
 
 
 class TestLDAP(TestCase):
@@ -27,6 +33,7 @@ class TestLDAPProfileParsing(TestCase):
                 'Blurp - Bloop',
             ],
             'psuPasswordExpireDate': ['20161031121314Z'],
+            'telephoneNumber': ['x5-1234']
         }
         result = parse_profile(entry)
         self.assertEqual(result['first_name'], 'Matt')
@@ -37,6 +44,7 @@ class TestLDAPProfileParsing(TestCase):
         self.assertEqual(result['school_or_office'], 'Office of Information Technology')
         self.assertEqual(result['department'], 'Academic & Research Computing')
         self.assertEqual(result['password_expiration_date'], '20161031T121314Z')
+        self.assertEqual(result['phone_number'], '503-725-1234')
 
     def test_parse_email(self):
         self.assertEqual('foo@bar.com', parse_email({'mail': ['foo@bar.com']}))
@@ -71,3 +79,58 @@ class TestLDAPProfileParsing(TestCase):
         self.assertEqual(('', 'Doe'), parse_name({
             'sn': ['Doe'],
         }))
+
+
+class TestPhoneNumberParsing(TestCase):
+
+    def test_ten_digit_number(self):
+        num = parse_phone_number(None, '5035551212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_ten_digit_number_with_dashes(self):
+        num = parse_phone_number(None, '503-555-1212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_ten_digit_number_with_dots(self):
+        num = parse_phone_number(None, '503.555.1212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_ten_digit_number_with_parens_and_dash(self):
+        num = parse_phone_number(None, '(503)555-1212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_eleven_digit_number(self):
+        num = parse_phone_number(None, '15035551212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_eleven_digit_number_with_dashes(self):
+        num = parse_phone_number(None, '1-503-555-1212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_ten_digit_number_with_dots(self):
+        num = parse_phone_number(None, '503.555.1212')
+        self.assertEqual(num, '503-555-1212')
+
+    def test_four_digit_extension(self):
+        num = parse_phone_number(None, '1212')
+        self.assertEqual(num, '503-725-1212')
+
+    def test_four_digit_extension_with_x_prefix(self):
+        num = parse_phone_number(None, 'x1212')
+        self.assertEqual(num, '503-725-1212')
+
+    def test_five_digit_extension(self):
+        num = parse_phone_number(None, '51212')
+        self.assertEqual(num, '503-725-1212')
+
+    def test_five_digit_extension_with_dash(self):
+        num = parse_phone_number(None, '5-1212')
+        self.assertEqual(num, '503-725-1212')
+
+    def test_five_digit_extension_with_dot(self):
+        num = parse_phone_number(None, '5.1212')
+        self.assertEqual(num, '503-725-1212')
+
+    def test_five_digit_extension_with_x_prefix(self):
+        num = parse_phone_number(None, 'x51212')
+        self.assertEqual(num, '503-725-1212')

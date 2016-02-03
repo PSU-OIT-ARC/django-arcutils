@@ -309,25 +309,88 @@ def parse_email(attributes, field='mail'):
     return email
 
 
-def parse_phone_number(attributes):
+def parse_phone_number(attributes, phone_number=None):
     """Get phone number from LDAP attributes and standardize it.
 
-    Try to convert to XXX-XXX-XXXX format.
+    Tries to normalize a phone number to XXX-XXX-XXXX format. Does not
+    normalize numbers with country codes, non-US formats, or any
+    nonstandard characters. Also does not handle the case where a user
+    has entered two phone numbers into the same field.
 
-    .. note:: Does not deal with country codes, non-US formats, or any
-              nonstandard characters.
+    Input formats that are handled after normalizing to remove
+    whitespace, parentheses, dashes, and dots:
+
+    - 10 digit number
+    - 11 digit number starting with 1
+    - 4 digit number (assumed to be a PSU extension)
+      - Same but prefixed with an "x"
+    - 5 digit number starting with 5 (assumed to be a PSU extension)
+      - Same but prefixed with an "x"
+    - Any of the above prefixed with "h." (indicating a home number,
+      presumably)
+
+    Args:
+        attributes: If ``phone_number`` isn't specified, it will be
+            retrieved from these LDAP attributes
+        phone_number: A phone number
+
+    Returns:
+        str: A phone number formatted as AAA-PPP-NNNN if possible
+        str: The original value from the telephoneNumber field if it
+            can't be normalized to a 10-digit US number
+        None: The telephoneNumber field is empty or contains a blank
+            value after stripping whitespace
+
+    .. note:: You *cannot* rely on the return value of this function
+              being a normalized 10-digit US phone number.
 
     """
-    phone_number = _get_attribute(attributes, 'telephoneNumber')
-    if phone_number:
+    if phone_number is None:
+        phone_number = _get_attribute(attributes, 'telephoneNumber')
+
+    if phone_number is None:
+        return None
+
+    phone_number = phone_number.strip()
+
+    if not phone_number:
+        return None
+
+    if re.search(r'^[2-9]\d{2}-\d{3}-\d{4}$', phone_number):
+        # Short circuit if already normalized
+        return phone_number
+
+    original_value = phone_number
+
+    # "h." prefix indicates a home number? Maybe?
+    if phone_number.startswith('h.'):
+        phone_number = phone_number[2:]
         phone_number = phone_number.strip()
-        phone_number = phone_number.replace(' ', '-')
-        phone_number = phone_number.replace('(', '')
-        phone_number = phone_number.replace(')', '-')
-        while '  ' in phone_number:
-            phone_number = phone_number.replace('  ', ' ')
-        while '--' in phone_number:
-            phone_number = phone_number.replace('--', '-')
+
+    phone_number = re.sub('[\s()-.]', '', phone_number)
+
+    # Add area code
+    if re.search(r'^\d{7}$', phone_number):
+        phone_number = '503{phone_number}'.format_map(locals())
+    # Convert extension to full number
+    elif re.search(r'^x?5\d{4}$', phone_number):
+        extension = phone_number[1:] if phone_number.startswith('x') else phone_number
+        phone_number = '50372{extension}'.format_map(locals())
+    # Apparently, extensions are sometimes specified using just the last
+    # four digits
+    elif re.search(r'^x?\d{4}$', phone_number):
+        extension = phone_number[1:] if phone_number.startswith('x') else phone_number
+        phone_number = '503725{extension}'.format_map(locals())
+    # Strip leading 1
+    elif re.search(r'^1\d{10}$', phone_number):
+        phone_number = phone_number[1:]
+
+    # Normalize number by adding dashes between parts
+    if re.search(r'^[2-9]\d{9}$', phone_number):
+        phone_number = '-'.join((phone_number[:3], phone_number[3:6], phone_number[6:]))
+    else:
+        phone_number = original_value
+
     return phone_number
 
 
