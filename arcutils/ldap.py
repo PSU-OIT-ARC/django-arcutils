@@ -236,7 +236,7 @@ def parse_profile(attributes):
             email_addresses.append(a)
 
     phone_number = parse_phone_number(attributes)
-    extension = phone_number[-6:] if phone_number else None
+    extension = parse_psu_extension(attributes, phone_number)
 
     return {
         'first_name': first_name,
@@ -392,6 +392,29 @@ def parse_phone_number(attributes, phone_number=None):
         phone_number = original_value
 
     return phone_number
+
+
+def parse_psu_extension(attributes, phone_number=None):
+    """If phone number looks like a PSU number, return the extension.
+
+    Args:
+        attributes: If ``phone_number`` isn't specified, it will be
+            retrieved from these LDAP attributes
+        phone_number: A phone number
+
+    The phone number, regardless of source, is normalized via
+    :func:`parse_phone_number` first.
+
+    Returns:
+        str: The P-NNNN extension if the phone number looks like a PSU
+            number
+        None: The phone doesn't look like a PSU number
+
+    """
+    phone_number = parse_phone_number(attributes, phone_number)
+    if phone_number and re.search(r'503-725-\d{4}$', phone_number):
+        return phone_number[-6:]
+    return None
 
 
 def parse_member_of(attributes):
