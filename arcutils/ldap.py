@@ -105,7 +105,7 @@ def connect(using='default'):
 
 
 def ldapsearch(query, connection=None, using='default', search_base=None, parse=True,
-               attributes=ldap3.ALL_ATTRIBUTES, **kwargs):
+               attributes=None, **kwargs):
     """Performs an LDAP search and returns the results.
 
     If there are results, they will be parsed via :func:`parse_profile`
@@ -132,6 +132,7 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
     """
     config = settings.LDAP[using]
     search_base = search_base or config['search_base']
+    attributes = attributes or ldap3.ALL_ATTRIBUTES
 
     if connection is None:
         registry = get_registry()
