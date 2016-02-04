@@ -35,17 +35,21 @@ def main(argv=None):
 
 def ldap(args):
     q = args.query
+    using = args.using
     search_base = args.search_base
     parse = args.parse
+
     try:
-        results = ldapsearch(q, using=args.using, search_base=search_base, parse=parse)
+        results = ldapsearch(q, using=using, search_base=search_base, parse=parse)
     except LDAPInvalidFilterError:
         printer.error('Invalid LDAP filter: {q}'.format(q=q))
         printer.error('Is the query wrapped in parens?')
         return 1
+
     if not results:
         printer.error('No results found')
         return 2
+
     for r in results:
         if not parse:
             print('dn', '=>', r['dn'], '\n')
