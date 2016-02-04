@@ -21,6 +21,8 @@ def main(argv=None):
     ldap_parser.set_defaults(command=ldap)
     ldap_parser.add_argument('query')
     ldap_parser.add_argument('--search-base', default=None)
+    ldap_parser.add_argument(
+        '--attributes', default=None, help='LDAP attributes to fetch, separated by commas')
     ldap_parser.add_argument('--parse', default=True, action='store_true', dest='parse')
     ldap_parser.add_argument('--no-parse', default=True, action='store_false', dest='parse')
     ldap_parser.add_argument('--using', default='default')
@@ -37,10 +39,15 @@ def ldap(args):
     q = args.query
     using = args.using
     search_base = args.search_base
+    attributes = args.attributes
     parse = args.parse
 
+    if attributes is not None:
+        attributes = [a.strip() for a in attributes.split(',')]
+
     try:
-        results = ldapsearch(q, using=using, search_base=search_base, parse=parse)
+        results = ldapsearch(
+            q, using=using, search_base=search_base, attributes=attributes, parse=parse)
     except LDAPInvalidFilterError:
         printer.error('Invalid LDAP filter: {q}'.format(q=q))
         printer.error('Is the query wrapped in parens?')
