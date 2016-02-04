@@ -104,8 +104,8 @@ def connect(using='default'):
     return ldap3.Connection(server, **client_args)
 
 
-def ldapsearch(query, connection=None, using='default', search_base=None, parse=True,
-               attributes=None, **kwargs):
+def ldapsearch(query, connection=None, using='default', search_base=None, attributes=None,
+               parse=True, **kwargs):
     """Performs an LDAP search and returns the results.
 
     If there are results, they will be parsed via :func:`parse_profile`
