@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1.0 - 2016-02-04
+
+### Added
+
+- LDAP: The `arcutils ldap` console script gained two new options:
+  `--search-base` and `--attibutes`; these correspond `ldapsearch()`
+  keyword args
+- LDAP: More tests, especially of phone number parsing
+
+### Changed
+
+- LDAP: Set the default value of the `attributes` keyword arg of
+  `ldapsearch()` to `None`; this way, `None` can be passed to
+  indicate that the default set of attributes should be fetched
+- LDAP: Allow default attributes fetched for connections to be
+  specified via `LDAP.{name}.attributes` settings
+- LDAP: Change order of `attributes` and `parse` keyword args to
+  `ldapsearch()`
+- LDAP: Make phone number parsing more robust
+
+### Fixed
+
+- LDAP: Only include extension in user profile if the user's phone
+  number looks like a PSU number
+- LDAP: Don't include `None` in the list of email addresses
+- LDAP: Don't return 'None@pdx.edu' as a fallback email address (i.e.,
+  when the LDAP attributes don't contain a username field)
+
 ## 2.0.0 - 2016-02-01
 
 Version 2 revamps ARCUtils to be more of a library.

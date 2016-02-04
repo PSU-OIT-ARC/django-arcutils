@@ -3,8 +3,7 @@ from functools import partial
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
-
-NO_DEFAULT = object()
+from arcutils.types import Some, Null
 
 
 def get_settings():
@@ -33,19 +32,36 @@ def get_setting(name, default=None):
     """Get setting specified by ``name``.
 
     Fall back to ``default`` if the setting doesn't exist, unless
-    ``strict`` is set (a ``KeyError`` will be raised in this case).
+    ``default`` is ``Null``.
+
+    Args:
+        name: Masquerade setting name, sans ``MASQUERADE.`` prefix
+        default: Value to use when the setting doesn't exist
+
+    Returns:
+        object: The value of the setting, or the default value if the
+            setting does not exist
+
+    Raises:
+        KeyError: Setting doesn't exist and ``default`` is ``Null``
 
     """
+    option = get_setting_as_option(name, default)
+    value = option.unwrap(default=KeyError(name))
+    return value
+
+
+def get_setting_as_option(name, default=Null):
+    """Return masquerade setting as an Option."""
     masquerade_settings = get_settings()
-    if default is NO_DEFAULT:
-        return masquerade_settings[name]
-    return masquerade_settings.get(name, default)
+    value = masquerade_settings.get(name, default)
+    return value if value is Null else Some(value)
 
 
 # Convenience functions for getting often-used settings
 
 is_enabled = partial(get_setting, 'enabled', False)
-get_param_name = partial(get_setting, 'param_name', NO_DEFAULT)
+get_param_name = partial(get_setting, 'param_name', Null)
 get_redirect_field_name = partial(get_setting, 'redirect_field_name', REDIRECT_FIELD_NAME)
-get_session_key = partial(get_setting, 'session_key', NO_DEFAULT)
-get_user_attr = partial(get_setting, 'user_attr', NO_DEFAULT)
+get_session_key = partial(get_setting, 'session_key', Null)
+get_user_attr = partial(get_setting, 'user_attr', Null)
