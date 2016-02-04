@@ -230,7 +230,7 @@ def parse_profile(attributes):
 
     preferred_email_address = parse_email(attributes)
     canonical_email_address = get('mailRoutingAddress') or get('mail')
-    email_addresses = [preferred_email_address]
+    email_addresses = [preferred_email_address] if preferred_email_address else []
     additional_email_addresses = get('mailRoutingAddress', True) + get('mailLocalAddress', True)
     for a in additional_email_addresses:
         if a not in email_addresses:
@@ -299,14 +299,17 @@ def parse_email(attributes, field='mail'):
     "mailLocalAddress" (aliases).
 
     """
+    get = functools.partial(_get_attribute, attributes)
     allowed_fields = ('mail', 'mailLocalAddress', 'mailRoutingAddress')
     if field not in allowed_fields:
         raise ValueError(
             'Unknown email address field: "{field}"; must be one of: {allowed_fields}'
             .format_map(locals()))
-    email = _get_attribute(attributes, field)
+    email = get(field)
     if not email:
-        email = '{uid}@pdx.edu'.format(uid=_get_attribute(attributes, 'uid'))
+        username = get('uid') or get('name')
+        if username:
+            email = '{uid}@pdx.edu'.format(uid=_get_attribute(attributes, 'uid'))
     return email
 
 
