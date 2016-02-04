@@ -132,7 +132,7 @@ def ldapsearch(query, connection=None, using='default', search_base=None, parse=
     """
     config = settings.LDAP[using]
     search_base = search_base or config['search_base']
-    attributes = attributes or ldap3.ALL_ATTRIBUTES
+    attributes = attributes or config.get('attributes') or ldap3.ALL_ATTRIBUTES
 
     if connection is None:
         registry = get_registry()
