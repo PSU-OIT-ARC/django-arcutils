@@ -87,7 +87,7 @@ def connect(using='default'):
         server = ldap3.ServerPool(hosts)
 
     strategy = config.get('strategy')
-    strategy = getattr(ldap3, strategy) if strategy else ldap3.RESTARTABLE
+    strategy = getattr(ldap3, strategy) if strategy else ldap3.SYNC
 
     client_args = {
         'user': config.get('username'),
