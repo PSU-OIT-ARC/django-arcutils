@@ -43,6 +43,12 @@ def escape(s):
     return s
 
 
+def setting_to_ldap3_attr(v):
+    if isinstance(v, str):
+        return getattr(ldap3, v)
+    return v
+
+
 def connect(using='default'):
     """Connect to the LDAP server indicated by ``using``."""
     config = settings.LDAP[using]
@@ -86,16 +92,15 @@ def connect(using='default'):
         hosts = [ldap3.Server(h, **server_args) for h in hosts]
         server = ldap3.ServerPool(hosts)
 
-    strategy = config.get('strategy')
-    strategy = getattr(ldap3, strategy) if strategy else ldap3.SYNC
-
     client_args = {
         'user': config.get('username'),
         'password': config.get('password'),
-        'auto_bind': config.get('auto_bind', False),
-        'client_strategy': strategy,
-        'lazy': config.get('lazy', True),
+        'auto_bind': setting_to_ldap3_attr(config.get('auto_bind', 'AUTO_BIND_NONE')),
+        'authentication': setting_to_ldap3_attr(config.get('authentication')),
+        'client_strategy': setting_to_ldap3_attr(config.get('strategy', 'SYNC')),
         'read_only': config.get('read_only', True),
+        'lazy': config.get('lazy', True),
+        'raise_exceptions': config.get('raise_exceptions', True),
         'pool_name': config.get('pool_name'),
         'pool_size': config.get('pool_size'),
         'pool_lifetime': config.get('pool_lifetime'),
