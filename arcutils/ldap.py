@@ -153,10 +153,12 @@ def ldapsearch(query, connection=None, using='default', search_base=None, attrib
             attributes=attributes,
             **kwargs)
 
-    if connection.strategy.sync:
-        response = connection.response if result else []
-    else:
-        response, _ = connection.get_response(result)
+        if connection.strategy.sync:
+            # For synchronous strategies, result will be True or False.
+            response = connection.response if result else []
+        else:
+            # For asynchronous strategies, result will be an int.
+            response, _ = connection.get_response(result)
 
     return [parse_profile(r['attributes']) for r in response] if parse else response
 
