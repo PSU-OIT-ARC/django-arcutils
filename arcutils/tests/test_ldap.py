@@ -2,8 +2,8 @@ from unittest import TestCase
 
 import ldap3
 
-from arcutils.ldap import (
-    connect,
+from arcutils.ldap import connect
+from arcutils.ldap.profile import (
     parse_email,
     parse_name,
     parse_phone_number,
@@ -109,8 +109,8 @@ class TestPhoneNumberParsing(TestCase):
         num = parse_phone_number(None, '1-503-555-1212')
         self.assertEqual(num, '503-555-1212')
 
-    def test_ten_digit_number_with_dots(self):
-        num = parse_phone_number(None, '503.555.1212')
+    def test_eleven_digit_number_with_dots(self):
+        num = parse_phone_number(None, '1.503.555.1212')
         self.assertEqual(num, '503-555-1212')
 
     def test_four_digit_extension(self):

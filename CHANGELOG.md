@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.2.0 - 2016-02-09
+
+### Added
+
+- Testing: Added `patch_json` method to our test `Client`.
+
+### Changed
+
+- LDAP: Reverted to SYNC as default connection strategy. We're really
+  thrashing around on this, and I can't tell if it's because of how the
+  LDAP service is setup, bugs in the ldap3 library, or bugs in our code.
+  One thing to recommend the SYNC strategy is that its code is actually
+  readable in the ldap3 code base. The other strategies are a mess.
+- LDAP: Changed default value for `auto_bind` connection option to
+  `AUTO_BIND_NONE` to match the ldap3 default (instead of using `True`,
+  which is equivalent to `AUTO_BIND_NO_TLS`).
+- LDAP: Split the `ldap` module up into various modules in a new `ldap`
+  package; the module was getting unwieldy, and this paves the way
+  toward some parsing-related refactoring I plan on doing at some point.
+
+### Fixed
+
+- LDAP: Wait for search responses inside `with connection` block;
+  the connection can become unbound while waiting outside the `with`
+  block, which can cause errors in some cases (esp. w/ TLS it seems).
+
 ## 2.1.0 - 2016-02-04
 
 ### Added
