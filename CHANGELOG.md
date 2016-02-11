@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.2.1 - 2016-02-10
+
+### Fixed
+
+- CAS: Add `CASBackend.get_user()` method (a copy of
+  `ModelBackend.get_user()`); this is necessary for `CASBackend` to
+  actually be used as an auth backend.
+
 ## 2.2.0 - 2016-02-09
 
 ### Added

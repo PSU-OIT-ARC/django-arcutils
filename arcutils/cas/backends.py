@@ -37,6 +37,13 @@ class CASBackend:
             user = None
         return user
 
+    def get_user(self, user_id):
+        user_model = get_user_model()
+        try:
+            return user_model._default_manager.get(pk=user_id)
+        except user_model.DoesNotExist:
+            return None
+
     def _validate_ticket(self, ticket, service, suffix=None):
         path = get_setting('CAS.validate_path')
         params = {'ticket': ticket, 'service': service}
