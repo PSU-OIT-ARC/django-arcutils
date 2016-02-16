@@ -50,13 +50,13 @@ def parse_cas_tree(tree):
 
         <cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>
             <cas:authenticationSuccess>
-                <cas:user>wbaldwin</cas:user>
+                <cas:user>bobs</cas:user>
                 <cas:attributes>
-                    <cas:uid>wbaldwin</cas:uid>
-                    <cas:display_name>Wyatt Baldwin</cas:display_name>
-                    <cas:given_name>Wyatt</cas:given_name>
-                    <cas:sn>Baldwin</cas:sn>
-                    <cas:mail>wbaldwin@pdx.edu</cas:mail>
+                    <cas:uid>bobs</cas:uid>
+                    <cas:display_name>Bob Smith</cas:display_name>
+                    <cas:given_name>Bob</cas:given_name>
+                    <cas:sn>Smith</cas:sn>
+                    <cas:mail>bobs@pdx.edu</cas:mail>
                 </cas:attributes>
             </cas:authenticationSuccess>
         </cas:serviceResponse>
