@@ -16,9 +16,6 @@ class Client(django.test.Client):
     def put_json(self, path, data=None, **kwargs):
         return self.put(path, **self._json_kwargs(data, kwargs))
 
-    def patch_json(self, path, data=None, **kwargs):
-        return self.patch(path, **self._json_kwargs(data, kwargs))
-
     def _json_kwargs(self, data, kwargs):
         if data is not None:
             data = json.dumps(data)
