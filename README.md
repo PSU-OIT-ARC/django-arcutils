@@ -41,7 +41,14 @@ To use this package in a Django project, do the following:
 ## Features
 
 NOTE: Many features have not been documented yet :( To get an idea of all the available features,
-take a look a the modules and packages in the top level `arcutils` package directory.
+take a look at the modules and packages in the top level `arcutils` directory.
+
+### Console Script
+
+Some ARCUtils functionality can be accessed via the `arcutils` console script (or via
+`python -m arcutils`). Currently, there is one subcommand for running LDAP queries:
+
+        arcutils ldap '(uid=pants)'
 
 ### CAS - arcutils.cas
 
@@ -83,11 +90,6 @@ project's database.
 
 - `arcutils.forms.BaseFormSet` and `arcutils.forms.BaseModelFormSet` override the `clean` method
   so that if a form is being deleted, its validation errors are blanked out.
-
-- Console script: some ARCUtils functionality can be accessed via the `arcutils` console script
-  (or via `python -m arcutils`). Currently, there is one subcommand for running LDAP queries:
-
-        arcutils ldap '(uid=wbaldwin)'
 
 ### LDAP - arcutils.ldap
 
