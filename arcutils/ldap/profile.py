@@ -157,9 +157,11 @@ def parse_phone_number(attributes, phone_number=None):
 
     - 10 digit number
     - 11 digit number starting with 1
-    - 4 digit number (assumed to be a PSU extension)
-      - Same but prefixed with an "x"
+    - 7 digit number (assumed to be a Portland-area number in the 503
+      area code)
     - 5 digit number starting with 5 (assumed to be a PSU extension)
+      - Same but prefixed with an "x"
+    - 4 digit number (assumed to be a PSU extension)
       - Same but prefixed with an "x"
     - Any of the above prefixed with "h." (indicating a home number,
       presumably)
