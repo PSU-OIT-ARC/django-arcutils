@@ -93,7 +93,7 @@ def init_local_settings(settings, quiet):
 NOT_SET = object()
 
 
-class SettingNotFoundError(Exception):
+class SettingNotFoundError(LookupError):
 
     pass
 
