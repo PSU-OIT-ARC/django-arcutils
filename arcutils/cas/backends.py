@@ -1,0 +1,98 @@
+import logging
+import textwrap
+from xml.etree import ElementTree
+from urllib.request import urlopen
+
+from django.contrib.auth import get_user_model
+from django.utils.module_loading import import_string
+
+from django.contrib.auth.backends import ModelBackend
+
+from arcutils.decorators import cached_property
+
+from .settings import get_setting
+from .utils import make_cas_url, parse_cas_tree, tree_find
+
+
+log = logging.getLogger(__name__)
+
+
+class CASBackend(object):
+
+    """CAS authentication backend."""
+
+    def authenticate(self, ticket, service):
+        username = self._validate_ticket(ticket, service)
+        if username:
+            user_model = get_user_model()
+            try:
+                user = user_model.objects.get(username=username)
+            except user_model.DoesNotExist:
+                if get_setting('auto_create_user', True):
+                    user = user_model.objects.create_user(username, None)
+                    user.save()
+                else:
+                    user = None
+        else:
+            user = None
+        return user
+
+    def get_user(self, user_id):
+        user_model = get_user_model()
+        try:
+            return user_model._default_manager.get(pk=user_id)
+        except user_model.DoesNotExist:
+            return None
+
+    def _validate_ticket(self, ticket, service, suffix=None):
+        path = get_setting('validate_path')
+        params = {'ticket': ticket, 'service': service}
+        url = make_cas_url(path, **params)
+
+        log.debug('Validating CAS ticket: {url}'.format(url=url))
+
+        with urlopen(url) as fp:
+            response = fp.read()
+
+        tree = ElementTree.fromstring(response)
+        log.debug('CAS response:\n%s', ElementTree.tostring(tree, encoding='unicode'))
+
+        if tree is None:
+            raise ValueError('Unexpected CAS response:\n{response}'.format(response=response))
+        success = tree_find(tree, 'cas:authenticationSuccess')
+
+        if success:
+            log.debug('CAS ticket validated: {url}'.format(url=url))
+            log.debug('Calling CAS response callbacks...')
+            cas_data = parse_cas_tree(tree)
+            for callback in self._response_callbacks:
+                callback(cas_data)
+            return cas_data['username']
+        else:
+            message = 'CAS ticket not validated: {url}\n{detail}'
+            failure = tree_find(tree, 'cas:authenticationFailure')
+            if failure:
+                detail = failure.text.strip()
+            else:
+                detail = ElementTree.tostring(tree, encoding='unicode').strip()
+            detail = textwrap.indent(detail, ' ' * 4)
+            log.error(message.format(url=url, detail=detail))
+            return None  # Explicit
+
+    @cached_property
+    def _response_callbacks(self):
+        callbacks = get_setting('response_callbacks')
+        for i, cb in enumerate(callbacks):
+            if isinstance(cb, str):
+                callbacks[i] = import_string(cb)
+        return callbacks
+
+
+class CASModelBackend(CASBackend, ModelBackend):
+
+    """CAS/Model authentication backend.
+
+    Use CASBackend's authenticate() method while also getting all the
+    default permissions handling from ModelBackend.
+
+    """
