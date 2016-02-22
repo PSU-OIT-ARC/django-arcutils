@@ -21,7 +21,7 @@ class TestGetSettings(TestCase):
         self.settings = settings
 
     def get_setting(self, key, default=NOT_SET):
-        return get_setting(key, default=default, _settings=self.settings)
+        return get_setting(key, default=default, settings=self.settings)
 
     def test_can_traverse_into_dict(self):
         self.assertEqual(self.get_setting('ARC.a'), 'a')

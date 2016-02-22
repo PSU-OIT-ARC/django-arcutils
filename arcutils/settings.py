@@ -98,7 +98,7 @@ class SettingNotFoundError(LookupError):
     pass
 
 
-def get_setting(key, default=NOT_SET, _settings=None):
+def get_setting(key, default=NOT_SET, settings=None):
     """Get setting for ``key``, falling back to ``default`` if passed.
 
     ``key`` should be a string like 'ARC.cdn.hosts' or 'X.Y.0'. The key
@@ -121,14 +121,14 @@ def get_setting(key, default=NOT_SET, _settings=None):
     If the setting isn't found, the ``default`` value will be returned
     if specified; otherwise, a ``SettingsNotFoundError`` will be raised.
 
-    ``_settings`` can be used to inject a mock settings object in
-    testing.
+    ``settings`` can be used to retrieve the setting from a settings
+     object other than the default ``django.conf.settings``.
 
     """
-    from django.conf import settings
+    import django.conf
 
-    if _settings:
-        settings = _settings
+    if settings is None:
+        settings = django.conf.settings
 
     root, *path = key.split('.')
     setting = getattr(settings, root, NOT_SET)
