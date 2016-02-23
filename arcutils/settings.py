@@ -156,6 +156,78 @@ def get_setting(key, default=NOT_SET, settings=None):
     return setting
 
 
+def make_prefixed_get_setting(prefix, defaults=None):
+    """Make a function that gets settings for a given ``prefix``.
+
+    Args:
+        prefix: An upper case setting name such as "CAS" or "LDAP"
+        defaults: A dict of defaults for the prefix
+
+    The idea is to make it easy to fetch sub-settings within a given
+    package.
+
+    For example::
+
+        >>> DEFAULT_CAS_SETTINGS = {
+        ...     'base_url': 'https://example.com/cas/',
+        ...     # plus a bunch more CAS settings...
+        ... }
+        >>> get_cas_setting = make_prefixed_get_setting('CAS', DEFAULT_CAS_SETTINGS)
+        >>> base_url = get_cas_setting('base_url')
+        >>> login_path = get_cas_setting('logout_path', default='/default/logout/path')
+
+    See the ``cas``, ``ldap``, and ``masquerade`` packages for concrete
+    examples of how this is used.
+
+    """
+
+    defaults = PrefixedSettings(prefix, defaults if defaults is not None else {})
+
+    def prefixed_get_setting(key, default=NOT_SET):
+        """Get setting for ``prefix``.
+
+        Args:
+            key: setting name without ``prefix``
+            default: value to use if setting isn't present in the
+                project's settings; if this isn't passed, and attempt
+                will be made to get a default value from ``defaults``
+
+        Returns:
+            object: Value of setting
+
+                Attempt to get setting from:
+
+                1. Project settings for ``prefix``
+                2. Default settings from ``defaults``
+                3. ``default`` arg
+
+        Raises:
+            SettingNotFoundError: When the setting isn't found in the
+                project's settings or in the global defaults and no fallback
+                is passed via the ``default`` keyword arg
+
+        """
+        qualified_key = '{prefix}.{key}'.format(prefix=prefix, key=key)
+
+        try:
+            return get_setting(qualified_key)
+        except SettingNotFoundError:
+            return get_setting(qualified_key, default=default, settings=defaults)
+
+    return prefixed_get_setting
+
+
+class PrefixedSettings:
+
+    def __init__(self, prefix, defaults):
+        self._prefix = prefix
+        self._defaults = defaults
+        setattr(self, prefix, defaults)
+
+    def __str__(self):
+        return '{0._prefix}: {0._defaults}'.format(self)
+
+
 # Internal helper functions
 
 
