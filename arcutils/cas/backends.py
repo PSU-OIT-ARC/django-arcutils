@@ -9,8 +9,8 @@ from django.utils.module_loading import import_string
 from django.contrib.auth.backends import ModelBackend
 
 from arcutils.decorators import cached_property
-from arcutils.settings import get_setting
 
+from .settings import get_setting
 from .utils import make_cas_url, parse_cas_tree, tree_find
 
 
@@ -28,7 +28,7 @@ class CASBackend:
             try:
                 user = user_model.objects.get(username=username)
             except user_model.DoesNotExist:
-                if get_setting('CAS.auto_create_user', True):
+                if get_setting('auto_create_user', True):
                     user = user_model.objects.create_user(username, None)
                     user.save()
                 else:
@@ -45,7 +45,7 @@ class CASBackend:
             return None
 
     def _validate_ticket(self, ticket, service, suffix=None):
-        path = get_setting('CAS.validate_path')
+        path = get_setting('validate_path')
         params = {'ticket': ticket, 'service': service}
         url = make_cas_url(path, **params)
 
@@ -81,7 +81,7 @@ class CASBackend:
 
     @cached_property
     def _response_callbacks(self):
-        callbacks = get_setting('CAS.response_callbacks')
+        callbacks = get_setting('response_callbacks')
         for i, cb in enumerate(callbacks):
             if isinstance(cb, str):
                 callbacks[i] = import_string(cb)
