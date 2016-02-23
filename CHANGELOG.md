@@ -2,7 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - unreleased
+## [1.2.0] - 2016-02-23
+
+### Added
+
+- `cas` package backported from ARCUtils v2 (our own implementation of
+  a CAS back end that supports Shibboleth CAS)
+- `response` module (for `get_redirect_location()`, which is used in the
+  `cas` package.
+
+### Changed/Fixed
+
+- General package maintenance and cleanup.
 
 ## [1.1.1] - 2015-06-23
 
