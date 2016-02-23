@@ -1,4 +1,5 @@
 import ssl
+from functools import partial
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -6,7 +7,8 @@ from ldap3 import Connection, Server, ServerPool, Tls
 
 from arcutils.path import abs_path
 
-from .utils import get_ldap_settings, setting_to_ldap3_attr
+from .settings import get_setting
+from .utils import setting_to_ldap3_attr
 
 
 def connect(using='default') -> Connection:
@@ -20,18 +22,18 @@ def connect(using='default') -> Connection:
         Connection
 
     """
-    config = get_ldap_settings(using)
+    get = partial(get_setting, using=using)
 
-    host = config.get('host')
-    hosts = config.get('hosts')
+    host = get('host', None)
+    hosts = get('hosts', None)
 
     if host and hosts:
         raise ImproperlyConfigured('LDAP: You can only specify one of `host` or `hosts`')
     if not (host or hosts):
         raise ImproperlyConfigured('LDAP: You must specify one of `host` or `hosts`')
 
-    use_ssl = config.get('use_ssl', False)
-    tls_config = config.get('tls')
+    use_ssl = get('use_ssl', False)
+    tls_config = get('tls', {})
 
     if use_ssl and tls_config:
         ca_certs_file = tls_config.get('ca_certs_file')
@@ -50,7 +52,7 @@ def connect(using='default') -> Connection:
         tls = None
 
     server_args = {
-        'port': config.get('port'),
+        'port': get('port', None),
         'use_ssl': use_ssl,
         'tls': tls,
     }
@@ -62,17 +64,17 @@ def connect(using='default') -> Connection:
         server = ServerPool(hosts)
 
     client_args = {
-        'user': config.get('username'),
-        'password': config.get('password'),
-        'auto_bind': setting_to_ldap3_attr(config.get('auto_bind', 'AUTO_BIND_NONE')),
-        'authentication': setting_to_ldap3_attr(config.get('authentication')),
-        'client_strategy': setting_to_ldap3_attr(config.get('strategy', 'SYNC')),
-        'read_only': config.get('read_only', True),
-        'lazy': config.get('lazy', True),
-        'raise_exceptions': config.get('raise_exceptions', True),
-        'pool_name': config.get('pool_name'),
-        'pool_size': config.get('pool_size'),
-        'pool_lifetime': config.get('pool_lifetime'),
+        'user': get('username', None),
+        'password': get('password', None),
+        'auto_bind': setting_to_ldap3_attr(get('auto_bind', 'AUTO_BIND_NONE')),
+        'authentication': setting_to_ldap3_attr(get('authentication', None)),
+        'client_strategy': setting_to_ldap3_attr(get('strategy', 'SYNC')),
+        'read_only': get('read_only', True),
+        'lazy': get('lazy', True),
+        'raise_exceptions': get('raise_exceptions', True),
+        'pool_name': get('pool_name', None),
+        'pool_size': get('pool_size', None),
+        'pool_lifetime': get('pool_lifetime', None),
     }
 
     return Connection(server, **client_args)

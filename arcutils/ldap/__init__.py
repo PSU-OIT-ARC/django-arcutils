@@ -16,9 +16,11 @@ settings::
         }
     }
 
+Check out the :mod:`arcutils.ldap.settings` module to see the available
+settings and their default values.
+
 Depending on the project, a username and password or other settings may
-also be required. There's a bit of documentation on this in the base
-local settings file (local.base.cfg).
+also be required.
 
 TODO: Incorporate the ldap3 library's abstraction layer:
       http://ldap3.readthedocs.org./abstraction.html

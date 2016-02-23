@@ -1,9 +1,10 @@
 import ldap3
+from functools import partial
 
 from ..registry import get_registry
 from .connection import connect
 from .profile import parse_profile
-from .utils import get_ldap_settings
+from .settings import get_setting
 
 
 def ldapsearch(query, connection=None, using='default', search_base=None, attributes=None,
@@ -32,9 +33,10 @@ def ldapsearch(query, connection=None, using='default', search_base=None, attrib
     :meth:`ldap3.Connection.search`.
 
     """
-    config = get_ldap_settings(using)
-    search_base = search_base or config['search_base']
-    attributes = attributes or config.get('attributes') or ldap3.ALL_ATTRIBUTES
+    get = partial(get_setting, using=using)
+
+    search_base = search_base or get('search_base')
+    attributes = attributes or get('attributes', None) or ldap3.ALL_ATTRIBUTES
 
     if connection is None:
         registry = get_registry()
