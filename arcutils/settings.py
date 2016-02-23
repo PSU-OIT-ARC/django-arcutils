@@ -189,8 +189,7 @@ def make_prefixed_get_setting(prefix, defaults=None):
         Args:
             key: setting name without ``prefix``
             default: value to use if setting isn't present in the
-                project's settings; if this isn't passed, and attempt
-                will be made to get a default value from ``defaults``
+                project's settings or in the ``defaults``
 
         Returns:
             object: Value of setting
@@ -203,8 +202,8 @@ def make_prefixed_get_setting(prefix, defaults=None):
 
         Raises:
             SettingNotFoundError: When the setting isn't found in the
-                project's settings or in the global defaults and no fallback
-                is passed via the ``default`` keyword arg
+                project's settings or in the ``defaults`` and no
+                fallback is passed via the ``default`` keyword arg
 
         """
         qualified_key = '{prefix}.{key}'.format(prefix=prefix, key=key)
