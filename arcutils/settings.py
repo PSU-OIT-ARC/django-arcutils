@@ -62,7 +62,7 @@ def init_settings(settings=None, local_settings=True, quiet=False, level=2):
     in the project's settings module.
 
     """
-    settings = settings if settings is not None else get_settings(level)
+    settings = settings if settings is not None else get_module_globals(level)
     settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
     package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
     settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
@@ -263,7 +263,6 @@ def derive_top_level_package_name(level=1):
     return package
 
 
-def get_settings(level=2):
-    """Get module globals."""
+def get_module_globals(level=2):
     frame = inspect.stack()[level][0]
     return frame.f_globals
