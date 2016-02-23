@@ -14,35 +14,31 @@ DEFAULTS = {
 }
 
 
-NO_DEFAULT = object()
+NOT_SET = object()
 
 
-def get_setting(name, default=NO_DEFAULT):
-    """Get CAS setting ``name``.
+def get_setting(key, default=NOT_SET):
+    """Get a CAS setting.
 
     Attempt to get the setting from:
 
     1. Project CAS settings
-    2. ``default`` arg, if passed
-    3. :global:`DEFAULTS`
+    2. :global:`DEFAULTS`
+    3. ``default`` arg
 
-    If ``name`` isn't found in the project's settings or in the global
+    If the setting isn't found in the project's settings or in the
     defaults and no fallback is passed via the ``default`` keyword arg,
     a :exc:`LookupError` will be raised.
 
     """
     cas_settings = getattr(settings, 'CAS', {})
 
-    # Look in project settings or try falling back to passed default.
-    value = cas_settings.get(name, default)
+    try:
+        return cas_settings[key]
+    except KeyError:
+        return DEFAULTS.get(key, default)
 
-    # Setting not found in project and no fallback passed, so fall back
-    # even further to global defaults.
-    if value is NO_DEFAULT:
-        value = DEFAULTS.get(name, default)
-
-    # Setting not found anywhere; blow up.
-    if value is NO_DEFAULT:
-        raise LookupError('Missing CAS setting: %s' % name)
+    if value is NOT_SET:
+        raise LookupError('Could not find CAS setting for key "%s"' % key)
 
     return value
