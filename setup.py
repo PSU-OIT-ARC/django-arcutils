@@ -29,7 +29,7 @@ setup(
     install_requires=install_requires,
     extras_require={
         'ldap': [
-            'certifi>=2015.11.20.1',
+            'certifi>=2016.2.28',
             'ldap3>=1.0.4',
         ],
         'dev': [
