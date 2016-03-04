@@ -61,6 +61,9 @@ def init_settings(settings=None, local_settings=True, quiet=False, level=2):
     should be a dict of settings as you'd get from calling ``globals()``
     in the project's settings module.
 
+    .. note:: If your project has additional local settings, they must
+        be defined *before* this function is called.
+
     """
     settings = settings if settings is not None else get_module_globals(level)
     settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
