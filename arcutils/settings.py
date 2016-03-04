@@ -71,6 +71,17 @@ def init_settings(settings=None, local_settings=True, quiet=False, level=2):
 
 
 def init_local_settings(settings, quiet):
+    """Initialize the local settings defined in ``settings``.
+
+    Args:
+        settings (dict): A dict of settings as you'd get from calling
+            ``globals()`` in a Django settings module.
+        quiet (bool): Squelch standard out when loading local settings.
+
+    .. note:: If your project has additional local settings, they must
+        be defined *before* this function is called.
+
+    """
     default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
