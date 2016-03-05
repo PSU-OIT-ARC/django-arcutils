@@ -33,7 +33,7 @@ def _is_internal_ip_address(self, addr):
 INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_address))()
 
 
-def init_settings(settings=None, local_settings=True, quiet=False, level=2):
+def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, level=2):
     """Initialize settings.
 
     Call this from the global scope of your project's settings module::
@@ -70,10 +70,10 @@ def init_settings(settings=None, local_settings=True, quiet=False, level=2):
     package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
     settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
     if local_settings:
-        init_local_settings(settings, quiet)
+        init_local_settings(settings, prompt=prompt, quiet=quiet)
 
 
-def init_local_settings(settings, quiet):
+def init_local_settings(settings, prompt=None, quiet=None):
     """Initialize the local settings defined in ``settings``.
 
     Args:
@@ -101,7 +101,7 @@ def init_local_settings(settings, quiet):
     }
     for k, v in defaults.items():
         settings.setdefault(k, v)
-    settings.update(load_and_check_settings(settings, quiet=quiet))
+    settings.update(load_and_check_settings(settings, prompt=prompt, quiet=quiet))
 
 
 NOT_SET = object()
