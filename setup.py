@@ -8,7 +8,7 @@ with open('VERSION') as version_fp:
 
 
 install_requires = [
-    'django-local-settings>=1.0a13',
+    'django-local-settings>=1.0a14',
     'stashward',
 ]
 
@@ -29,7 +29,7 @@ setup(
     install_requires=install_requires,
     extras_require={
         'ldap': [
-            'certifi>=2015.11.20.1',
+            'certifi>=2016.2.28',
             'ldap3>=1.0.4',
         ],
         'dev': [

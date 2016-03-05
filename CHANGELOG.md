@@ -1,7 +1,17 @@
-œ# Change Log
+# Change Log
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
+
+## 2.3.0 - 2016-03-04
+
+- Made `settings` arg to `init_settings()` public
+- Renamed `settings.get_settings()` to `settings.get_module_globals()`
+  for clarity
+- Improved & standardized default settings for `cas`, `ldap`, and
+  `masquerade` packages
+- Upgraded certifi 2015.11.20.1 => 2016.2.28
+- Upgraded django-local-settings 1.0a13 => 1.0a14
 
 ## 2.2.1 - 2016-02-10
 

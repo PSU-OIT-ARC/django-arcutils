@@ -33,7 +33,7 @@ def _is_internal_ip_address(self, addr):
 INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_address))()
 
 
-def init_settings(settings=None, local_settings=True, quiet=False, level=2):
+def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, level=2):
     """Initialize settings.
 
     Call this from the global scope of your project's settings module::
@@ -61,16 +61,30 @@ def init_settings(settings=None, local_settings=True, quiet=False, level=2):
     should be a dict of settings as you'd get from calling ``globals()``
     in the project's settings module.
 
+    .. note:: If your project has additional local settings, they must
+        be defined *before* this function is called.
+
     """
-    settings = settings if settings is not None else get_settings(level)
+    settings = settings if settings is not None else get_module_globals(level)
     settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
     package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
     settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
     if local_settings:
-        init_local_settings(settings, quiet)
+        init_local_settings(settings, prompt=prompt, quiet=quiet)
 
 
-def init_local_settings(settings, quiet):
+def init_local_settings(settings, prompt=None, quiet=None):
+    """Initialize the local settings defined in ``settings``.
+
+    Args:
+        settings (dict): A dict of settings as you'd get from calling
+            ``globals()`` in a Django settings module.
+        quiet (bool): Squelch standard out when loading local settings.
+
+    .. note:: If your project has additional local settings, they must
+        be defined *before* this function is called.
+
+    """
     default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
@@ -87,18 +101,18 @@ def init_local_settings(settings, quiet):
     }
     for k, v in defaults.items():
         settings.setdefault(k, v)
-    settings.update(load_and_check_settings(settings, quiet=quiet))
+    settings.update(load_and_check_settings(settings, prompt=prompt, quiet=quiet))
 
 
 NOT_SET = object()
 
 
-class SettingNotFoundError(Exception):
+class SettingNotFoundError(LookupError):
 
     pass
 
 
-def get_setting(key, default=NOT_SET, _settings=None):
+def get_setting(key, default=NOT_SET, settings=None):
     """Get setting for ``key``, falling back to ``default`` if passed.
 
     ``key`` should be a string like 'ARC.cdn.hosts' or 'X.Y.0'. The key
@@ -121,14 +135,14 @@ def get_setting(key, default=NOT_SET, _settings=None):
     If the setting isn't found, the ``default`` value will be returned
     if specified; otherwise, a ``SettingsNotFoundError`` will be raised.
 
-    ``_settings`` can be used to inject a mock settings object in
-    testing.
+    ``settings`` can be used to retrieve the setting from a settings
+     object other than the default ``django.conf.settings``.
 
     """
-    from django.conf import settings
+    import django.conf
 
-    if _settings:
-        settings = _settings
+    if settings is None:
+        settings = django.conf.settings
 
     root, *path = key.split('.')
     setting = getattr(settings, root, NOT_SET)
@@ -154,6 +168,77 @@ def get_setting(key, default=NOT_SET, _settings=None):
             setting = default
 
     return setting
+
+
+def make_prefixed_get_setting(prefix, defaults=None):
+    """Make a function that gets settings for a given ``prefix``.
+
+    Args:
+        prefix: An upper case setting name such as "CAS" or "LDAP"
+        defaults: A dict of defaults for the prefix
+
+    The idea is to make it easy to fetch sub-settings within a given
+    package.
+
+    For example::
+
+        >>> DEFAULT_CAS_SETTINGS = {
+        ...     'base_url': 'https://example.com/cas/',
+        ...     # plus a bunch more CAS settings...
+        ... }
+        >>> get_cas_setting = make_prefixed_get_setting('CAS', DEFAULT_CAS_SETTINGS)
+        >>> base_url = get_cas_setting('base_url')
+        >>> login_path = get_cas_setting('logout_path', default='/default/logout/path')
+
+    See the ``cas``, ``ldap``, and ``masquerade`` packages for concrete
+    examples of how this is used.
+
+    """
+
+    defaults = PrefixedSettings(prefix, defaults if defaults is not None else {})
+
+    def prefixed_get_setting(key, default=NOT_SET):
+        """Get setting for ``prefix``.
+
+        Args:
+            key: setting name without ``prefix``
+            default: value to use if setting isn't present in the
+                project's settings or in the ``defaults``
+
+        Returns:
+            object: Value of setting
+
+                Attempt to get setting from:
+
+                1. Project settings for ``prefix``
+                2. Default settings from ``defaults``
+                3. ``default`` arg
+
+        Raises:
+            SettingNotFoundError: When the setting isn't found in the
+                project's settings or in the ``defaults`` and no
+                fallback is passed via the ``default`` keyword arg
+
+        """
+        qualified_key = '{prefix}.{key}'.format(prefix=prefix, key=key)
+
+        try:
+            return get_setting(qualified_key)
+        except SettingNotFoundError:
+            return get_setting(qualified_key, default=default, settings=defaults)
+
+    return prefixed_get_setting
+
+
+class PrefixedSettings:
+
+    def __init__(self, prefix, defaults):
+        self._prefix = prefix
+        self._defaults = defaults
+        setattr(self, prefix, defaults)
+
+    def __str__(self):
+        return '{0._prefix}: {0._defaults}'.format(self)
 
 
 # Internal helper functions
@@ -191,7 +276,6 @@ def derive_top_level_package_name(level=1):
     return package
 
 
-def get_settings(level=2):
-    """Get module globals."""
+def get_module_globals(level=2):
     frame = inspect.stack()[level][0]
     return frame.f_globals
