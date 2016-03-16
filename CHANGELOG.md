@@ -1,5 +1,9 @@
 # Change Log for ARCUtils
 
+## 2.5.0
+
+In progress...
+
 ## 2.4.0
 
 - Upgraded ldap3 from 1.0.4 to 1.1.2
