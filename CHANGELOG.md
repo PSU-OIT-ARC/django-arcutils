@@ -1,6 +1,6 @@
 # Change Log for ARCUtils
 
-## 2.5.0
+## 2.5.0 - 2016-03-16
 
 - Added DRF router with "proper" trailing slash policy: list/collection
   routes end with a slash; detail/member routes don't. This is nicer and
