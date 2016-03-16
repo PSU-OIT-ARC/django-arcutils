@@ -1,6 +1,12 @@
 # Change Log for ARCUtils
 
-## 2.4.0
+## 2.5.0 - 2016-03-16
+
+- Added DRF router with "proper" trailing slash policy: list/collection
+  routes end with a slash; detail/member routes don't. This is nicer and
+  also easier to use with AngularJS $resource routes.
+
+## 2.4.0 - 2016-03-16
 
 - Upgraded ldap3 from 1.0.4 to 1.1.2
 - Made copying of wsgi.py more convenient.
