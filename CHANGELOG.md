@@ -2,7 +2,9 @@
 
 ## 2.5.0
 
-In progress...
+- Added DRF router with "proper" trailing slash policy: list/collection
+  routes end with a slash; detail/member routes don't. This is nicer and
+  also easier to use with AngularJS $resource routes.
 
 ## 2.4.0
 
