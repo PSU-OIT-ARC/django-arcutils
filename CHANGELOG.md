@@ -1,7 +1,4 @@
-# Change Log
-
-All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+# Change Log for ARCUtils
 
 ## 2.3.0 - 2016-03-04
 
