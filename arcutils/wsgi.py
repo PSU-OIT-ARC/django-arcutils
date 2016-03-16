@@ -63,3 +63,8 @@ def create_wsgi_application(root, settings_module=None, local_settings_file=None
 
     from django.core.wsgi import get_wsgi_application
     return get_wsgi_application()
+
+
+root = os.path.dirname(os.path.dirname(__file__))
+settings_module = '{package}.settings'  # IMPORTANT: Replace {package}
+application = create_wsgi_application(root, settings_module)
