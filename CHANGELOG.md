@@ -1,7 +1,9 @@
-# Change Log
+# Change Log for ARCUtils
 
-All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+## 2.4.0
+
+- Upgraded ldap3 from 1.0.4 to 1.1.2
+- Made copying of wsgi.py more convenient.
 
 ## 2.3.0 - 2016-03-04
 
