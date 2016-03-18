@@ -88,6 +88,16 @@ def init_local_settings(settings, prompt=None, quiet=None):
     default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
+        'ADMINS': LocalSetting([]),
+        'ALLOWED_HOSTS': LocalSetting([]),
+        'GOOGLE': {
+            'analytics': {
+                'tracking_id': LocalSetting(
+                    None, doc='Enter Google Analytics tracking ID (UA-NNNNNNNN-N)'
+                ),
+            },
+        },
+        'MANAGERS': LocalSetting([]),
         'SECRET_KEY': SecretSetting(default_secret_key),
         'DATABASES': {
             'default': {
