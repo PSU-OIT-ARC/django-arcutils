@@ -47,6 +47,7 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
         - ARCUTILS_PACKAGE_DIR
         - PACKAGE (top level project package)
         - PACKAGE_DIR (top level project package directory)
+        - ROOT_DIR (project directory; should only be used in dev)
 
     The ``PACKAGE`` and ``PACKAGE_DIR`` settings will be computed
     dynamically (based on the location of the settings module this
@@ -69,6 +70,7 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
     settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
     package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
     settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
+    settings.setdefault('ROOT_DIR', os.path.dirname(settings['PACKAGE_DIR']))
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
 
