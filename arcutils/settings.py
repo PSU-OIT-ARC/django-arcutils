@@ -91,7 +91,7 @@ def init_local_settings(settings, prompt=None, quiet=None):
         'SECRET_KEY': SecretSetting(default_secret_key),
         'DATABASES': {
             'default': {
-                'ENGINE': LocalSetting('django.db.backends.postgresql_psycopg2'),
+                'ENGINE': LocalSetting('django.db.backends.postgresql'),
                 'NAME': LocalSetting(settings.get('PACKAGE', NO_DEFAULT)),
                 'USER': LocalSetting(''),
                 'PASSWORD': SecretSetting(),
