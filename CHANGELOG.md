@@ -1,5 +1,9 @@
 # Change Log for ARCUtils
 
+## 2.6.0 - unreleased
+
+In progress...
+
 ## 2.5.0 - 2016-03-16
 
 - Added DRF router with "proper" trailing slash policy: list/collection
