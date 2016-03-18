@@ -20,6 +20,8 @@ import ipaddress
 import os
 import pkg_resources
 
+from django.utils import timezone
+
 from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, SecretSetting
 
 
@@ -49,6 +51,11 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
         - PACKAGE_DIR (top level project package directory)
         - ROOT_DIR (project directory; should only be used in dev)
 
+    Also adds ``START_TIME`` as the current date/time. This will be
+    an "aware" UTC datetime object if the project has time zone support
+    enabled (i.e. ``USE_TZ = True``) or a non-aware datetime object if
+    not.
+
     The ``PACKAGE`` and ``PACKAGE_DIR`` settings will be computed
     dynamically (based on the location of the settings module this
     function is called from). If this isn't working, you can set the
@@ -73,6 +80,7 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
     settings.setdefault('ROOT_DIR', os.path.dirname(settings['PACKAGE_DIR']))
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
+    settings.setdefault('START_TIME', timezone.now())
 
 
 def init_local_settings(settings, prompt=None, quiet=None):
