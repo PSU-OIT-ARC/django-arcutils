@@ -1,6 +1,10 @@
 # Change Log for ARCUtils
 
-## 2.6.0 - unreleased
+## 2.7.0 - unreleased
+
+In progress...
+
+## 2.6.0 - 2016-03-21
 
 ### Added
 
