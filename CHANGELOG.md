@@ -1,8 +1,11 @@
 # Change Log for ARCUtils
 
-## 2.7.0 - unreleased
+## 2.7.0 - 2016-03-21
 
-In progress...
+- Added ARCTasks as a dev dependency for its release tasks.
+- Upgraded django-local-settings 1.0a14 => 1.0a17. Note that for now
+  this means settings values can't contain embedded curly braces that
+  are *not* intended for interpolation.
 
 ## 2.6.0 - 2016-03-21
 
