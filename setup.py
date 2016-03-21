@@ -37,6 +37,7 @@ setup(
             'djangorestframework>3.3',
             'flake8',
             'ldap3',
+            'psu.oit.arc.tasks',
         ],
     },
     entry_points="""
