@@ -20,6 +20,8 @@ import ipaddress
 import os
 import pkg_resources
 
+from django.utils import timezone
+
 from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, SecretSetting
 
 
@@ -41,12 +43,28 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
         from arcutils.settings import init_settings
         init_settings()
 
+    This assumes the project is structured like so, with the settings
+    module in the top level package::
+
+        project directory/
+            {top level package}/
+                __init__.py
+                settings.py
+            README.md
+            setup.py
+
     It will add a few default settings that are commonly used in local
     settings files:
 
         - ARCUTILS_PACKAGE_DIR
         - PACKAGE (top level project package)
         - PACKAGE_DIR (top level project package directory)
+        - ROOT_DIR (project directory; should only be used in dev)
+
+    Also adds ``START_TIME`` as the current date/time. This will be
+    an "aware" UTC datetime object if the project has time zone support
+    enabled (i.e. ``USE_TZ = True``) or a non-aware datetime object if
+    not.
 
     The ``PACKAGE`` and ``PACKAGE_DIR`` settings will be computed
     dynamically (based on the location of the settings module this
@@ -67,10 +85,13 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
     """
     settings = settings if settings is not None else get_module_globals(level)
     settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
-    package = settings.setdefault('PACKAGE', derive_top_level_package_name(level=level))
-    settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(package, ''))
+    if not settings.get('PACKAGE'):
+        settings['PACKAGE'] = derive_top_level_package_name(level)
+    settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(settings['PACKAGE'], ''))
+    settings.setdefault('ROOT_DIR', os.path.dirname(settings['PACKAGE_DIR']))
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
+    settings.setdefault('START_TIME', timezone.now())
 
 
 def init_local_settings(settings, prompt=None, quiet=None):
@@ -88,10 +109,20 @@ def init_local_settings(settings, prompt=None, quiet=None):
     default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
+        'ADMINS': LocalSetting([]),
+        'ALLOWED_HOSTS': LocalSetting([]),
+        'GOOGLE': {
+            'analytics': {
+                'tracking_id': LocalSetting(
+                    None, doc='Enter Google Analytics tracking ID (UA-NNNNNNNN-N)'
+                ),
+            },
+        },
+        'MANAGERS': LocalSetting([]),
         'SECRET_KEY': SecretSetting(default_secret_key),
         'DATABASES': {
             'default': {
-                'ENGINE': LocalSetting('django.db.backends.postgresql_psycopg2'),
+                'ENGINE': LocalSetting('django.db.backends.postgresql'),
                 'NAME': LocalSetting(settings.get('PACKAGE', NO_DEFAULT)),
                 'USER': LocalSetting(''),
                 'PASSWORD': SecretSetting(),
@@ -245,34 +276,25 @@ class PrefixedSettings:
 
 
 def derive_top_level_package_name(level=1):
-    """Return top level package based on location of settings module.
+    """Return top level package name.
 
-    This assumes the project is structured like so, with the settings
-    module in the top level package::
+    Args:
+        level (int): How many levels down the stack the caller is from
+            here. 1 indicates this function is being called from module
+            scope, 2 indicates this function is being called from
+            another function, etc.
 
-        {package}/
-            __init__.py
-            settings.py
+    This will get the package name of the module containing the caller.
+    It will then check if the package name contains dots and return the
+    first segment.
 
-    Further, it's assumed that this function is being called from the
-    global scope of the settings module.
-
-    If the settings module is in a sub-package (or if this is being
-    called from within a function), the ``level`` arg can be adjusted
-    accordingly. For example, for a project structured like this,
-    ``level`` would be set to 2::
-
-        {package}/
-            __init__.py
-            settings/
-                settings.py
-
-    The ``level`` arg can be thought of as "levels deep" in terms of
-    both packages and functions.
+    If this is called indirectly--e.g., via :func:`init_settings`--the
+    ``level`` has to be adjusted accordingly.
 
     """
     frame = inspect.stack()[level][0]
     package = frame.f_globals['__package__']
+    package = package.split('.', 1)[0]
     return package
 
 
