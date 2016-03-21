@@ -8,7 +8,7 @@ with open('VERSION') as version_fp:
 
 
 install_requires = [
-    'django-local-settings>=1.0a14',
+    'django-local-settings>=1.0a17',
     'stashward',
 ]
 
@@ -37,6 +37,7 @@ setup(
             'djangorestframework>3.3',
             'flake8',
             'ldap3',
+            'psu.oit.arc.tasks',
         ],
     },
     entry_points="""
