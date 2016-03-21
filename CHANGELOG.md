@@ -2,7 +2,25 @@
 
 ## 2.6.0 - unreleased
 
-In progress...
+### Added
+
+- Added `ROOT_DIR` setting for use in dev only (when `init_settings()`
+  is used).
+- Added `START_TIME` setting (when `init_settings()` is used).
+- Added more default local settings (when `init_local_settings() is
+  used).
+
+### Changed
+
+- Switched to new name for PostgreSQL database back end (`postgresql`).
+  Projects still using Django 1.7 or earlier will need to override this
+  to use the old name (`postgresql_psycopg2`).
+- Bumped default Bootstrap version from 3.3.5 => 3.3.6.
+
+### Fixed
+
+- Fixed how `PACKAGE` setting is initialized when using
+  `init_settings()`.
 
 ## 2.5.0 - 2016-03-16
 
