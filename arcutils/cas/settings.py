@@ -24,13 +24,6 @@ DEFAULTS = {
     # referring page.
     'redirect_url': None,
 
-    # These callbacks are called when CAS login is successful. The CAS XML
-    # response is parsed into a dictionary of user attributes, which is
-    # passed to each callback in turn. The default callback constructs a
-    # standard User object from those attributes if the user doesn't already
-    # exist.
-    'response_callbacks': ['arcutils.cas.callbacks.default_response_callback'],
-
     'session_key': {
         'redirect_to': 'CAS.redirect_to',
     },

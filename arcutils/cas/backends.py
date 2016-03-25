@@ -3,11 +3,13 @@ import textwrap
 from xml.etree import ElementTree
 from urllib.request import urlopen
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth.hashers import make_password
 from django.utils.module_loading import import_string
 
-from django.contrib.auth.backends import ModelBackend
-
+from arcutils.exc import ARCUtilsDeprecationWarning
 from arcutils.decorators import cached_property
 
 from .settings import get_setting
@@ -22,20 +24,87 @@ class CASBackend:
     """CAS authentication backend."""
 
     def authenticate(self, ticket, service):
-        username = self._validate_ticket(ticket, service)
-        if username:
-            user_model = get_user_model()
-            try:
-                user = user_model.objects.get(username=username)
-            except user_model.DoesNotExist:
-                if get_setting('auto_create_user', True):
-                    user = user_model.objects.create_user(username, None)
-                    user.save()
-                else:
-                    user = None
-        else:
-            user = None
-        return user
+        cas_data = self._validate_ticket(ticket, service)
+
+        if self._response_callbacks:
+            ARCUtilsDeprecationWarning.warn(
+                'The use of CAS response callbacks is deprecated. Subclass CASBackend or'
+                'CASModelBackend and override the get_or_create_user() method instead.')
+            log.debug('Calling CAS response callbacks...')
+            for callback in self._response_callbacks:
+                callback(cas_data)
+
+        return self.get_or_create_user(cas_data) if cas_data else None
+
+    def get_or_create_user(self, cas_data):
+        """Get user.
+
+        ``cas_data`` must contain a 'username' key. If the corresponding
+        user already exists, it will be returned as is; if it doesn't, a
+        new user record will be created and returned.
+
+        .. note:: The ``CAS.auto_create_user`` setting can be set to
+                  ``False`` to disable the auto-creation of users.
+
+        """
+        user_model = get_user_model()
+        username = cas_data['username']
+        try:
+            return user_model.objects.get(username=username)
+        except user_model.DoesNotExist:
+            pass
+        return self.create_user(cas_data) if get_setting('auto_create_user') else None
+
+    def create_user(self, cas_data):
+        """Create user from CAS data.
+
+        This attempts to populate some user attributes from the CAS
+        response: ``first_name``, ``last_name``, and ``email``. If any of
+        those attributes aren't found in the CAS response, they won't be
+        set on the new user object; an error isn't raised because those
+        attributes aren't critical and can be set later.
+
+        The user's password is set to something unusable in the app's user
+        table--i.e., we don't store passwords for CAS users in the app.
+
+        If the ``STAFF`` setting is set, the user's ``is_staff`` flag
+        will be set according to whether their username is in the
+        ``STAFF`` list.
+
+        If the ``SUPERUSER`` settings is set, the user's ``is_staff``
+        and ``is_superuser`` flags will be set according to whether
+        their username is in the ``SUPERUSERS`` list.
+
+        .. note:: This method assumes a standard user model. It may not
+                  or may not work with custom user models.
+
+        """
+        user_model = get_user_model()
+        username = cas_data['username']
+
+        # May be overridden by CAS data
+        user_args = {
+            'email': '{username}@pdx.edu'.format(username=username),
+            'first_name': '',
+            'last_name': '',
+        }
+
+        for name, value in user_args.items():
+            if name in cas_data:
+                user_args[name] = cas_data[name]
+
+        staff = getattr(settings, 'STAFF', None)
+        superusers = getattr(settings, 'SUPERUSERS', None)
+        is_staff = bool(staff and username in staff)
+        is_superuser = bool(superusers and username in superusers)
+
+        user_args.update({
+            'password': make_password(None),
+            'is_staff': is_staff or is_superuser,
+            'is_superuser': is_superuser,
+        })
+
+        return user_model.objects.create(**user_args)
 
     def get_user(self, user_id):
         user_model = get_user_model()
@@ -63,11 +132,7 @@ class CASBackend:
 
         if success:
             log.debug('CAS ticket validated: {url}'.format(url=url))
-            log.debug('Calling CAS response callbacks...')
-            cas_data = parse_cas_tree(tree)
-            for callback in self._response_callbacks:
-                callback(cas_data)
-            return cas_data['username']
+            return parse_cas_tree(tree)
         else:
             message = 'CAS ticket not validated: {url}\n{detail}'
             failure = tree_find(tree, 'cas:authenticationFailure')
@@ -81,7 +146,7 @@ class CASBackend:
 
     @cached_property
     def _response_callbacks(self):
-        callbacks = get_setting('response_callbacks')
+        callbacks = get_setting('response_callbacks', [])
         for i, cb in enumerate(callbacks):
             if isinstance(cb, str):
                 callbacks[i] = import_string(cb)
