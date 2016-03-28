@@ -30,7 +30,7 @@ setup(
     extras_require={
         'ldap': [
             'certifi>=2016.2.28',
-            'ldap3>=1.1.2',
+            'ldap3>=1.2.2',
         ],
         'dev': [
             'django>=1.7,<1.9',
