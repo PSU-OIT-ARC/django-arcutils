@@ -19,6 +19,7 @@ import inspect
 import ipaddress
 import os
 import pkg_resources
+from datetime import datetime
 
 from django.utils import timezone
 
@@ -91,7 +92,14 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, l
     settings.setdefault('ROOT_DIR', os.path.dirname(settings['PACKAGE_DIR']))
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
-    settings.setdefault('START_TIME', timezone.now())
+
+    # NOTE: We can't simply use Django's timezone.now() here because it
+    #       accesses settings.USE_TZ, but at this point the settings
+    #       may not be considered fully configured by Django, so we have
+    #       to do this to avoid an ImproperlyConfigured exception.
+    use_tz = settings.get('USE_TZ', False)
+    now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
+    settings.setdefault('START_TIME', now)
 
 
 def init_local_settings(settings, prompt=None, quiet=None):

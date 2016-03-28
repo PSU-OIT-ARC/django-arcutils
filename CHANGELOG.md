@@ -1,5 +1,30 @@
 # Change Log for ARCUtils
 
+## 2.8.0 - 2016-03-28
+
+### Added
+
+- Default `MEDIA_ROOT` and `STATIC_ROOT` test settings. If these aren't
+  set, media and static files created during testing might end up in the
+  current directory, which is annoying.
+
+### Deprecated
+
+- The use of CAS response callbacks is now deprecated. A `CASBackend` or
+  `CASModelBackend` subclass with an overridden `create_user` method
+  should be used instead. It was too confusing having multiple ways of
+  creating users from CAS data. `create_user` also makes it convenient
+  to override or set additional user attributes from subclasses.
+
+### Fixed
+
+- Fixed how `START_TIME` setting is set in `init_settings` to keep an
+  `ImproperlyConfigured` exception from being raised.
+
+### Upgraded
+
+- ldap3 1.1.2 => 1.2.2
+
 ## 2.7.0 - 2016-03-21
 
 - Added ARCTasks as a dev dependency for its release tasks.
