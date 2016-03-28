@@ -36,7 +36,7 @@ class CASBackend:
 
         return self.get_or_create_user(cas_data) if cas_data else None
 
-    def get_or_create_user(self, cas_data):
+    def get_or_create_user(self, cas_data, **overrides):
         """Get user.
 
         ``cas_data`` must contain a 'username' key. If the corresponding
@@ -46,6 +46,8 @@ class CASBackend:
         .. note:: The ``CAS.auto_create_user`` setting can be set to
                   ``False`` to disable the auto-creation of users.
 
+        ``overrides`` are passed through to :meth:`create_user`.
+
         """
         user_model = get_user_model()
         username = cas_data['username']
@@ -53,16 +55,15 @@ class CASBackend:
             return user_model.objects.get(username=username)
         except user_model.DoesNotExist:
             pass
-        return self.create_user(cas_data) if get_setting('auto_create_user') else None
+        return self.create_user(cas_data, **overrides) if get_setting('auto_create_user') else None
 
-    def create_user(self, cas_data):
+    def create_user(self, cas_data, **overrides):
         """Create user from CAS data.
 
         This attempts to populate some user attributes from the CAS
-        response: ``first_name``, ``last_name``, and ``email``. If any of
-        those attributes aren't found in the CAS response, they won't be
-        set on the new user object; an error isn't raised because those
-        attributes aren't critical and can be set later.
+        response: ``first_name``, ``last_name``, and ``email``. Any of
+        those attributes that aren't found in the CAS response will be
+        set to a default value on the new user object.
 
         The user's password is set to something unusable in the app's user
         table--i.e., we don't store passwords for CAS users in the app.
@@ -75,6 +76,10 @@ class CASBackend:
         and ``is_superuser`` flags will be set according to whether
         their username is in the ``SUPERUSERS`` list.
 
+        ``overrides`` can be passed as to override the values of *any*
+        of the fields mentioned above or to set additional fields. This
+        is useful in subclasses to avoid re-saving the user.
+
         .. note:: This method assumes a standard user model. It may not
                   or may not work with custom user models.
 
@@ -82,7 +87,6 @@ class CASBackend:
         user_model = get_user_model()
         username = cas_data['username']
 
-        # May be overridden by CAS data
         user_args = {
             'email': '{username}@pdx.edu'.format(username=username),
             'first_name': '',
@@ -103,6 +107,8 @@ class CASBackend:
             'is_staff': is_staff or is_superuser,
             'is_superuser': is_superuser,
         })
+
+        user_args.update(overrides)
 
         return user_model.objects.create(**user_args)
 
