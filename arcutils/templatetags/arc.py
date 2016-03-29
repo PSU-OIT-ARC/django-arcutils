@@ -50,6 +50,9 @@ def cdn_url(path, scheme=None):
             ...
         }
 
+        # Or, if using django-local-settings:
+        ARC.cdn.paths.jquery-js = "jquery/{jquery}/jquery-{jquery}.min.js"
+
         # In a template:
         {% load arc %}
         <script src="{% cdn_url 'jquery-js' %}"></script>
