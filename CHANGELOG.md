@@ -1,9 +1,9 @@
 # Change Log for ARCUtils
 
-## 2.9.0 - unreleased
+## 2.8.1 - 2016-03-29
 
-In progress...
-
+Fix the default `ARC.cdn.paths` local setting and improve its docs and
+examples also.
 
 ## 2.8.0 - 2016-03-28
 
