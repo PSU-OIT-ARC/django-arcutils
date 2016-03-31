@@ -1,8 +1,14 @@
 # Change Log for ARCUtils
 
-## 2.9.0 - unreleased
+## 2.8.2 - 2016-03-31
 
-In progress...
+- Improved help text shown for default `SECRET_KEY` local setting; since
+  it's a secret settings, we can't set a default, so we want to indicate
+  that the value shown is a suggestion. It's also quoted now for easier
+  copypasta.
+- Added default `GOOGLE.analytics.tracking_id setting = null` stage
+  setting since Google Analytics isn't typically used in staging, and
+  being prompted for it is annoying.
 
 
 ## 2.8.1 - 2016-03-29
