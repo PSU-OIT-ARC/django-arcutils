@@ -114,7 +114,7 @@ def init_local_settings(settings, prompt=None, quiet=None):
         be defined *before* this function is called.
 
     """
-    default_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
+    suggested_secret_key = base64.b64encode(os.urandom(64)).decode('utf-8')
     defaults = {
         'DEBUG': LocalSetting(False),
         'ADMINS': LocalSetting([]),
@@ -127,7 +127,7 @@ def init_local_settings(settings, prompt=None, quiet=None):
             },
         },
         'MANAGERS': LocalSetting([]),
-        'SECRET_KEY': SecretSetting(default_secret_key),
+        'SECRET_KEY': SecretSetting(doc='Suggested: "{suggested_secret_key}"'.format_map(locals())),
         'DATABASES': {
             'default': {
                 'ENGINE': LocalSetting('django.db.backends.postgresql'),
