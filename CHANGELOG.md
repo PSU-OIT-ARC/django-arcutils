@@ -2,7 +2,16 @@
 
 ## 2.9.0 - unreleased
 
-In progress...
+Upgraded django-local-settings from 1.0a17 to 1.0a20. 1.0a20 is
+*backward incompatible* with 1.0a19 in that it uses `{...}` for
+interpolation groups instead of `{{...}}`. In addition, since
+`str.format()` is no longer used to do interpolation, `{{X[y]}}` won't
+work now; you have to use `{{X.y}}` instead (which is actually a *good*
+thing).
+
+This change also means that this version of ARCUtils is backward
+incompatible, but it's not *majorly* incompatible, so I don't think
+bumping the major version is appropriate in this case.
 
 
 ## 2.8.2 - 2016-03-31
