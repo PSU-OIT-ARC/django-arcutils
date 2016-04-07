@@ -8,7 +8,7 @@ with open('VERSION') as version_fp:
 
 
 install_requires = [
-    'django-local-settings>=1.0a17',
+    'django-local-settings>=1.0a20',
     'stashward',
 ]
 
