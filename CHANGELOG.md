@@ -1,6 +1,6 @@
 # Change Log for ARCUtils
 
-## 2.9.0 - unreleased
+## 2.9.0 - 2016-04-07
 
 Upgraded django-local-settings from 1.0a17 to 1.0a20. 1.0a20 is
 *backward incompatible* with 1.0a19 in that it uses `{...}` for
