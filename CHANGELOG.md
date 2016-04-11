@@ -2,7 +2,11 @@
 
 ## 2.10.0 - unreleased
 
-In progress...
+## Fixed
+
+Fixed creation of users when using CAS auth. Previously, the `username`
+attribute wasn't being set; now it is. This regression was introduced
+when the use of CAS callbacks was deprecated in 2.8.0.
 
 
 ## 2.9.0 - 2016-04-07
@@ -36,6 +40,9 @@ Fix the default `ARC.cdn.paths` local setting and improve its docs and
 examples also.
 
 ## 2.8.0 - 2016-03-28
+
+*Note: This version has a bug relating to the creation of users when CAS
+authentication is used, which was fixed in 2.9.1.*
 
 ### Added
 

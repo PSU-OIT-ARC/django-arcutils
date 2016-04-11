@@ -103,6 +103,7 @@ class CASBackend:
         is_superuser = bool(superusers and username in superusers)
 
         user_args.update({
+            'username': username,
             'password': make_password(None),
             'is_staff': is_staff or is_superuser,
             'is_superuser': is_superuser,
