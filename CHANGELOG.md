@@ -1,5 +1,14 @@
 # Change Log for ARCUtils
 
+## 2.9.1 - 2016-04-11
+
+## Fixed
+
+Fixed creation of users when using CAS auth. Previously, the `username`
+attribute wasn't being set; now it is. This regression was introduced
+when the use of CAS callbacks was deprecated in 2.8.0.
+
+
 ## 2.9.0 - 2016-04-07
 
 Upgraded django-local-settings from 1.0a17 to 1.0a20. 1.0a20 is
@@ -31,6 +40,9 @@ Fix the default `ARC.cdn.paths` local setting and improve its docs and
 examples also.
 
 ## 2.8.0 - 2016-03-28
+
+*Note: This version has a bug relating to the creation of users when CAS
+authentication is used, which was fixed in 2.9.1.*
 
 ### Added
 
