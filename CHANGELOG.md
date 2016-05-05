@@ -1,8 +1,10 @@
 # Change Log for ARCUtils
 
-## 2.10.0 - unreleased
+## 2.10.0 - 2016-05-05
 
-In progress...
+- Corrected default ARC.cdn.paths.jquery-js setting.
+- Added ARC-specific Django Admin stuff (added top level `admin`
+  module).
 
 
 ## 2.9.1 - 2016-04-11
