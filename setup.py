@@ -13,7 +13,10 @@ install_requires = [
 ]
 
 if sys.version_info[:2] < (3, 4):
+    django_version = '1.8'
     install_requires.append('enum34')
+else:
+    django_version = '1.9'
 
 
 setup(
@@ -33,7 +36,7 @@ setup(
             'ldap3>=1.2.2',
         ],
         'dev': [
-            'django>=1.7,<1.9',
+            'django>={django_version},<{django_version}.999'.format(**locals()),
             'djangorestframework>3.3',
             'flake8',
             'ldap3',
