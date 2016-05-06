@@ -27,7 +27,7 @@ def will_be_deleted_with(instance):
 
     """
     # XXX: Not sure why this import can't be moved to module scope.
-    from django.contrib.admin.util import NestedObjects
+    from django.contrib.admin.utils import NestedObjects
     # The collector returns a list of all objects in the database that
     # would be deleted if `obj` were deleted.
     collector = NestedObjects(using='default')
