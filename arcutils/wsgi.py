@@ -61,7 +61,16 @@ def create_wsgi_application(root, settings_module=None, local_settings_file=None
     os.environ.setdefault('LOCAL_SETTINGS_FILE', local_settings_file)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
+    from django.conf import settings
     from django.core.wsgi import get_wsgi_application
+    from django.core.management import call_command
+
+    if not settings.DEBUG:
+        from arcutils.tasks import DailyTasksProcess
+        daily_tasks = DailyTasksProcess(home=root)
+        daily_tasks.add_task(call_command, 3, 1, ('clearsessions',), name='clearsessions')
+        daily_tasks.start()
+
     return get_wsgi_application()
 
 
