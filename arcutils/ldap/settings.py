@@ -1,4 +1,4 @@
-from arcutils.settings import NOT_SET, make_prefixed_get_setting
+from arcutils.settings import PrefixedSettings
 
 
 DEFAULTS = {
@@ -49,9 +49,11 @@ DEFAULTS = {
 }
 
 
-_get_setting = make_prefixed_get_setting('LDAP', DEFAULTS)
+class Settings(PrefixedSettings):
+
+    def get(self, key, default=None, using='default'):
+        using_key = '{using}.{key}'.format(using=using, key=key)
+        return super().get(using_key, default)
 
 
-def get_setting(key, default=NOT_SET, using='default'):
-    key = '{using}.{key}'.format(using=using, key=key)
-    return _get_setting(key, default=default)
+settings = Settings('LDAP', DEFAULTS)

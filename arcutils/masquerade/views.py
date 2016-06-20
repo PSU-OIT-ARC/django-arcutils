@@ -10,7 +10,7 @@ from arcutils.drf import TemplateHTMLContextDictRenderer
 from arcutils.response import get_redirect_location
 
 from .perms import can_masquerade, can_masquerade_as
-from .settings import get_setting, get_session_key, get_redirect_field_name
+from .settings import settings, get_session_key, get_redirect_field_name
 from .util import get_masquerade_user, is_masquerading
 
 
@@ -31,7 +31,7 @@ class BaseView(APIView):
 
     def get_redirect_location(self, request):
         redirect_field_name = get_redirect_field_name()
-        default = get_setting('default_redirect_url', '/')
+        default = settings.get('default_redirect_url', '/')
         return get_redirect_location(request, redirect_field_name, default)
 
 

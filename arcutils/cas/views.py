@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
 from django.contrib import auth
 
-from .settings import get_setting
+from .settings import settings
 from .utils import login_url, logout_url, redirect_url, service_url
 
 
@@ -30,7 +30,7 @@ def login(request, redirect_to=None):
     # the service URL with a ticket to be validated. The service URL is
     # passed to CAS via the service query parameter of the login URL.
     url = login_url(request)
-    session_key = get_setting('session_key.redirect_to', SESSION_KEY_REDIRECT_TO)
+    session_key = settings.get('session_key.redirect_to', SESSION_KEY_REDIRECT_TO)
     request.session[session_key] = redirect_to
     log.debug('Redirecting to CAS for login: {url}'.format(url=url))
     return HttpResponseRedirect(url)
@@ -49,7 +49,7 @@ def validate(request):
         # account status.
         if user.is_active:
             auth.login(request, user)
-            session_key = get_setting('session_key.redirect_to', SESSION_KEY_REDIRECT_TO)
+            session_key = settings.get('session_key.redirect_to', SESSION_KEY_REDIRECT_TO)
             redirect_to = request.session.pop(session_key, None) or '/'
             return HttpResponseRedirect(redirect_to)
         else:
@@ -62,7 +62,7 @@ def validate(request):
 def logout(request):
     # Local logout; does *not* do CAS logout
     auth.logout(request)
-    if get_setting('logout_completely', True):
+    if settings.get('logout_completely', True):
         # CAS logout
         return HttpResponseRedirect(logout_url(request))
     else:

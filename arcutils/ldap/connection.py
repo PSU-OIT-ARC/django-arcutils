@@ -7,7 +7,7 @@ from ldap3 import Connection, Server, ServerPool, Tls
 
 from arcutils.path import abs_path
 
-from .settings import get_setting
+from .settings import settings
 from .utils import setting_to_ldap3_attr
 
 
@@ -22,7 +22,7 @@ def connect(using='default') -> Connection:
         Connection
 
     """
-    get = partial(get_setting, using=using)
+    get = partial(settings.get, using=using)
 
     host = get('host', None)
     hosts = get('hosts', None)

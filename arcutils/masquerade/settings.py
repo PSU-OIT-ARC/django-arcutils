@@ -2,7 +2,7 @@ from functools import partial
 
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
-from arcutils.settings import make_prefixed_get_setting
+from arcutils.settings import PrefixedSettings
 
 
 DEFAULTS = {
@@ -17,13 +17,13 @@ DEFAULTS = {
 }
 
 
-get_setting = make_prefixed_get_setting('MASQUERADE', DEFAULTS)
+settings = PrefixedSettings('MASQUERADE', DEFAULTS)
 
 
 # Convenience functions for getting often-used settings
 
-is_enabled = partial(get_setting, 'enabled', False)
-get_param_name = partial(get_setting, 'param_name')
-get_redirect_field_name = partial(get_setting, 'redirect_field_name', REDIRECT_FIELD_NAME)
-get_session_key = partial(get_setting, 'session_key')
-get_user_attr = partial(get_setting, 'user_attr')
+is_enabled = partial(settings.get, 'enabled', False)
+get_param_name = partial(settings.get, 'param_name')
+get_redirect_field_name = partial(settings.get, 'redirect_field_name', REDIRECT_FIELD_NAME)
+get_session_key = partial(settings.get, 'session_key')
+get_user_attr = partial(settings.get, 'user_attr')

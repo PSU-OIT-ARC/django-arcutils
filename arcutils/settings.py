@@ -208,8 +208,9 @@ def get_setting(key, default=NOT_SET, settings=None):
     return setting
 
 
-def make_prefixed_get_setting(prefix, defaults=None):
-    """Make a function that gets settings for a given ``prefix``.
+class PrefixedSettings:
+
+    """Read-only settings for a given ``prefix``.
 
     Args:
         prefix: An upper case setting name such as "CAS" or "LDAP"
@@ -224,19 +225,32 @@ def make_prefixed_get_setting(prefix, defaults=None):
         ...     'base_url': 'https://example.com/cas/',
         ...     # plus a bunch more CAS settings...
         ... }
-        >>> get_cas_setting = make_prefixed_get_setting('CAS', DEFAULT_CAS_SETTINGS)
-        >>> base_url = get_cas_setting('base_url')
-        >>> login_path = get_cas_setting('logout_path', default='/default/logout/path')
+        >>> cas_settings = PrefixedSettings('CAS', DEFAULT_CAS_SETTINGS)
+        >>> cas_settings.get('base_url')
+        'https://example.com/cas/'
+        >>> cas_settings.get('logout_path', default='/default/logout/path')
+        '/default/logout/path'
 
     See the ``cas``, ``ldap``, and ``masquerade`` packages for concrete
     examples of how this is used.
 
     """
 
-    defaults = PrefixedSettings(prefix, defaults if defaults is not None else {})
+    class Defaults:
 
-    def prefixed_get_setting(key, default=NOT_SET):
-        """Get setting for ``prefix``.
+        # Make defaults look like normal settings so they can be
+        # traversed by get_setting().
+
+        def __init__(self, prefix, defaults):
+            setattr(self, prefix, defaults)
+
+    def __init__(self, prefix, defaults=None, settings=None):
+        self.__prefix = prefix
+        self.__defaults = self.Defaults(prefix, defaults if defaults is not None else {})
+        self.__settings = settings if settings is not None else django_settings
+
+    def get(self, key, default=NOT_SET):
+        """Get setting for configured ``prefix``.
 
         Args:
             key: setting name without ``prefix``
@@ -258,25 +272,17 @@ def make_prefixed_get_setting(prefix, defaults=None):
                 fallback is passed via the ``default`` keyword arg
 
         """
-        qualified_key = '{prefix}.{key}'.format(prefix=prefix, key=key)
-
+        qualified_key = '{prefix}.{name}'.format(prefix=self.__prefix, name=key)
         try:
-            return get_setting(qualified_key)
+            value = get_setting(qualified_key)
         except SettingNotFoundError:
-            return get_setting(qualified_key, default=default, settings=defaults)
-
-    return prefixed_get_setting
-
-
-class PrefixedSettings:
-
-    def __init__(self, prefix, defaults):
-        self._prefix = prefix
-        self._defaults = defaults
-        setattr(self, prefix, defaults)
-
-    def __str__(self):
-        return '{0._prefix}: {0._defaults}'.format(self)
+            try:
+                value = get_setting(qualified_key, default=default, settings=self.__defaults)
+            except SettingNotFoundError:
+                value = NOT_SET
+        if value is NOT_SET:
+            raise SettingNotFoundError(qualified_key)
+        return value
 
 
 # Internal helper functions

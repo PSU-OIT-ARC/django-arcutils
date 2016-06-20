@@ -3,7 +3,7 @@ import textwrap
 from xml.etree import ElementTree
 from urllib.request import urlopen
 
-from django.conf import settings
+from django.conf import settings as django_settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.hashers import make_password
@@ -12,7 +12,7 @@ from django.utils.module_loading import import_string
 from arcutils.exc import ARCUtilsDeprecationWarning
 from arcutils.decorators import cached_property
 
-from .settings import get_setting
+from .settings import settings
 from .utils import make_cas_url, parse_cas_tree, tree_find
 
 
@@ -55,7 +55,7 @@ class CASBackend:
             return user_model.objects.get(username=username)
         except user_model.DoesNotExist:
             pass
-        return self.create_user(cas_data, **overrides) if get_setting('auto_create_user') else None
+        return self.create_user(cas_data, **overrides) if settings.get('auto_create_user') else None
 
     def create_user(self, cas_data, **overrides):
         """Create user from CAS data.
@@ -97,8 +97,8 @@ class CASBackend:
             if name in cas_data:
                 user_args[name] = cas_data[name]
 
-        staff = getattr(settings, 'STAFF', None)
-        superusers = getattr(settings, 'SUPERUSERS', None)
+        staff = getattr(django_settings, 'STAFF', None)
+        superusers = getattr(django_settings, 'SUPERUSERS', None)
         is_staff = bool(staff and username in staff)
         is_superuser = bool(superusers and username in superusers)
 
@@ -121,7 +121,7 @@ class CASBackend:
             return None
 
     def _validate_ticket(self, ticket, service, suffix=None):
-        path = get_setting('validate_path')
+        path = settings.get('validate_path')
         params = {'ticket': ticket, 'service': service}
         url = make_cas_url(path, **params)
 
@@ -153,7 +153,7 @@ class CASBackend:
 
     @cached_property
     def _response_callbacks(self):
-        callbacks = get_setting('response_callbacks', [])
+        callbacks = settings.get('response_callbacks', [])
         for i, cb in enumerate(callbacks):
             if isinstance(cb, str):
                 callbacks[i] = import_string(cb)
