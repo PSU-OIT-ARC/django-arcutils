@@ -120,7 +120,7 @@ class CASBackend:
         except user_model.DoesNotExist:
             return None
 
-    def _validate_ticket(self, ticket, service, suffix=None):
+    def _validate_ticket(self, ticket, service):
         path = settings.get('validate_path')
         params = {'ticket': ticket, 'service': service}
         url = make_cas_url(path, **params)
