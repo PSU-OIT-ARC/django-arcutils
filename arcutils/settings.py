@@ -21,6 +21,7 @@ import os
 import pkg_resources
 from datetime import datetime
 
+from django.conf import settings as django_settings
 from django.utils import timezone
 
 from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, SecretSetting
@@ -178,10 +179,8 @@ def get_setting(key, default=NOT_SET, settings=None):
      object other than the default ``django.conf.settings``.
 
     """
-    import django.conf
-
     if settings is None:
-        settings = django.conf.settings
+        settings = django_settings
 
     root, *path = key.split('.')
     setting = getattr(settings, root, NOT_SET)
