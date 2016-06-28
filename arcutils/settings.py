@@ -241,7 +241,8 @@ class PrefixedSettings:
         # Make defaults look like normal settings so they can be
         # traversed by get_setting().
 
-        def __init__(self, prefix, defaults):
+        def __init__(self, prefix, defaults=None):
+            defaults = {} if defaults is None else defaults
             setattr(self, prefix, defaults)
 
     def __init__(self, prefix, defaults=None, settings=None):
