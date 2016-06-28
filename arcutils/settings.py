@@ -284,6 +284,9 @@ class PrefixedSettings:
             raise SettingNotFoundError(qualified_key)
         return value
 
+    def __getitem__(self, key):
+        return self.get(key, NOT_SET)
+
 
 # Internal helper functions
 
