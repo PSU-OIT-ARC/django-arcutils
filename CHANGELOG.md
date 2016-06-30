@@ -1,5 +1,43 @@
 # Change Log for ARCUtils
 
+## 2.11.0 - 2016-06-30
+
+### Added
+
+- Added `PrefixedSettings`. This provides a nice way to specify defaults
+  for a group of settings (e.g., for a Django app or package) and to get
+  access to a group of settings.
+  NOTE: There's more detail about this in the `Changed` section below.
+- Added `SECURE_PROXY_SSL_HEADER` to default stage local settings.
+  This is needed (only) in staging because the main Apache instance
+  proxies to app-specific Apache instances.
+
+### Changed
+
+- Constrained Django version depending on Python version: 1.8 is
+  installed on Python<=3.3; 1.9 is installed on Python>=3.4.
+- Disabled all logging in default test local settings by using a
+  `NullHandler`.
+- `clearsessions` is now run nightly by default (when the `wsgi.py`
+  template provided by ARCUtils is used).
+- Replaced `make_prefixed_get_setting` function with `PrefixedSettings`
+  class; the latter provides the same functionality, but is perhaps
+  easier to understand, and its usage is more similar to regular Django
+  settings (it provides dict-like access to the prefixed settings).
+  NOTE: This is a breaking change, but `make_prefixed_get_setting` has
+  so far only been used internally in ARCUtils. `PrefixedSettings` is
+  more suitable for use externally.
+- Removed unused `_suffix` arg from `CASBackend._validate_ticket`.
+
+### Fixed
+
+- Corrected import path to `NestedObjects`; Django standardized all
+  utility module names in 1.7 (`util` => `utils`).
+- Made Django's `ManifestStaticFilesStorage` the default in stage local
+  settings. Not sure what the rationale was for this being different
+  from production before.
+
+
 ## 2.10.0 - 2016-05-05
 
 - Corrected default ARC.cdn.paths.jquery-js setting.

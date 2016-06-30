@@ -33,11 +33,14 @@ from threading import Lock, RLock
 
 from django.utils.module_loading import import_string
 
-from .settings import get_setting
+from .settings import PrefixedSettings
 from .types import Option, Some, Null
 
 
 DEFAULT_REGISTRY = '{prefix}.default_registry'.format(prefix=__name__)
+
+
+settings = PrefixedSettings('ARC')
 
 
 class RegistryError(Exception):
@@ -378,7 +381,7 @@ def add_registry(name, registry_type=None, **kwargs) -> Registry:
     registries = get_registries()
     with _registry_lock:
         if registry_type is None:
-            registry_type = get_setting('ARC.registry.type', Registry)
+            registry_type = settings.get('registry.type', Registry)
         if isinstance(registry_type, str):
             registry_type = import_string(registry_type)
         registries[name] = registry_type(name, **kwargs)
@@ -409,5 +412,5 @@ class RegistryMiddleware:
     """
 
     def process_request(self, request):
-        name = get_setting('ARC.registry.request_attr_name', 'registry')
+        name = settings.get('registry.request_attr_name', 'registry')
         setattr(request, name, get_registry())

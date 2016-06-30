@@ -1,4 +1,4 @@
-from arcutils.settings import make_prefixed_get_setting
+from arcutils.settings import PrefixedSettings
 
 
 DEFAULTS = {
@@ -30,4 +30,4 @@ DEFAULTS = {
 }
 
 
-get_setting = make_prefixed_get_setting('CAS', DEFAULTS)
+settings = PrefixedSettings('CAS', DEFAULTS)

@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from arcutils.response import get_redirect_location
 from arcutils.types.option import Some, Null
 
-from .settings import get_setting
+from .settings import settings
 
 
 CAS_NS_MAP = {
@@ -80,7 +80,7 @@ def login_url(request):
         https://cas.host.example.com/login?service={service_url()}
 
     """
-    path = get_setting('login_path', 'login')
+    path = settings.get('login_path', 'login')
     params = {'service': service_url(request)}
     return make_cas_url(path, **params)
 
@@ -93,7 +93,7 @@ def logout_url(request):
         https://cas.host.example.com/logout
 
     """
-    path = get_setting('logout_path', 'logout')
+    path = settings.get('logout_path', 'logout')
     return make_cas_url(path)
 
 
@@ -104,7 +104,7 @@ def make_cas_url(*path, **params):
     path prefix of the base CAS URL will be overwritten.
 
     """
-    base_url = get_setting('base_url')
+    base_url = settings.get('base_url')
     path = posixpath.join(*path)
     url = urljoin(base_url, path)
     if params:
@@ -123,7 +123,7 @@ def redirect_url(request):
     otherwise, fall back to ``next`` parameter, referrer, or /.
 
     """
-    default = get_setting('redirect_url', default=None)
+    default = settings.get('redirect_url', default=None)
     url = get_redirect_location(request, default=default)
     return url
 

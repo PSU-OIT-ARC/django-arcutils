@@ -1,6 +1,6 @@
 from django.test import override_settings, SimpleTestCase
 
-from arcutils.settings import NOT_SET, SettingNotFoundError, get_setting, make_prefixed_get_setting
+from arcutils.settings import NOT_SET, SettingNotFoundError, PrefixedSettings, get_setting
 
 
 @override_settings(ARC={
@@ -56,30 +56,27 @@ class TestGetPrefixedSettings(SimpleTestCase):
             },
             'overridden': 'default',
         }
-        self.get_cas_setting = make_prefixed_get_setting('CAS', defaults)
+        self.settings = PrefixedSettings('CAS', defaults)
 
     def test_get_from_defaults(self):
-        self.assertEqual(self.get_cas_setting('base_url'), 'http://example.com/cas/')
+        self.assertEqual(self.settings.get('base_url'), 'http://example.com/cas/')
 
     def test_get_nested_from_defaults(self):
-        self.assertEqual(self.get_cas_setting('parent.child'), 'child')
+        self.assertEqual(self.settings.get('parent.child'), 'child')
 
     def test_get_from_project_settings(self):
-        self.assertEqual(self.get_cas_setting('extra'), 'extra')
+        self.assertEqual(self.settings.get('extra'), 'extra')
 
     def test_get_setting_overridden_in_project_settings(self):
-        self.assertEqual(self.get_cas_setting('overridden'), 'overridden')
+        self.assertEqual(self.settings.get('overridden'), 'overridden')
 
     def test_defaults_trump_passed_default(self):
         self.assertEqual(
-            self.get_cas_setting('base_url', 'http://example.com/other/'),
+            self.settings.get('base_url', 'http://example.com/other/'),
             'http://example.com/cas/')
 
     def test_passed_default_does_not_trump_project_setting(self):
-        self.assertEqual(self.get_cas_setting('extra', 'default'), 'extra')
-
-    def test_get_nonexistent(self):
-        self.assertRaises(SettingNotFoundError, self.get_cas_setting, 'pants')
+        self.assertEqual(self.settings.get('extra', 'default'), 'extra')
 
     def test_get_default_for_nonexistent(self):
-        self.assertEqual(self.get_cas_setting('pants', 'jeans'), 'jeans')
+        self.assertEqual(self.settings.get('pants', 'jeans'), 'jeans')
