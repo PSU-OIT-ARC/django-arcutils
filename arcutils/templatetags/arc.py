@@ -14,6 +14,7 @@ except ImportError:
 
 from arcutils.exc import ARCUtilsDeprecationWarning
 from arcutils.settings import get_setting
+from arcutils.staticfiles import load_manifest as load_staticfiles_manifest
 
 
 register = template.Library()
@@ -205,6 +206,47 @@ def require_block(app_name, *cdn_urls):
     scripts = ['<script src="{src}"></script>'.format(src=s) for s in scripts]
     scripts = '\n    '.join(scripts)
     return mark_safe(scripts)
+
+
+@register.simple_tag
+def staticfiles_manifest(*paths, as_json=True):
+    """Get manifest for static files.
+
+    .. note:: This is experimental; use with caution.
+
+    Provides a way to pass the static files manifest to JavaScript
+    when using Django's ``ManifestStaticFilesStorage``. If ``paths`` are
+    passed, the manifest will be filtered to include only matching
+    paths; otherwise, all paths will be included (note: the manifest can
+    be quite large in some cases, so filtering it may be a good idea).
+
+    See :func:`arcutils.staticfiles.load_manifest` for more details.
+
+    Example usage::
+
+        <script>
+            var STATIC_URL = {% static '' %},
+                STATICFILES_MANIFEST = {% staticfiles_manifest 'app/*' %};
+
+            // Analogous to {% static 'path/to/some/file' %}
+            function staticUrl (path) {
+                if (STATICFILES_MANIFEST) {
+                    STATICFILES_MANIFEST[path]
+                }
+                // NOTE: This assumes STATIC_URL ends with a slash and
+                //       the path does *not* start with a slash.
+                return [STATIC_URL, path].join('');
+            }
+
+            // Then, in front end app code:
+            var url = staticUrl('path/to/some/file');
+        </script>
+
+    """
+    manifest = load_staticfiles_manifest(*paths)
+    if as_json:
+        manifest = mark_safe(json.dumps(manifest))
+    return manifest
 
 
 # Legacy template tags. DO NOT use in new code. These are here to ease
