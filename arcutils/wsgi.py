@@ -62,8 +62,8 @@ def create_wsgi_application(root, settings_module=None, local_settings_file=None
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
     from django.conf import settings
-    from django.core.wsgi import get_wsgi_application
     from django.core.management import call_command
+    from django.core.wsgi import get_wsgi_application
 
     if not settings.DEBUG:
         from arcutils.tasks import DailyTasksProcess
