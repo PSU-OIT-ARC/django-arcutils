@@ -65,13 +65,15 @@ def create_wsgi_application(root, settings_module=None, local_settings_file=None
     from django.core.management import call_command
     from django.core.wsgi import get_wsgi_application
 
+    app = get_wsgi_application()
+
     if not settings.DEBUG:
         from arcutils.tasks import DailyTasksProcess
         daily_tasks = DailyTasksProcess(home=root)
         daily_tasks.add_task(call_command, 3, 1, ('clearsessions',), name='clearsessions')
         daily_tasks.start()
 
-    return get_wsgi_application()
+    return app
 
 
 root = os.path.dirname(os.path.dirname(__file__))
