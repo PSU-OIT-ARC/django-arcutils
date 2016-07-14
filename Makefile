@@ -37,6 +37,12 @@ test: install
 coverage:
 	$(venv)/bin/coverage run --source $(package) runtests.py && coverage report
 
+tox: install
+	$(venv)/bin/tox
+tox-clean:
+	rm -rf .tox
+retox: tox-clean tox
+
 sdist: $(sdist)
 $(sdist): $(sources)
 	python setup.py sdist

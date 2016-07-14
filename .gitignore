@@ -1,5 +1,6 @@
 # Root of repo
 /.env*/
+/.tox/
 /dist/
 /*.egg-info/
 

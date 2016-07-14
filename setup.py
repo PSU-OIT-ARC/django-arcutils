@@ -7,6 +7,7 @@ with open('VERSION') as version_fp:
     VERSION = version_fp.read().strip()
 
 
+# Base dependencies
 install_requires = [
     'certifi>=2016.2.28',
     'django-local-settings>=1.0a20',
@@ -19,6 +20,11 @@ if sys.version_info[:2] < (3, 4):
 else:
     django_version = '1.9'
 
+# Dependencies that are used in multiple places
+deps = {
+    'djangorestframework': 'djangorestframework>=3.4',
+    'ldap3': 'ldap3>=1.2.2',
+}
 
 setup(
     name='django-arcutils',
@@ -33,15 +39,20 @@ setup(
     install_requires=install_requires,
     extras_require={
         'ldap': [
-            'ldap3>=1.2.2',
+            deps['ldap3'],
         ],
         'dev': [
-            'django>={django_version},<{django_version}.999'.format(**locals()),
-            'djangorestframework>3.3',
+            'django>={django_version},<{django_version}.999'.format_map(locals()),
+            deps['djangorestframework'],
             'flake8',
-            'ldap3',
+            deps['ldap3'],
             'psu.oit.arc.tasks',
+            'tox>=2.3.1',
         ],
+        'tox': [
+            deps['djangorestframework'],
+            deps['ldap3'],
+        ]
     },
     entry_points="""
     [console_scripts]
