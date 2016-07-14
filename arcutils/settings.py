@@ -128,7 +128,7 @@ def init_local_settings(settings, prompt=None, quiet=None):
             },
         },
         'MANAGERS': LocalSetting([]),
-        'SECRET_KEY': SecretSetting(doc='Suggested: "{suggested_secret_key}"'.format_map(locals())),
+        'SECRET_KEY': SecretSetting(doc='Suggested: "{suggested_secret_key}"'.format(**locals())),
         'DATABASES': {
             'default': {
                 'ENGINE': LocalSetting('django.db.backends.postgresql'),

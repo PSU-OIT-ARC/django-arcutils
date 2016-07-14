@@ -30,7 +30,7 @@ class TestLDAPProfileParsing(TestCase):
             'mailRoutingAddress': ['mdj2@pdx.edu'],
             'uid': ['mdj2'],
             'ou': [
-                'Academic & Research Computing - Office of Information Technology',
+                'Web Development Team - Office of Information Technology',
                 'Blurp - Bloop',
             ],
             'psuPasswordExpireDate': ['20161031121314Z'],
@@ -41,9 +41,9 @@ class TestLDAPProfileParsing(TestCase):
         self.assertEqual(result['last_name'], 'Johnson')
         self.assertEqual(result['email_address'], 'mdj2@pdx.edu')
         self.assertEqual(result['email_addresses'], ['mdj2@pdx.edu', 'matt.johnson@pdx.edu'])
-        self.assertEqual(result['ou'], 'Academic & Research Computing - Office of Information Technology')
+        self.assertEqual(result['ou'], 'Web Development Team - Office of Information Technology')
         self.assertEqual(result['school_or_office'], 'Office of Information Technology')
-        self.assertEqual(result['department'], 'Academic & Research Computing')
+        self.assertEqual(result['department'], 'Web Development Team')
         self.assertEqual(result['password_expiration_date'], '20161031T121314Z')
         self.assertEqual(result['phone_number'], '503-725-1234')
         self.assertEqual(result['extension'], '5-1234')

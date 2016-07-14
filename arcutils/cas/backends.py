@@ -55,7 +55,8 @@ class CASBackend:
             return user_model.objects.get(username=username)
         except user_model.DoesNotExist:
             pass
-        return self.create_user(cas_data, **overrides) if settings.get('auto_create_user') else None
+        if settings.get('auto_create_user'):
+            return self.create_user(cas_data, **overrides)
 
     def create_user(self, cas_data, **overrides):
         """Create user from CAS data.
