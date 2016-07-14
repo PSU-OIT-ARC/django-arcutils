@@ -1,1 +1,1 @@
-from .audit import AuditModel
+from .audit import AuditModel  # noqa
