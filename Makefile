@@ -21,7 +21,7 @@ reinit: clean-venv clean-install init
 
 venv: $(venv)
 $(venv):
-	virtualenv -p python3 $(venv)
+	virtualenv -p python3.3 $(venv)
 clean-venv:
 	rm -rf $(venv)
 
