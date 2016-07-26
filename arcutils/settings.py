@@ -364,6 +364,6 @@ def derive_top_level_package_name(package_level=0, stack_level=1):
     return package
 
 
-def get_module_globals(level=2):
-    frame = inspect.stack()[level][0]
+def get_module_globals(stack_level=2):
+    frame = inspect.stack()[stack_level][0]
     return frame.f_globals
