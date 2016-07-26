@@ -292,26 +292,36 @@ class PrefixedSettings:
 # Internal helper functions
 
 
-def derive_top_level_package_name(level=1):
+def derive_top_level_package_name(package_level=0, stack_level=1):
     """Return top level package name.
 
     Args:
-        level (int): How many levels down the stack the caller is from
-            here. 1 indicates this function is being called from module
-            scope, 2 indicates this function is being called from
+        package_level (int): How many package levels down the caller
+            is. 0 indicates this function is being called from the top
+            level package, 1 indicates that it's being called from a
+            sub-package, etc.
+        stack_level (int): How many levels down the stack the caller is
+            from here. 1 indicates this function is being called from
+            module scope, 2 indicates this function is being called from
             another function, etc.
 
-    This will get the package name of the module containing the caller.
-    It will then check if the package name contains dots and return the
-    first segment.
+    This will first get the package name of the module containing the
+    caller. ``package_level`` segments will be then be chopped off of
+    the package name.
 
-    If this is called indirectly--e.g., via :func:`init_settings`--the
-    ``level`` has to be adjusted accordingly.
+    If this is called from a sub-package, ``package_level`` will have to
+    be adjusted accordingly (add 1 for each sub-package).
+
+    If this is called indirectly (e.g., via :func:`init_settings`)
+    ``stack_level`` will have to be adjusted accordingly (add 1 for each
+    nested function).
 
     """
-    frame = inspect.stack()[level][0]
+    assert package_level >= 0, 'Package level should be greater than or equal to 0'
+    assert stack_level > 0, 'Stack level should be greater than 0'
+    frame = inspect.stack()[stack_level][0]
     package = frame.f_globals['__package__']
-    package = package.split('.', 1)[0]
+    package = package.rsplit('.', package_level)[0]
     return package
 
 
