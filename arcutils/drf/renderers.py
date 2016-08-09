@@ -49,13 +49,13 @@ class TemplateHTMLContextDictRenderer(TemplateHTMLRenderer):
     context_object_name = 'object'
     context_object_list_name = 'object_list'
 
-    def resolve_context(self, data, request, response):
-        wrapper_name = self.get_wrapper_name(data, request, response)
+    def get_template_context(self, data, renderer_context):
+        wrapper_name = self.get_wrapper_name(data, renderer_context)
         data = {wrapper_name: data}
-        return super().resolve_context(data, request, response)
+        return super().get_template_context(data, renderer_context)
 
-    def get_wrapper_name(self, data, request, response):
-        view = response.renderer_context['view']
+    def get_wrapper_name(self, data, renderer_context):
+        view = renderer_context['view']
         if isinstance(data, Sequence):
             name = (
                 getattr(view, 'context_object_list_name', None) or

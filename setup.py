@@ -22,7 +22,7 @@ else:
 
 # Dependencies that are used in multiple places
 deps = {
-    'djangorestframework': 'djangorestframework>=3.4',
+    'djangorestframework': 'djangorestframework>=3.4.3',
     'ldap3': 'ldap3>=1.2.2',
 }
 
