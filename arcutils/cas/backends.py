@@ -73,13 +73,13 @@ class CASBackend:
         will be set according to whether their username is in the
         ``STAFF`` list.
 
-        If the ``SUPERUSER`` settings is set, the user's ``is_staff``
+        If the ``SUPERUSER`` setting is set, the user's ``is_staff``
         and ``is_superuser`` flags will be set according to whether
         their username is in the ``SUPERUSERS`` list.
 
-        ``overrides`` can be passed as to override the values of *any*
-        of the fields mentioned above or to set additional fields. This
-        is useful in subclasses to avoid re-saving the user.
+        ``overrides`` can be passed to override the values of *any* of
+        the fields mentioned above or to set additional fields. This is
+        useful in subclasses to avoid re-saving the user.
 
         .. note:: This method assumes a standard user model. It may not
                   or may not work with custom user models.
