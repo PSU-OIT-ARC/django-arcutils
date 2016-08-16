@@ -11,6 +11,7 @@ with open('VERSION') as version_fp:
 install_requires = [
     'certifi>=2016.8.8',
     'django-local-settings>=1.0b1',
+    'pytz>=2016.6.1',
     'stashward',
 ]
 
