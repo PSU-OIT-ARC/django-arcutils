@@ -5,6 +5,7 @@ package = arcutils
 sdist = dist/$(distribution)-$(version).tar.gz
 upload_path = hrimfaxi:/vol/www/cdn/pypi/dist
 venv = .env
+python_version ?= python3.3
 version = $(shell cat VERSION)
 
 sources = $(shell find . \
@@ -21,7 +22,7 @@ reinit: clean-venv clean-install init
 
 venv: $(venv)
 $(venv):
-	virtualenv -p python3 $(venv)
+	virtualenv -p $(python_version) $(venv)
 clean-venv:
 	rm -rf $(venv)
 
@@ -36,6 +37,12 @@ test: install
 	$(venv)/bin/python runtests.py
 coverage:
 	$(venv)/bin/coverage run --source $(package) runtests.py && coverage report
+
+tox: install
+	$(venv)/bin/tox
+tox-clean:
+	rm -rf .tox
+retox: tox-clean tox
 
 sdist: $(sdist)
 $(sdist): $(sources)

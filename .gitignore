@@ -1,3 +1,9 @@
-dist
-*.egg-info
+# Root of repo
+/.env*/
+/.tox/
+/dist/
+/*.egg-info/
+
+# Anywhere in repo
+__pycache__/
 *.pyc

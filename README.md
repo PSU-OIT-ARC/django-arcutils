@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/PSU-OIT-ARC/django-arcutils.svg?branch=master)](https://travis-ci.org/PSU-OIT-ARC/django-arcutils)
 
 This package provides utilities that are commonly needed in ARC Django projects. It supports Python
-3.3+ and Django 1.7+.
+3.3+ and Django 1.8+.
 
 ## General Note
 

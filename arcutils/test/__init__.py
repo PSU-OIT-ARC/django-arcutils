@@ -1,2 +1,2 @@
-from .base import FunctionalTestCase
-from .user import UserMixin
+from .base import FunctionalTestCase  # noqa
+from .user import UserMixin  # noqa

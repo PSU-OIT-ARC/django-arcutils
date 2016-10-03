@@ -33,10 +33,16 @@ class TestDRF(TestCase):
     def setUp(self):
         self.renderer = TemplateHTMLContextDictRenderer()
 
-    def check_context(self, data, wrapper_name, request=None, response=None):
+    def check_context(self, data, wrapper_name, request=None, response=None, view=None):
         request = request or Request()
         response = response or Response()
-        context = self.renderer.resolve_context(data, request, response)
+        view = view or View()
+        renderer_context = {
+            'request': request,
+            'response': response,
+            'view': view,
+        }
+        context = self.renderer.get_template_context(data, renderer_context)
         self.assertIn(wrapper_name, context)
         self.assertIs(context[wrapper_name], data)
 
@@ -48,22 +54,13 @@ class TestDRF(TestCase):
 
     def test_template_html_context_renderer_with_dict_and_custom_wrapper_name(self):
         view = View(context_object_name='pants')
-        response = Response(renderer_context={
-            'view': view,
-        })
-        self.check_context({}, 'pants', response=response)
+        self.check_context({}, 'pants', view=view)
 
     def test_template_html_context_renderer_with_list_and_custom_wrapper_name(self):
         view = View(context_object_name='horse')
-        response = Response(renderer_context={
-            'view': view,
-        })
-        self.check_context([], 'horse', response=response)
+        self.check_context([], 'horse', view=view)
 
     def test_template_html_context_renderer_with_custom_wrapper_names(self):
         view = View(context_object_name='horse', context_object_list_name='horses')
-        response = Response(renderer_context={
-            'view': view,
-        })
-        self.check_context({}, 'horse', response=response)
-        self.check_context([], 'horses', response=response)
+        self.check_context({}, 'horse', view=view)
+        self.check_context([], 'horses', view=view)

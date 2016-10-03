@@ -145,7 +145,8 @@ def jsonify(obj):
 @register.filter
 def markdown(content):
     if _markdown is None:
-        raise ImproperlyConfigured('Markdown must be installed to use the markdown template filter')
+        raise ImproperlyConfigured(
+            'Markdown must be installed to use the markdown template filter')
     return mark_safe(_markdown.markdown(content))
 
 

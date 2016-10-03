@@ -171,7 +171,7 @@ class Registry:
 
     """
 
-    def __init__(self, name,  use_locking=True):
+    def __init__(self, name, use_locking=True):
         self.name = name
         self._components = {}
         self._lock = RLock() if use_locking else FakeLock()

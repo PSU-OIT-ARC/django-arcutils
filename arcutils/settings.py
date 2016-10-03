@@ -37,60 +37,99 @@ def _is_internal_ip_address(self, addr):
 INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_address))()
 
 
-def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, level=2):
-    """Initialize settings.
+def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
+                  stack_level=2):
+    """Initialize project settings.
 
-    Call this from the global scope of your project's settings module::
+    Basic Usage
+    ===========
 
+    By default, it's assumed that the project is structured like so,
+    with the settings module in the top level package::
+
+        project/
+            package/
+                __init__.py
+                settings.py
+            README
+            setup.py
+
+    It's also assumed that :func:`init_settings` will be called from the
+    global scope of the project's settings module::
+
+        # package/settings.py
         from arcutils.settings import init_settings
         init_settings()
 
-    This assumes the project is structured like so, with the settings
-    module in the top level package::
-
-        project directory/
-            {top level package}/
-                __init__.py
-                settings.py
-            README.md
-            setup.py
-
-    It will add a few default settings that are commonly used in local
-    settings files:
+    A few default settings that are commonly used in local settings
+    files will be added (if not explicitly set before calling this
+    function):
 
         - ARCUTILS_PACKAGE_DIR
         - PACKAGE (top level project package)
         - PACKAGE_DIR (top level project package directory)
         - ROOT_DIR (project directory; should only be used in dev)
+        - START_TIME (current date/time; will be an "aware" UTC datetime
+          object if the project has time zone support enabled)
 
-    Also adds ``START_TIME`` as the current date/time. This will be
-    an "aware" UTC datetime object if the project has time zone support
-    enabled (i.e. ``USE_TZ = True``) or a non-aware datetime object if
-    not.
+    If the project has additional local settings, they must be defined
+    *before* this function is called.
 
-    The ``PACKAGE`` and ``PACKAGE_DIR`` settings will be computed
-    dynamically (based on the location of the settings module this
-    function is called from). If this isn't working, you can set the
-    ``PACKAGE`` setting explicitly in the project's settings (before
-    calling this function)::
-
-        PACKAGE = 'quickticket'
-        init_settings()
+    Advanced Usage
+    ==============
 
     Generally, you won't need to pass ``settings``, but if you do, it
     should be a dict of settings as you'd get from calling ``globals()``
     in the project's settings module.
 
-    .. note:: If your project has additional local settings, they must
-        be defined *before* this function is called.
+    If the settings module is in a sub-package, ``package_level`` will
+    need to be adjusted accordingly. If :func:`init_settings` is being
+    called from another function, ``stack_level`` will have to be
+    adjusted accordingly. See :func:`derive_top_level_package_name` for
+    more info about these args.
+
+    The ``PACKAGE``, ``PACKAGE_DIR``, and ``ROOT_DIR`` settings will be
+    derived based on the location of the settings module this function
+    is called from. If this isn't working, ensure the ``package_level``
+    and ``stack_level`` options are correct; or, set the ``PACKAGE``
+    setting explicitly before calling this function::
+
+        PACKAGE = 'quickticket'
+        init_settings()
+
+    ``PACKAGE_DIR`` and ``ROOT_DIR`` can also be set explicitly if
+    necessary.
+
+    .. note:: If the package name and related settings can't be derived
+        automatically, that indicates a bug in this function.
 
     """
-    settings = settings if settings is not None else get_module_globals(level)
-    settings.setdefault('ARCUTILS_PACKAGE_DIR', ARCUTILS_PACKAGE_DIR)
+    settings = settings if settings is not None else get_module_globals(stack_level)
+
+    if not settings.get('ARCUTILS_PACKAGE_DIR'):
+        settings['ARCUTILS_PACKAGE_DIR'] = ARCUTILS_PACKAGE_DIR
+
     if not settings.get('PACKAGE'):
-        settings['PACKAGE'] = derive_top_level_package_name(level)
-    settings.setdefault('PACKAGE_DIR', pkg_resources.resource_filename(settings['PACKAGE'], ''))
-    settings.setdefault('ROOT_DIR', os.path.dirname(settings['PACKAGE_DIR']))
+        # The default value for PACKAGE is derived by figuring out where
+        # init_settings was called from in terms of package and scope.
+        settings['PACKAGE'] = derive_top_level_package_name(package_level, stack_level)
+
+    if not settings.get('PACKAGE_DIR'):
+        # The default value for PACKAGE_DIR is simply the directory
+        # corresponding to PACKAGE.
+        settings['PACKAGE_DIR'] = pkg_resources.resource_filename(settings['PACKAGE'], '')
+
+    if not settings.get('ROOT_DIR'):
+        # The default value for ROOT_DIR is the directory N levels up
+        # from PACKAGE_DIR, where N is equal to the package depth of the
+        # top level package. Note that in most cases N is 1; it will be
+        # greater than 1 when the top level package is contained in a
+        # namespace package.
+        package_depth = len(settings['PACKAGE'].split('.'))
+        parts = os.path.split(settings['PACKAGE_DIR'])
+        root_dir = os.path.join(*parts[:package_depth])
+        settings['ROOT_DIR'] = root_dir
+
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
 
@@ -128,7 +167,7 @@ def init_local_settings(settings, prompt=None, quiet=None):
             },
         },
         'MANAGERS': LocalSetting([]),
-        'SECRET_KEY': SecretSetting(doc='Suggested: "{suggested_secret_key}"'.format_map(locals())),
+        'SECRET_KEY': SecretSetting(doc='Suggested: "{suggested_secret_key}"'.format(**locals())),
         'DATABASES': {
             'default': {
                 'ENGINE': LocalSetting('django.db.backends.postgresql'),
@@ -292,29 +331,39 @@ class PrefixedSettings:
 # Internal helper functions
 
 
-def derive_top_level_package_name(level=1):
+def derive_top_level_package_name(package_level=0, stack_level=1):
     """Return top level package name.
 
     Args:
-        level (int): How many levels down the stack the caller is from
-            here. 1 indicates this function is being called from module
-            scope, 2 indicates this function is being called from
+        package_level (int): How many package levels down the caller
+            is. 0 indicates this function is being called from the top
+            level package, 1 indicates that it's being called from a
+            sub-package, etc.
+        stack_level (int): How many levels down the stack the caller is
+            from here. 1 indicates this function is being called from
+            module scope, 2 indicates this function is being called from
             another function, etc.
 
-    This will get the package name of the module containing the caller.
-    It will then check if the package name contains dots and return the
-    first segment.
+    This will first get the package name of the module containing the
+    caller. ``package_level`` segments will be then be chopped off of
+    the package name.
 
-    If this is called indirectly--e.g., via :func:`init_settings`--the
-    ``level`` has to be adjusted accordingly.
+    If this is called from a sub-package, ``package_level`` will have to
+    be adjusted accordingly (add 1 for each sub-package).
+
+    If this is called indirectly (e.g., via :func:`init_settings`)
+    ``stack_level`` will have to be adjusted accordingly (add 1 for each
+    nested function).
 
     """
-    frame = inspect.stack()[level][0]
+    assert package_level >= 0, 'Package level should be greater than or equal to 0'
+    assert stack_level > 0, 'Stack level should be greater than 0'
+    frame = inspect.stack()[stack_level][0]
     package = frame.f_globals['__package__']
-    package = package.split('.', 1)[0]
+    package = package.rsplit('.', package_level)[0]
     return package
 
 
-def get_module_globals(level=2):
-    frame = inspect.stack()[level][0]
+def get_module_globals(stack_level=2):
+    frame = inspect.stack()[stack_level][0]
     return frame.f_globals

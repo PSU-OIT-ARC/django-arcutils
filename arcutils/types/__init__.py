@@ -1,1 +1,1 @@
-from .option import Option, Some, Null
+from .option import Option, Some, Null  # noqa

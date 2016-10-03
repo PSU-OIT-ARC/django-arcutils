@@ -28,8 +28,8 @@ TODO: Incorporate the ldap3 library's abstraction layer:
 """
 import ldap3
 
-from .connection import connect
-from .search import ldapsearch, ldapsearch_by_email
+from .connection import connect  # noqa
+from .search import ldapsearch, ldapsearch_by_email  # noqa
 from .utils import escape  # noqa
 
 CONNECTION_TYPE = ldap3.Connection

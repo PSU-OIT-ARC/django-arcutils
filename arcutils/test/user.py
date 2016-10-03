@@ -35,7 +35,7 @@ class UserMixin:
         if not logged_in:
             raise CouldNotLogInError('{}:{}'.format(username, password))
 
-    def create_user_and_login(self, username='foo', password='hunter2', groups=None, **user_kwargs):
-        user = self.create_user(username, password, groups=groups, **user_kwargs)
+    def create_user_and_login(self, username='foo', password='hunter2', groups=None, **kwargs):
+        user = self.create_user(username, password, groups=groups, **kwargs)
         self.login_user(username, password)
         return user

@@ -1,8 +1,26 @@
 # Change Log for ARCUtils
 
+## 2.12.0 - 2016-10-03
+
+- Added official support for Python 3.5.
+- Dropped official support for Django 1.7.
+- Started adding support for Django 1.10.
+- Improved default WSGI script.
+- Started using tox to test multiple Python/Django combinations.
+- Fixed up some settings-related stuff (low level internal stuff that
+  likely has no observable effect).
+- Added default `AUTH_PASSWORD_VALIDATORS` because we shouldn't allow
+  users to have terrible passwords.
+- Fixed Bootstrap stylesheet link in foundation.html.
+- Upgraded DRF 3.4 => 3.4.7, which required some internal changes to
+  our `TemplateHTMLContextDictRenderer`.
+- pytz is now included as a default dependency.
+- Upgraded ldap3 1.2.2 => 1.4.0.
+
+
 ## 2.11.1 - 2016-07-01
 
-In progress...
+Revert back to using StaticFilesStorage by default in staging.
 
 
 ## 2.11.0 - 2016-06-30

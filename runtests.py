@@ -34,6 +34,10 @@ settings.configure(
             'search_base': 'ou=people,dc=pdx,dc=edu',
         }
     },
+    TEMPLATES=[{
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+    }],
 )
 
 setup()

@@ -7,8 +7,11 @@ with open('VERSION') as version_fp:
     VERSION = version_fp.read().strip()
 
 
+# Base dependencies
 install_requires = [
-    'django-local-settings>=1.0a20',
+    'certifi>=2016.9.26',
+    'django-local-settings>=1.0b1',
+    'pytz>=2016.7',
     'stashward',
 ]
 
@@ -16,8 +19,13 @@ if sys.version_info[:2] < (3, 4):
     django_version = '1.8'
     install_requires.append('enum34')
 else:
-    django_version = '1.9'
+    django_version = '1.10'
 
+# Dependencies that are used in multiple places
+deps = {
+    'djangorestframework': 'djangorestframework>=3.4.7',
+    'ldap3': 'ldap3>=1.4.0',
+}
 
 setup(
     name='django-arcutils',
@@ -32,16 +40,20 @@ setup(
     install_requires=install_requires,
     extras_require={
         'ldap': [
-            'certifi>=2016.2.28',
-            'ldap3>=1.2.2',
+            deps['ldap3'],
         ],
         'dev': [
-            'django>={django_version},<{django_version}.999'.format(**locals()),
-            'djangorestframework>3.3',
+            'django>={django_version},<{django_version}.999'.format_map(locals()),
+            deps['djangorestframework'],
             'flake8',
-            'ldap3',
+            deps['ldap3'],
             'psu.oit.arc.tasks',
+            'tox>=2.3.1',
         ],
+        'tox': [
+            deps['djangorestframework'],
+            deps['ldap3'],
+        ]
     },
     entry_points="""
     [console_scripts]
@@ -54,5 +66,6 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
 )
