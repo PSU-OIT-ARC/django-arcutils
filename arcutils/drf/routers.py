@@ -1,5 +1,5 @@
 from rest_framework.routers import (
-    DefaultRouter as BaseDefaultRoute,
+    DefaultRouter as BaseDefaultRouter,
     Route,
     DynamicListRoute,
     DynamicDetailRoute,
@@ -46,7 +46,7 @@ ROUTES = [
 ]
 
 
-class DefaultRouter(BaseDefaultRoute):
+class DefaultRouter(BaseDefaultRouter):
 
     """A router with a "proper" trailing slash policy.
 
