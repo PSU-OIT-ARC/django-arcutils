@@ -7,7 +7,7 @@ In progress...
 
 ## 2.11.1 - 2016-07-01
 
-In progress...
+Revert back to using StaticFilesStorage by default in staging.
 
 
 ## 2.11.0 - 2016-06-30
