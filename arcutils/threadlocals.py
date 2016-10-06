@@ -33,6 +33,8 @@ the relevant models regardless of which views they're used in.
 import logging
 import threading
 
+from .middleware import MiddlewareBase
+
 
 log = logging.getLogger(__name__)
 
@@ -69,14 +71,13 @@ def get_current_user(default=None):
     return getattr(request, 'user', default)
 
 
-class ThreadLocalMiddleware:
+class ThreadLocalMiddleware(MiddlewareBase):
 
-    def process_request(self, request):
+    def before_view(self, request):
         _thread_local_storage.put('request', request)
 
-    def process_response(self, request, response):
+    def after_view(self, request, response):
         _thread_local_storage.remove('request')
-        return response
 
     def process_exception(self, request, exception):
         _thread_local_storage.remove('request')

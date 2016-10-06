@@ -33,6 +33,7 @@ from threading import Lock, RLock
 
 from django.utils.module_loading import import_string
 
+from .middleware import MiddlewareBase
 from .settings import PrefixedSettings
 from .types import Option, Some, Null
 
@@ -395,12 +396,12 @@ def delete_registry(name) -> None:
             del registries[name]
 
 
-class RegistryMiddleware:
+class RegistryMiddleware(MiddlewareBase):
 
     """Attaches the default component registry to the current request.
 
-    Add this to MIDDLEWARE_CLASSES for easy access to the registry from
-    views.
+    Add this to a project's middleware for easy access to the registry
+    from views.
 
     By default, this sets ``request.registry`` to point at the registry.
     Set the ``ARC.registry.request_attr_name`` setting to change this to
@@ -411,6 +412,6 @@ class RegistryMiddleware:
 
     """
 
-    def process_request(self, request):
+    def before_view(self, request):
         name = settings.get('registry.request_attr_name', 'registry')
         setattr(request, name, get_registry())
