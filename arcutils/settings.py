@@ -38,7 +38,7 @@ INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_addres
 
 
 def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
-                  stack_level=2):
+                  stack_level=2, drop=()):
     """Initialize project settings.
 
     Basic Usage
@@ -103,6 +103,9 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     .. note:: If the package name and related settings can't be derived
         automatically, that indicates a bug in this function.
 
+    To drop unused default settings, specify a list of such settings via
+    the ``drop`` arg.
+
     """
     settings = settings if settings is not None else get_module_globals(stack_level)
 
@@ -140,6 +143,10 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     use_tz = settings.get('USE_TZ', False)
     now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
     settings.setdefault('START_TIME', now)
+
+    # Drop irrelevant settings.
+    for name in drop:
+        del settings[name]
 
 
 def init_local_settings(settings, prompt=None, quiet=None):
