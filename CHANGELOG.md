@@ -1,8 +1,12 @@
 # Change Log for ARCUtils
 
-## 2.13.0 - unreleased
+## 2.13.0 - 2016-10-07
 
-In progress...
+- Made all middleware compatible with Django 1.10 and above. Did so by
+  reimplementing all middleware for Django 1.10 and then adding shims
+  for Django 1.9 and below.
+- Added `drop` arg to `init_settings()`; this allows projects to drop
+  unused, cluttering settings.
 
 
 ## 2.12.0 - 2016-10-03
