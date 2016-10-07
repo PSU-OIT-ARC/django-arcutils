@@ -1,17 +1,15 @@
-from django.core.exceptions import MiddlewareNotUsed
-
+from ..middleware import MiddlewareBase
 from .perms import can_masquerade
 from .settings import get_user_attr, is_enabled
 from .util import get_masquerade_user, is_masquerading
 
 
-class MasqueradeMiddleware:
+class MasqueradeMiddleware(MiddlewareBase):
 
-    def __init__(self):
-        if not is_enabled():
-            raise MiddlewareNotUsed
+    def enabled(self):
+        return is_enabled()
 
-    def process_request(self, request):
+    def before_view(self, request):
         masquerade_info = {}
         actual_user = request.user
         if is_masquerading(request):
