@@ -7,8 +7,8 @@ from .profile import parse_profile
 from .settings import settings
 
 
-def ldapsearch(query, connection=None, using='default', search_base=None, attributes=None,
-               parse=True, **kwargs):
+def ldapsearch(query, connection=None, using='default', search_base=None,
+               search_scope=ldap3.SUBTREE, attributes=None, parse=True, **kwargs):
     """Performs an LDAP search and returns the results.
 
     If there are results, they will be parsed via :func:`parse_profile`
@@ -48,7 +48,7 @@ def ldapsearch(query, connection=None, using='default', search_base=None, attrib
         result = connection.search(
             search_base=search_base,
             search_filter=query,
-            search_scope=ldap3.SEARCH_SCOPE_WHOLE_SUBTREE,
+            search_scope=search_scope,
             attributes=attributes,
             **kwargs)
 

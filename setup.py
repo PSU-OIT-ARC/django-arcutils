@@ -25,7 +25,7 @@ else:
 # Dependencies that are used in multiple places
 deps = {
     'djangorestframework': 'djangorestframework>=3.5.3',
-    'ldap3': 'ldap3>=1.4.0,<2.0',
+    'ldap3': 'ldap3>=2.1.0',
 }
 
 setup(
