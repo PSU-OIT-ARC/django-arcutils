@@ -30,11 +30,21 @@ from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, Se
 ARCUTILS_PACKAGE_DIR = pkg_resources.resource_filename('arcutils', '')
 
 
-# Considers any standard private IP address a valid internal IP address
-def _is_internal_ip_address(self, addr):
-    addr = ipaddress.ip_address(addr)
-    return addr.is_loopback or addr.is_private
-INTERNAL_IPS = type('INTERNAL_IPS', (), dict(__contains__=_is_internal_ip_address))()
+class _InternalIPsType:
+
+    """Used to construct a convenient INTERNAL_IPS setting for dev.
+
+    An *instance* of this type considers any standard loopback or
+    private IP address a valid internal IP address.
+
+    """
+
+    def __contains__(self, addr):
+        addr = ipaddress.ip_address(addr)
+        return addr.is_loopback or addr.is_private
+
+
+INTERNAL_IPS = _InternalIPsType()
 
 
 def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
