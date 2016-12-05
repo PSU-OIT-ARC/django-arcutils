@@ -168,7 +168,6 @@ def require_block(app_name, *cdn_urls):
 
     In production, this outputs the following tags::
 
-        <script src="/static/{prefix}/almond/almond.js"></script>
         ... CDN <script>s ...
         <script src="/static/{app_name}/main-built.js"></script>
 
@@ -198,23 +197,24 @@ def require_block(app_name, *cdn_urls):
 
     """
     debug = settings.DEBUG
-    file_name = 'main.js' if debug else 'main-built.js'
-    entry_point = posixpath.join(app_name, file_name)
+    prefix = get_setting('ARC.require_block.prefix', default='vendor')
     scripts = []
 
-    # Prefix relative to static root
-    prefix = get_setting('ARC.require_block.prefix', default='vendor')
-
     if debug:
+        file_name = 'main.js'
         script_path = '{prefix}/requirejs/require.js'.format(prefix=prefix)
         scripts.append(staticfiles_storage.url('requireConfig.js'))
         scripts.append(staticfiles_storage.url(script_path))
     else:
+        file_name = 'main-built.js'
         script_path = '{prefix}/almond/almond.js'.format(prefix=prefix)
         scripts.append(staticfiles_storage.url(script_path))
         for src in cdn_urls:
             scripts.append(cdn_url(src))
+
+    entry_point = posixpath.join(app_name, file_name)
     scripts.append(staticfiles_storage.url(entry_point))
+
     scripts = ['<script src="{src}"></script>'.format(src=s) for s in scripts]
     scripts = '\n    '.join(scripts)
     return mark_safe(scripts)
