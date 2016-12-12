@@ -44,7 +44,7 @@ def parse_profile(attributes):
     title = get('title')
 
     # XXX: This part is wonky. I'm not sure how many OU parts there can
-    #      be or what there proper names are (school vs office, etc).
+    #      be or what their proper names are (school vs office, etc).
     ou = get('ou') or get('department')
     if ou:
         ou_parts = ou.split(' - ', 1)
@@ -264,7 +264,7 @@ def parse_member_of(attributes):
 
     And this function will return a list of dicts like this::
 
-        [{'name': 'AAA'}, {'name': 'BBB'}]
+        [{'name': 'AAA'}, {'name': 'XXX'}]
 
     """
     member_of = _get_attribute(attributes, 'memberOf', True)

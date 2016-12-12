@@ -158,12 +158,16 @@ def require_block(app_name, *cdn_urls):
     setting. In debug mode, this outputs the following tags::
 
         <script src="/static/requireConfig.js"></script>
-        <script src="/static/vendor/requirejs/require.js"></script>
+        <script src="/static/{prefix}/requirejs/require.js"></script>
         <script src="/static/{app_name}/main.js"></script>
+
+    .. note:: ``prefix`` defaults to 'vendor'. To change this (e.g., to
+              'node_modules'), set ``ARC.require_block.prefix``. Note
+              that this prefix is relative to one of the project's
+              static root.
 
     In production, this outputs the following tags::
 
-        <script src="/static/vendor/almond/almond.js"></script>
         ... CDN <script>s ...
         <script src="/static/{app_name}/main-built.js"></script>
 
@@ -175,8 +179,8 @@ def require_block(app_name, *cdn_urls):
         var require = {
             baseUrl: '/static',  // Same as STATIC_URL, minus trailing slash
             paths: {
-                almond: 'vendor/almond/almond',
-                ng: 'vendor/angular/angular',
+                almond: '{prefix}/almond/almond',
+                ng: '{prefix}/angular/angular',
                 ...,
                 quickticket: '.'  // Replace quickticket with project name
             }
@@ -193,17 +197,24 @@ def require_block(app_name, *cdn_urls):
 
     """
     debug = settings.DEBUG
-    file_name = 'main.js' if debug else 'main-built.js'
-    entry_point = posixpath.join(app_name, file_name)
+    prefix = get_setting('ARC.require_block.prefix', default='vendor')
     scripts = []
+
     if debug:
+        file_name = 'main.js'
+        script_path = '{prefix}/requirejs/require.js'.format(prefix=prefix)
         scripts.append(staticfiles_storage.url('requireConfig.js'))
-        scripts.append(staticfiles_storage.url('vendor/requirejs/require.js'))
+        scripts.append(staticfiles_storage.url(script_path))
     else:
-        scripts.append(staticfiles_storage.url('vendor/almond/almond.js'))
+        file_name = 'main-built.js'
+        script_path = '{prefix}/almond/almond.js'.format(prefix=prefix)
+        scripts.append(staticfiles_storage.url(script_path))
         for src in cdn_urls:
             scripts.append(cdn_url(src))
+
+    entry_point = posixpath.join(app_name, file_name)
     scripts.append(staticfiles_storage.url(entry_point))
+
     scripts = ['<script src="{src}"></script>'.format(src=s) for s in scripts]
     scripts = '\n    '.join(scripts)
     return mark_safe(scripts)

@@ -1,5 +1,28 @@
 # Change Log for ARCUtils
 
+## 2.14.0 - 2016-12-12
+
+- Added basic Sentry support. Added raven (Python Sentry client) to
+  dependencies and added `raven.contrib.django.raven_compat` to
+  `INSTALLED_APPS`. This makes the assumption that we (eventually) want
+  to use Sentry in all (or at least most) projects.
+- Updated default dev and test settings to use package name as database
+  username instead of defaulting to the current OS user. This goes with
+  a corresponding change in ARCTasks that creates a database user named
+  after the package when creating databases.
+- Upgraded ldap3 1.x to 2.x (1.4.0 => 2.1.1). This required a few
+  tweaks, but the ARCUtils LDAP API is essentially unchanged.
+- Upgraded DRF 3.4.x => 3.5.x. This is used only in dev and testing.
+- Added default DRF renderer settings for all environments. These
+  defaults are based on the notion that most projects will have an
+  (Angular?) front end talking to a RESTful back end. Proposed by
+  @conwayb.
+- Improved `require_block` template tag. Made it more flexible with
+  regard to the path prefix for `require.js` or `almond.js`. The
+  `ARC.require_block.prefix` setting can be used to override the default
+  `vendor` prefix.
+
+
 ## 2.13.0 - 2016-10-07
 
 - Made all middleware compatible with Django 1.10 and above. Did so by

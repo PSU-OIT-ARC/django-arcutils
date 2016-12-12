@@ -3,6 +3,7 @@ from functools import partial
 
 from django.core.exceptions import ImproperlyConfigured
 
+import ldap3
 from ldap3 import Connection, Server, ServerPool, Tls
 
 from arcutils.path import abs_path
@@ -55,6 +56,7 @@ def connect(using='default') -> Connection:
         'port': get('port', None),
         'use_ssl': use_ssl,
         'tls': tls,
+        'get_info': ldap3.NONE,
     }
 
     if host:

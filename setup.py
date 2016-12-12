@@ -10,8 +10,9 @@ with open('VERSION') as version_fp:
 # Base dependencies
 install_requires = [
     'certifi>=2016.9.26',
-    'django-local-settings>=1.0b1',
-    'pytz>=2016.7',
+    'django-local-settings>=1.0b2',
+    'pytz>=2016.10',
+    'raven>=5.32.0',
     'stashward',
 ]
 
@@ -23,8 +24,8 @@ else:
 
 # Dependencies that are used in multiple places
 deps = {
-    'djangorestframework': 'djangorestframework>=3.4.7',
-    'ldap3': 'ldap3>=1.4.0',
+    'djangorestframework': 'djangorestframework>=3.5.3',
+    'ldap3': 'ldap3>=2.1.1',
 }
 
 setup(
@@ -48,7 +49,7 @@ setup(
             'flake8',
             deps['ldap3'],
             'psu.oit.arc.tasks',
-            'tox>=2.3.1',
+            'tox>=2.5.0',
         ],
         'tox': [
             deps['djangorestframework'],
