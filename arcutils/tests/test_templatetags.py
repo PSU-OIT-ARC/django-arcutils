@@ -73,3 +73,37 @@ class TestGoogleAnalyticsTag(TestCase):
             self.assertTrue(output.startswith('<!--'))
             self.assertTrue(output.endswith('-->'))
             self.assertNotIn(self.tracking_id, output)
+
+
+class TestRedirectLocation(TestCase):
+
+    def _make_request(self, **meta):
+        request = HttpRequest()
+        request.META['SERVER_NAME'] = 'ohslib.test'
+        request.META['SERVER_PORT'] = 80
+        request.META.update(meta)
+        return request
+
+    def test_no_referrer_and_no_default(self):
+        template = Template('{% load arc %}{% redirect_location %}')
+        request = self._make_request()
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, '/')
+
+    def test_referrer_and_no_default(self):
+        template = Template('{% load arc %}{% redirect_location %}')
+        request = self._make_request(HTTP_REFERER='/previous')
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, '/previous')
+
+    def test_no_referrer_and_default(self):
+        template = Template('{% load arc %}{% redirect_location default_location="/previous" %}')
+        request = self._make_request()
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, '/previous')
+
+    def test_no_referrer_and_default_route_name(self):
+        template = Template('{% load arc %}{% redirect_location default_location="test" %}')
+        request = self._make_request()
+        output = template.render(Context({'request': request}))
+        self.assertEqual(output, '/test')
