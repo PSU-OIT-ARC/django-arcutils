@@ -9,8 +9,8 @@ with open('VERSION') as version_fp:
 
 # Base dependencies
 install_requires = [
-    'certifi>=2016.9.26',
-    'django-local-settings>=1.0b2',
+    'certifi>=2017.1.23',
+    'django-local-settings>=1.0b3',
     'pytz>=2016.10',
     'raven>=5.32.0',
     'stashward',
@@ -25,7 +25,7 @@ else:
 # Dependencies that are used in multiple places
 deps = {
     'djangorestframework': 'djangorestframework>=3.5.3',
-    'ldap3': 'ldap3>=2.1.1',
+    'ldap3': 'ldap3>=2.2.0',
 }
 
 setup(
