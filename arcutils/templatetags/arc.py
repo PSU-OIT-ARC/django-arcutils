@@ -3,8 +3,10 @@ import posixpath
 
 from django import template
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ImproperlyConfigured
+from django.shortcuts import resolve_url
 from django.utils.safestring import mark_safe
 
 try:
@@ -13,6 +15,7 @@ except ImportError:
     _markdown = None
 
 from arcutils.exc import ARCUtilsDeprecationWarning
+from arcutils.response import get_redirect_location
 from arcutils.settings import get_setting
 from arcutils.staticfiles import load_manifest as load_staticfiles_manifest
 
@@ -259,6 +262,34 @@ def staticfiles_manifest(*paths, as_json=True):
     if as_json:
         manifest = mark_safe(json.dumps(manifest))
     return manifest
+
+
+@register.simple_tag(takes_context=True)
+def redirect_location(context, redirect_field_name=REDIRECT_FIELD_NAME, default_location='/',
+                      **kwargs):
+    """Get redirect location.
+
+    Wraps :func:`arcutils.response.get_redirect_location`.
+
+    To make this a little easier to use in templates, ``default`` and
+    ``kwargs`` are passed to Django's ``resolve_url()``. This keeps us
+    from having to do this::
+
+        {% url 'xyz' x=1 as default_url %}
+        <a href="{% redirect_location default=default_url %}
+
+    and lets us do this instead::
+
+        <a href="{% redirect_location default='xyz' x=1 %}"
+
+    .. note:: The above doesn't work with positional route args. For
+        such routes, use ``{% url ... as ... %}``.
+
+    """
+    request = context['request']
+    kwargs = kwargs if kwargs is not None else {}
+    default = resolve_url(default_location, **kwargs)
+    return get_redirect_location(request, redirect_field_name, default)
 
 
 # Legacy template tags. DO NOT use in new code. These are here to ease
