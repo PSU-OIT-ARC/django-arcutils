@@ -1,8 +1,19 @@
 # Change Log for ARCUtils
 
-## 2.15.0 - unreleased
+## 2.15.0 - 2017-01-27
 
-In progress...
+- Added `findunusedtemplates` Django management command (works pretty
+  well but could be improved).
+- Added `showsettings` Django management command.
+- Set default database for dev and test to `localhost`. This is intended
+  to be more reliable than depending on a local socket connection. It's
+  also more compatible with some Docker setups.
+- Improved `wsgi.py` by allowing the root and virtualenv directories to
+  be specified via the `WSGI_ROOT` and `WSGI_VENV` environment
+  variables.  This is another change supporting Docker setups.
+- Added `redirect_location` template tag, which is a wrapper for
+  `response.get_redirect_location()`. The former is much easier to use
+  in templates versus adding a var to the template context in the view.
 
 
 ## 2.14.0 - 2016-12-12
