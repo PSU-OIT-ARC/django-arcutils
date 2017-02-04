@@ -6,10 +6,10 @@ from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.test.runner import DiscoverRunner
-from django.test.utils import setup_test_environment
 
 settings.configure(
     DEBUG=True,
+    ALLOWED_HOSTS=['*'],
     DATABASES={
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -37,11 +37,15 @@ settings.configure(
     TEMPLATES=[{
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+            ]
+        }
     }],
 )
 
 setup()
-setup_test_environment()
 test_runner = DiscoverRunner(verbosity=1)
 
 failures = test_runner.run_tests(['arcutils'])
