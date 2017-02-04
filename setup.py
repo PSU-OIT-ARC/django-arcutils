@@ -49,7 +49,7 @@ setup(
             'flake8',
             deps['ldap3'],
             'psu.oit.arc.tasks',
-            'tox>=2.5.0',
+            'tox>=2.6.0',
         ],
         'tox': [
             deps['djangorestframework'],
