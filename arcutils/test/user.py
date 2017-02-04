@@ -19,15 +19,20 @@ class UserMixin:
     def username_field(self):
         return self.user_model.USERNAME_FIELD
 
-    def create_user(self, username='foo', password='hunter2', groups=None, **kwargs):
+    def create_user(self, username='foo', password='hunter2', groups=(), **kwargs):
         kwargs[self.username_field] = username
         user = self.user_model(**kwargs)
         user.set_password(password)
         user.save()
-        if groups is not None:
-            for group in groups:
-                g, created = Group.objects.get_or_create(name=group)
-                user.groups.add(g)
+
+        for group in groups:
+            if isinstance(group, str):
+                group = self.create_group(group)
+            elif not isinstance(group, Group):
+                raise TypeError(
+                    'Expected a group name or a Group instance; got a {0.__class__}'.format(group))
+            user.groups.add(group)
+
         return user
 
     def login_user(self, username, password):
@@ -35,7 +40,11 @@ class UserMixin:
         if not logged_in:
             raise CouldNotLogInError('{}:{}'.format(username, password))
 
-    def create_user_and_login(self, username='foo', password='hunter2', groups=None, **kwargs):
+    def create_user_and_login(self, username='foo', password='hunter2', groups=(), **kwargs):
         user = self.create_user(username, password, groups=groups, **kwargs)
         self.login_user(username, password)
         return user
+
+    def create_group(self, name):
+        group, _ = Group.objects.get_or_create(name=name)
+        return group
