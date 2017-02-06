@@ -1,6 +1,6 @@
 from django.test import override_settings, SimpleTestCase
 
-from arcutils.settings import NOT_SET, SettingNotFoundError, PrefixedSettings, get_setting
+from arcutils.settings import NO_DEFAULT, PrefixedSettings, get_setting
 
 
 @override_settings(ARC={
@@ -11,7 +11,7 @@ from arcutils.settings import NOT_SET, SettingNotFoundError, PrefixedSettings, g
 })
 class TestGetSettings(SimpleTestCase):
 
-    def get_setting(self, key, default=NOT_SET):
+    def get_setting(self, key, default=NO_DEFAULT):
         return get_setting(key, default=default)
 
     def test_can_traverse_into_dict(self):
@@ -32,13 +32,13 @@ class TestGetSettings(SimpleTestCase):
         self.assertIs(self.get_setting('ARC.nope', default), default)
 
     def test_raises_when_not_found_and_no_default(self):
-        self.assertRaises(SettingNotFoundError, self.get_setting, 'NOPE')
+        self.assertRaises(KeyError, self.get_setting, 'NOPE')
 
-    def test_cannot_traverse_into_string_setting(self):
-        self.assertRaises(ValueError, self.get_setting, 'ARC.d.0')
+    def test_can_traverse_into_string_setting(self):
+        self.assertEqual(self.get_setting('ARC.d.0'), 'd')
 
-    def test_bad_index_causes_value_error(self):
-        self.assertRaises(ValueError, self.get_setting, 'ARC.b.nope')
+    def test_bad_index_causes_type_error(self):
+        self.assertRaises(TypeError, self.get_setting, 'ARC.b.nope')
 
 
 @override_settings(CAS={
