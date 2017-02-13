@@ -21,6 +21,7 @@ import os
 import pkg_resources
 from datetime import datetime
 
+from django import VERSION as DJANGO_VERSION
 from django.conf import settings as django_settings
 from django.utils import timezone
 
@@ -158,6 +159,12 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     use_tz = settings.get('USE_TZ', False)
     now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
     settings.setdefault('START_TIME', now)
+
+    # Remove the MIDDLEWARE_CLASSES setting on Django >= 1.10, but only
+    # if the MIDDLEWARE setting is present *and* set.
+    if DJANGO_VERSION[:2] >= (1, 10):
+        if settings.get('MIDDLEWARE'):
+            settings.pop('MIDDLEWARE_CLASSES', None)
 
     # Drop irrelevant settings.
     for name in drop:
