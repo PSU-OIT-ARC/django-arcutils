@@ -49,7 +49,7 @@ INTERNAL_IPS = _InternalIPsType()
 
 
 def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
-                  stack_level=2, drop=()):
+                  stack_level=2, drop=(), settings_processors=()):
     """Initialize project settings.
 
     Basic Usage
@@ -117,6 +117,10 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     To drop unused default settings, specify a list of such settings via
     the ``drop`` arg.
 
+    To process settings in any custom manner needed, pass a list of
+    functions via ``settings_processors``. Each processor will be passed
+    the settings to be manipulated as necessary.
+
     """
     settings = settings if settings is not None else get_module_globals(stack_level)
 
@@ -158,6 +162,9 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     # Drop irrelevant settings.
     for name in drop:
         del settings[name]
+
+    for processor in settings_processors:
+        processor(settings)
 
 
 def init_local_settings(settings, prompt=None, quiet=None):
