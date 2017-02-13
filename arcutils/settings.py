@@ -166,6 +166,8 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     for processor in settings_processors:
         processor(settings)
 
+    return settings
+
 
 def init_local_settings(settings, prompt=None, quiet=None):
     """Initialize the local settings defined in ``settings``.
