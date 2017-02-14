@@ -1,9 +1,37 @@
 # Change Log for ARCUtils
 
-## 2.16.0 - unreleased
+## 2.16.0 - 2017-02-13
 
-In progress...
+### Major Changes
 
+- Reimplemented `settings.get_setting()` and `PrefixedSettings` so they
+  use django-local-settings' dotted item functionality internally. This
+  makes these simpler and more consistent with other settings access in
+  ARC/WDT projects. The major external difference is that a `KeyError`
+  will be raised now instead of a `SettingNotFoundError`. In addition,
+  it's now possible to traverse into settings values.
+- Enhanced group handling in `UserMixin`. Groups can now be `Group`
+  objects in addition to group names. This was copied over from ohslib
+  so that ohslib could use ARCUtils' `UserMixin`.
+- When Django 1.10 is in use, the `MIDDLEWARE_CLASSES` setting is now
+  automatically removed from settings (assuming the `MIDDLEWARE` setting
+  is present and set).
+- Added `settings_processors` option to `settings.init_settings()`. This
+  makes it easy to modify settings if needed.
+
+### Other Changes
+
+- Upgraded django-local-settings 1.0b3 => 1.0b5.
+- Upgraded tox 2.5.0 => 2.6.0.
+- Improved tox.ini; in particular, test each version of Python in order,
+  and each version of Django in order for each version of Python.
+- Started adding support for Python 3.6 and Django 1.11 (the latter is
+  still in alpha).
+- Added `<package>.staging.rc.pdx.edu` to default stage `ALLOWED_HOSTS`.
+- Added `show_upgraded_packages` task from ARCTasks.
+- `settings.init_settings()` now returns the `settings` dict its passed.
+  This seems like it could potentially be useful, whereas returning
+  `None` isn't.
 
 ## 2.15.0 - 2017-01-27
 
