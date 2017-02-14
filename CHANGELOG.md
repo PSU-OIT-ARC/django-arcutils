@@ -1,5 +1,10 @@
 # Change Log for ARCUtils
 
+## 2.17.0 - unreleased
+
+In progress...
+
+
 ## 2.16.0 - 2017-02-13
 
 ### Major Changes
@@ -32,6 +37,7 @@
 - `settings.init_settings()` now returns the `settings` dict its passed.
   This seems like it could potentially be useful, whereas returning
   `None` isn't.
+
 
 ## 2.15.0 - 2017-01-27
 
