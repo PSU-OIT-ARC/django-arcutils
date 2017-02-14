@@ -79,7 +79,7 @@ class TestRedirectLocation(TestCase):
 
     def _make_request(self, **meta):
         request = HttpRequest()
-        request.META['SERVER_NAME'] = 'ohslib.test'
+        request.META['SERVER_NAME'] = 'arcutils.test'
         request.META['SERVER_PORT'] = 80
         request.META.update(meta)
         return request

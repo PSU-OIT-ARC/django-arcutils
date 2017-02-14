@@ -21,10 +21,12 @@ import os
 import pkg_resources
 from datetime import datetime
 
+from django import VERSION as DJANGO_VERSION
 from django.conf import settings as django_settings
 from django.utils import timezone
 
 from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, SecretSetting
+from local_settings.settings import DottedAccessDict, Settings as LocalSettings
 
 
 ARCUTILS_PACKAGE_DIR = pkg_resources.resource_filename('arcutils', '')
@@ -48,7 +50,7 @@ INTERNAL_IPS = _InternalIPsType()
 
 
 def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
-                  stack_level=2, drop=()):
+                  stack_level=2, drop=(), settings_processors=()):
     """Initialize project settings.
 
     Basic Usage
@@ -116,6 +118,10 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     To drop unused default settings, specify a list of such settings via
     the ``drop`` arg.
 
+    To process settings in any custom manner needed, pass a list of
+    functions via ``settings_processors``. Each processor will be passed
+    the settings to be manipulated as necessary.
+
     """
     settings = settings if settings is not None else get_module_globals(stack_level)
 
@@ -154,9 +160,20 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
     settings.setdefault('START_TIME', now)
 
+    # Remove the MIDDLEWARE_CLASSES setting on Django >= 1.10, but only
+    # if the MIDDLEWARE setting is present *and* set.
+    if DJANGO_VERSION[:2] >= (1, 10):
+        if settings.get('MIDDLEWARE'):
+            settings.pop('MIDDLEWARE_CLASSES', None)
+
     # Drop irrelevant settings.
     for name in drop:
         del settings[name]
+
+    for processor in settings_processors:
+        processor(settings)
+
+    return settings
 
 
 def init_local_settings(settings, prompt=None, quiet=None):
@@ -200,68 +217,36 @@ def init_local_settings(settings, prompt=None, quiet=None):
     settings.update(load_and_check_settings(settings, prompt=prompt, quiet=quiet))
 
 
-NOT_SET = object()
+def get_setting(name, default=NO_DEFAULT, settings=None):
+    """Get setting for ``name``, falling back to ``default`` if passed.
 
-
-class SettingNotFoundError(LookupError):
-
-    pass
-
-
-def get_setting(key, default=NOT_SET, settings=None):
-    """Get setting for ``key``, falling back to ``default`` if passed.
-
-    ``key`` should be a string like 'ARC.cdn.hosts' or 'X.Y.0'. The key
-    is split on dots into path segments, then the settings are traversed
-    like this:
+    ``name`` should be a string like 'ARC.cdn.hosts' or 'X.Y.0'. The
+    name is split on dots into path segments, then the settings are
+    traversed like this:
 
         - Set current value to django.conf.settings.{first segment}
         - For each other segment
             - Get current_value[segment] if current value is a dict
             - Get current_value[int(segment)] if current value is a list
 
-    Only dicts, list, and tuples will be traversed. If a segment
-    contains some other type of value, a ``ValueError`` will be raised.
-    Note that we don't return the default in this case because this
-    means an existing setting is being accessed incorrectly.
-
-    If a non-int index is given for a list or tuple segment, this will
-    also raise a ``ValueError``.
-
     If the setting isn't found, the ``default`` value will be returned
-    if specified; otherwise, a ``SettingsNotFoundError`` will be raised.
+    if specified; otherwise, a ``KeyError`` will be raised.
 
     ``settings`` can be used to retrieve the setting from a settings
      object other than the default ``django.conf.settings``.
+
+    :class:`local_settings.settings.DottedAccessDict` is used to
+    implement this functionality. See the django-local-settings project
+    for more details about settings traversal.
 
     """
     if settings is None:
         settings = django_settings
 
-    root, *path = key.split('.')
-    setting = getattr(settings, root, NOT_SET)
+    if not isinstance(settings, LocalSettings):
+        settings = DottedAccessDict(get_settings_dict(settings))
 
-    for segment in path:
-        if setting is NOT_SET:
-            break
-        if isinstance(setting, dict):
-            setting = setting.get(segment, NOT_SET)
-        elif isinstance(setting, (list, tuple)):
-            index = int(segment)
-            try:
-                setting = setting[index]
-            except IndexError:
-                setting = NOT_SET
-        else:
-            raise ValueError('Cannot traverse into setting of type %s' % type(setting))
-
-    if setting is NOT_SET:
-        if default is NOT_SET:
-            raise SettingNotFoundError('Could not find setting for key "%s"' % key)
-        else:
-            setting = default
-
-    return setting
+    return settings.get_dotted(name, default)
 
 
 class PrefixedSettings:
@@ -292,25 +277,18 @@ class PrefixedSettings:
 
     """
 
-    class Defaults:
-
-        # Make defaults look like normal settings so they can be
-        # traversed by get_setting().
-
-        def __init__(self, prefix, defaults=None):
-            defaults = {} if defaults is None else defaults
-            setattr(self, prefix, defaults)
-
     def __init__(self, prefix, defaults=None, settings=None):
+        defaults = get_settings_dict(defaults)
+        settings = get_settings_dict(settings if settings is not None else django_settings)
         self.__prefix = prefix
-        self.__defaults = self.Defaults(prefix, defaults if defaults is not None else {})
-        self.__settings = settings if settings is not None else django_settings
+        self.__defaults = DottedAccessDict(defaults)
+        self.__settings = DottedAccessDict(settings)
 
-    def get(self, key, default=NOT_SET):
+    def get(self, name, default=NO_DEFAULT):
         """Get setting for configured ``prefix``.
 
         Args:
-            key: setting name without ``prefix``
+            name: setting name without ``prefix``
             default: value to use if setting isn't present in the
                 project's settings or in the ``defaults``
 
@@ -324,28 +302,46 @@ class PrefixedSettings:
                 3. ``default`` arg
 
         Raises:
-            SettingNotFoundError: When the setting isn't found in the
-                project's settings or in the ``defaults`` and no
-                fallback is passed via the ``default`` keyword arg
+            KeyError: When the setting isn't found in the project's
+                settings or in the ``defaults`` and no fallback is
+                passed via the ``default`` keyword arg
 
         """
-        qualified_key = '{prefix}.{name}'.format(prefix=self.__prefix, name=key)
+        qualified_name = '{prefix}.{name}'.format(prefix=self.__prefix, name=name)
         try:
-            value = get_setting(qualified_key)
-        except SettingNotFoundError:
-            try:
-                value = get_setting(qualified_key, default=default, settings=self.__defaults)
-            except SettingNotFoundError:
-                value = NOT_SET
-        if value is NOT_SET:
-            raise SettingNotFoundError(qualified_key)
-        return value
+            return self.__settings.get_dotted(qualified_name)
+        except KeyError:
+            return self.__defaults.get_dotted(name, default=default)
 
     def __getitem__(self, key):
-        return self.get(key, NOT_SET)
+        return PrefixedSettings.get(self, key, NO_DEFAULT)
 
 
 # Internal helper functions
+
+
+def get_settings_dict(settings):
+    """For a given settings object, return a dict.
+
+    Args:
+        settings (object): Usually either a Django settings object or
+            a dict; can also be a sequence that can be converted to
+            a dict or some other non-dict mapping
+
+    Returns:
+        empty dict: ``settings`` is ``None``
+        vars(settings._wrapped): ``settings`` is (or appears to be)
+            a Django settings object
+        dict(settings): ``settings`` is any other type of object
+
+    """
+    if settings is None:
+        return {}
+    if hasattr(settings, '_wrapped'):
+        # A Django settings object
+        # TODO: Find a better way to check for Django settings?
+        return vars(settings._wrapped)
+    return dict(settings)
 
 
 def derive_top_level_package_name(package_level=0, stack_level=1):

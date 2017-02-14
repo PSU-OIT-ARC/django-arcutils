@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from arcutils.colorize import printer
-from arcutils.settings import SettingNotFoundError, get_setting
+from arcutils.settings import get_setting, get_settings_dict
 
 
 class Command(BaseCommand):
@@ -40,7 +40,7 @@ class Command(BaseCommand):
         for name in names:
             try:
                 value = get_setting(name)
-            except SettingNotFoundError:
+            except KeyError:
                 printer.error('Setting "{0}" not found'.format(name), file=sys.stderr)
             else:
                 self.print(name, value, depth, exclude)
@@ -52,7 +52,7 @@ class Command(BaseCommand):
         return names
 
     def get_top_level_setting_names(self):
-        names = sorted(settings._wrapped.__dict__)
+        names = sorted(get_settings_dict(settings))
         names = [n for n in names if not n.startswith('_')]
         return names
 

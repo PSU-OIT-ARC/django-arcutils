@@ -10,7 +10,7 @@ with open('VERSION') as version_fp:
 # Base dependencies
 install_requires = [
     'certifi>=2017.1.23',
-    'django-local-settings>=1.0b3',
+    'django-local-settings>=1.0b5',
     'pytz>=2016.10',
     'raven>=5.32.0',
     'stashward',
@@ -49,7 +49,7 @@ setup(
             'flake8',
             deps['ldap3'],
             'psu.oit.arc.tasks',
-            'tox>=2.5.0',
+            'tox>=2.6.0',
         ],
         'tox': [
             deps['djangorestframework'],
