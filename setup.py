@@ -62,7 +62,7 @@ setup(
 
     """,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Framework :: Django',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
