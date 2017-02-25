@@ -12,7 +12,7 @@ install_requires = [
     'certifi>=2017.1.23',
     'django-local-settings>=1.0b5',
     'pytz>=2016.10',
-    'raven>=5.32.0',
+    'raven>=6.0.0',
     'stashward',
 ]
 
