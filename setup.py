@@ -10,7 +10,7 @@ with open('VERSION') as version_fp:
 # Base dependencies
 install_requires = [
     'certifi>=2017.1.23',
-    'django-local-settings>=1.0b5',
+    'django-local-settings>=1.0b6',
     'pytz>=2016.10',
     'raven>=6.0.0',
     'stashward',
