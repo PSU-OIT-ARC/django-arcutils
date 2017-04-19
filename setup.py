@@ -20,7 +20,7 @@ if sys.version_info[:2] < (3, 4):
     django_version = '1.8'
     install_requires.append('enum34')
 else:
-    django_version = '1.10'
+    django_version = '1.11'
 
 # Dependencies that are used in multiple places
 deps = {
