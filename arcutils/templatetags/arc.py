@@ -166,8 +166,8 @@ def require_block(app_name, *cdn_urls):
 
     .. note:: ``prefix`` defaults to 'vendor'. To change this (e.g., to
               'node_modules'), set ``ARC.require_block.prefix``. Note
-              that this prefix is relative to one of the project's
-              static root.
+              that this prefix must be relative to the project's static
+              files directory.
 
     In production, this outputs the following tags::
 
