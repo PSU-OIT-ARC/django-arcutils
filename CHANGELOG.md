@@ -1,5 +1,10 @@
 # Change Log for ARCUtils
 
+## 2.18 - unreleased
+
+In progress...
+
+
 ## 2.17 - 2017-04-27
 
 - Added support for Python 3.6.
