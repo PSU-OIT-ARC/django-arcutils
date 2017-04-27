@@ -34,6 +34,10 @@ class Command(BaseCommand):
         self.exclude_patterns = options['exclude_patterns']
 
     def collect(self):
+        # Only invoke our custom include/exclude logic if indicated.
+        if not (self.include_patterns or self.exclude_patterns):
+            return super().collect()
+
         # Django's version of this command doesn't provide many hooks
         # for customizing the collection process, so this method is
         # a copy of the base collect method with a couple tweaks to
