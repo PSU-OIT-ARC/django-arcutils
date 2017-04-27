@@ -1,8 +1,22 @@
 # Change Log for ARCUtils
 
-## 2.17.0 - unreleased
+## 2.17 - 2017-04-27
 
-In progress...
+- Added support for Python 3.6.
+- Started adding support for Django 1.11.
+- Upgraded DRF 3.5 => 3.6.
+- Removed default `STATICFILES_DIRS` local setting. This isn't needed in
+  the case where `arcutils` and the project are in `INSTALLED_APPS`--
+  which is the common case--since static directories in apps are
+  included by default.
+- Added custom `collectstatic` Django management command with
+  `--exclude` and `--include` options. Unlike the built in `--ignore`
+  option, these match against whole paths instead of path segments. In
+  addition, if a file is `--include`d it will be included even if it was
+  previously ignored or excluded; this is useful when ignoring a big
+  directory like `node_modules` that contains a file or two that should
+  be included (e.g., `almond.js`).
+- Updated tasks/commands for latest version of ARCTasks.
 
 
 ## 2.16.0 - 2017-02-13
