@@ -1,5 +1,10 @@
 # Change Log for ARCUtils
 
+## 2.19.0 - unreleased
+
+In progress...
+
+
 ## 2.18.0 - 2017-05-03
 
 - Made the masquerade app more RESTful. In particular, it's now possible
