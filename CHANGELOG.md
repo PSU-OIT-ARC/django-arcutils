@@ -1,6 +1,15 @@
 # Change Log for ARCUtils
 
-## 2.17 - 2017-04-27
+## 2.18.0 - 2017-05-03
+
+- Made the masquerade app more RESTful. In particular, it's now possible
+  to request a JSON response from its select (user) view. Because of
+  this, the user data it returns is now serialized using a DRF model
+  serializer; I don't think this will cause any backward-compatibility
+  issues, but it might.
+
+
+## 2.17.0 - 2017-04-27
 
 - Added support for Python 3.6.
 - Started adding support for Django 1.11.

@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 
+from rest_framework import serializers
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,6 +14,15 @@ from arcutils.response import get_redirect_location
 from .perms import can_masquerade, can_masquerade_as
 from .settings import settings, get_session_key, get_redirect_field_name
 from .util import get_masquerade_user, is_masquerading
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        exclude = ['password']
+
+    display_name = serializers.CharField(source='get_full_name')
 
 
 class BaseView(APIView):
@@ -37,7 +48,7 @@ class BaseView(APIView):
 
 class MasqueradeSelectView(BaseView):
 
-    renderer_classes = [TemplateHTMLContextDictRenderer]
+    renderer_classes = [TemplateHTMLContextDictRenderer, JSONRenderer]
     template_name = 'masquerade/select.html'
     context_object_name = 'masquerade'
 
@@ -49,7 +60,7 @@ class MasqueradeSelectView(BaseView):
         q = user_model.objects.exclude(pk=user.pk).order_by('first_name', 'last_name', 'email')
         users = [u for u in q if can_masquerade_as(user, u)]
         return Response({
-            'users': users,
+            'users': UserSerializer(users, many=True).data,
             'other_users_count': q.count(),  # excludes request.user
             get_redirect_field_name(): self.get_redirect_location(request),
         })
