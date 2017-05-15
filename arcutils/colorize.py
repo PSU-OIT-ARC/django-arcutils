@@ -22,6 +22,7 @@ instance of :class:`.Colorizer` or :class:`ColorPrinter` with your own
 color map.
 
 """
+import os
 import sys
 
 
@@ -145,7 +146,7 @@ class Colorizer(_Base):
         if color_map is not None:
             self.color_map.update(color_map)
 
-    def colorize(self, *args, **kwargs):
+    def colorize(self, *args, sep=' ', end='', reset=True, **kwargs):
         """Returns a colorized string (joining ``args`` into one str).
 
         Pass ``color`` as a keyword arg to colorize ``*args``. It can
@@ -158,17 +159,16 @@ class Colorizer(_Base):
         passed, the output string will start with the specified color.
 
         The remaining args are similar to the built-in ``print()``
-        function. ``sep`` is a space. ``end`` is the reset code instead
-        of a newline. To disable resetting the color at the end of the
-        string, pass ``end=''`` (or some other end string).
+        function. ``sep`` is a space as usual; ``end`` is an empty
+        string instead of a newline.
+        
+        The string is terminated with the terminal reset code unless
+        ``reset=False``.
 
         """
         color = kwargs.get('color', NONE)
         if not isinstance(color, Color):
             color = self.color_map[color]
-        reset = self.color_map['reset']
-        sep = kwargs.get('sep', ' ')
-        end = kwargs.get('end', reset)
         args = (color,) + args
         string = []
         for arg in args[:-1]:
@@ -179,8 +179,8 @@ class Colorizer(_Base):
                 string.append(sep)
         string.append(str(args[-1]))
         string = ''.join(string)
-        if end:
-            string = '{string}{end}'.format(**locals())
+        reset = self.color_map['reset'] if reset else ''
+        string = '{string}{end}{reset}'.format(**locals())
         return string
 
     __call__ = colorize
@@ -234,8 +234,13 @@ class ColorPrinter(_Base):
             colorizer_kwargs = kwargs.copy()
             colorizer_kwargs['color'] = color
             colorizer_kwargs.pop('file', None)
+            colorizer_kwargs.setdefault('end', os.linesep)
             string = self.colorizer.colorize(*args, **colorizer_kwargs)
-            print(string, **kwargs)
+
+            print_kwargs = kwargs.copy()
+            print_kwargs.pop('sep', None)
+            print_kwargs['end'] = ''
+            print(string, **print_kwargs)
         else:
             args = [a for a in args if not isinstance(a, Color)]
             print(*args, **kwargs)
