@@ -161,7 +161,7 @@ class Colorizer(_Base):
         The remaining args are similar to the built-in ``print()``
         function. ``sep`` is a space as usual; ``end`` is an empty
         string instead of a newline.
-        
+
         The string is terminated with the terminal reset code unless
         ``reset=False``.
 
