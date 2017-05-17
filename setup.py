@@ -20,12 +20,12 @@ if sys.version_info[:2] < (3, 4):
     django_version = '1.8'
     install_requires.append('enum34')
 else:
-    django_version = '1.11'
+    django_version = '1.11.1'
 
 # Dependencies that are used in multiple places
 deps = {
-    'djangorestframework': 'djangorestframework>=3.6.2',
-    'ldap3': 'ldap3>=2.2.2',
+    'djangorestframework': 'djangorestframework>=3.6.3',
+    'ldap3': 'ldap3>=2.2.4',
 }
 
 setup(
