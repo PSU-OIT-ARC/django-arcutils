@@ -27,7 +27,7 @@ Example::
     ]
 
     # Example admin module in project:
-    from arcutil import admin  # Replaces `from django.contrib import admin`
+    from arcutils import admin  # Replaces `from django.contrib import admin`
     from .models import SomeModel
     admin.cas_site.register(SomeModel)
 
