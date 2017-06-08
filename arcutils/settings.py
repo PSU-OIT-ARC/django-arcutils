@@ -147,6 +147,10 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         root_dir = os.path.join(*parts[:package_depth])
         settings['ROOT_DIR'] = root_dir
 
+    if not settings.get('VERSION'):
+        dist = pkg_resources.get_distribution(settings['PACKAGE'])
+        settings['VERSION'] = dist.version
+
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
 
