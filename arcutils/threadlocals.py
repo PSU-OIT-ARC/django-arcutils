@@ -44,7 +44,7 @@ class _ThreadLocalStorage(threading.local):
     def get(self, name, default=None):
         if hasattr(self, name):
             return getattr(self, name)
-        log.warn('%s has not been saved to thread local storage', name)
+        log.warning('%s has not been saved to thread local storage', name)
         return default
 
     def put(self, name, value):
