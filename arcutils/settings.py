@@ -162,6 +162,22 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
     settings.setdefault('START_TIME', now)
 
+    if not settings.get('UP_TIME'):
+
+        class UpTime:
+
+            __slots__ = ('start_time',)
+
+            def __init__(self, start_time):
+                self.start_time = start_time
+
+            @property
+            def current(self):
+                from django.utils import timezone
+                return timezone.now() - self.start_time
+
+        settings['UP_TIME'] = UpTime(settings['START_TIME'])
+
     # Remove the MIDDLEWARE_CLASSES setting on Django >= 1.10, but only
     # if the MIDDLEWARE setting is present *and* set.
     if DJANGO_VERSION[:2] >= (1, 10):
