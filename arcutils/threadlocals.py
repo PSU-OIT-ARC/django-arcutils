@@ -68,7 +68,7 @@ def get_current_user(default=None):
     request = _thread_local_storage.get('request')
     if request is None:
         return default
-    return getattr(request, 'user', default)
+    return request.user
 
 
 class ThreadLocalMiddleware(MiddlewareBase):
