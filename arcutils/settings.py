@@ -29,9 +29,6 @@ from local_settings import NO_DEFAULT, load_and_check_settings, LocalSetting, Se
 from local_settings.settings import DottedAccessDict, Settings as LocalSettings
 
 
-ARCUTILS_PACKAGE_DIR = pkg_resources.resource_filename('arcutils', '')
-
-
 class _InternalIPsType:
 
     """Used to construct a convenient INTERNAL_IPS setting for dev.
@@ -126,7 +123,8 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     settings = settings if settings is not None else get_module_globals(stack_level)
 
     if not settings.get('ARCUTILS_PACKAGE_DIR'):
-        settings['ARCUTILS_PACKAGE_DIR'] = ARCUTILS_PACKAGE_DIR
+        arcutils_package_dir = pkg_resources.resource_filename('arcutils', '')
+        settings['ARCUTILS_PACKAGE_DIR'] = arcutils_package_dir
 
     if not settings.get('PACKAGE'):
         # The default value for PACKAGE is derived by figuring out where
