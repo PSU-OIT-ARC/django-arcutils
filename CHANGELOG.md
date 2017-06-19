@@ -1,8 +1,32 @@
 # Change Log for ARCUtils
 
-## 2.19.0 - unreleased
+## 2.19.0 - 2017-06-19
 
-In progress...
+### Major Changes
+
+- Added `auditor` app. This is used to log changes to specified model
+  fields. Should be considered a work in progress for now.
+
+### Minor Changes
+
+- Added custom 400 and 500 error views. These pass the request context
+  to the template renderer so that templates can be rendered correctly.
+- Removed global `ARCUTILS_PACKAGE_DIR` from `settings`. The ARCUtils
+  package directory is now retrieved only when `init_settings()` is
+  called.
+- Added additional default settings in `init_settings()`:
+  - `UP_TIME`: an object with a `current` property that returns the
+    current uptime (by subtracting the current time from the existing
+    `START_TIME` setting)
+  - `VERSION`: the project version retrieved via `pkg_resources`
+
+### Other Changes
+
+- Upgraded djangorestframework 3.6.2 => 3.6.3
+- Upgraded ldap3 2.2.2 => 2.2.4
+- Upgraded raven 6.0.0 => 6.1.0
+- Fixed double-printing of `end` in color printer
+- Replaced deprecated `log.warn()` with `log.warning()`
 
 
 ## 2.18.0 - 2017-05-03
