@@ -12,7 +12,7 @@ install_requires = [
     'certifi>=2017.4.17',
     'django-local-settings>=1.0b6',
     'pytz>=2017.2',
-    'raven>=6.0.0',
+    'raven>=6.1.0',
     'stashward',
 ]
 
@@ -24,8 +24,8 @@ else:
 
 # Dependencies that are used in multiple places
 deps = {
-    'djangorestframework': 'djangorestframework>=3.6.2',
-    'ldap3': 'ldap3>=2.2.2',
+    'djangorestframework': 'djangorestframework>=3.6.3',
+    'ldap3': 'ldap3>=2.2.4',
 }
 
 setup(
