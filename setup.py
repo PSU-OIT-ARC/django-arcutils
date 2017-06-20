@@ -23,6 +23,7 @@ else:
 
 # Dependencies that are used in multiple places
 deps = {
+    'coverage': 'coverage>=4.4.1',
     'djangorestframework': 'djangorestframework>=3.6.3',
     'ldap3': 'ldap3>=2.2.4',
 }
@@ -43,6 +44,7 @@ setup(
             deps['ldap3'],
         ],
         'dev': [
+            deps['coverage'],
             'django>={django_version},<{django_version}.999'.format_map(locals()),
             deps['djangorestframework'],
             'flake8',
@@ -51,6 +53,7 @@ setup(
             'tox>=2.7.0',
         ],
         'tox': [
+            deps['coverage'],
             deps['djangorestframework'],
             deps['ldap3'],
         ]
