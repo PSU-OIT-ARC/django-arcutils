@@ -19,7 +19,7 @@ import inspect
 import ipaddress
 import os
 from datetime import datetime
-from pkg_resources import get_distribution, resource_filename
+from pkg_resources import get_distribution
 
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings as django_settings
@@ -74,9 +74,7 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     files will be added (if not explicitly set before calling this
     function):
 
-        - ARCUTILS_PACKAGE_DIR
         - PACKAGE (top level project package)
-        - PACKAGE_DIR (top level project package directory)
         - ROOT_DIR (project directory; should only be used in dev)
         - START_TIME (current date/time; will be an "aware" UTC datetime
           object if the project has time zone support enabled)
@@ -97,17 +95,16 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     adjusted accordingly. See :func:`derive_top_level_package_name` for
     more info about these args.
 
-    The ``PACKAGE``, ``PACKAGE_DIR``, and ``ROOT_DIR`` settings will be
-    derived based on the location of the settings module this function
-    is called from. If this isn't working, ensure the ``package_level``
-    and ``stack_level`` options are correct; or, set the ``PACKAGE``
-    setting explicitly before calling this function::
+    The ``PACKAGE`` and ``ROOT_DIR`` settings will be derived based on
+    the location of the settings module this function is called from. If
+    this isn't working, ensure the ``package_level`` and ``stack_level``
+    options are correct; or, set the ``PACKAGE`` setting explicitly
+    before calling this function::
 
         PACKAGE = 'quickticket'
         init_settings()
 
-    ``PACKAGE_DIR`` and ``ROOT_DIR`` can also be set explicitly if
-    necessary.
+    ``ROOT_DIR`` can also be set explicitly if necessary.
 
     .. note:: If the package name and related settings can't be derived
         automatically, that indicates a bug in this function.
@@ -158,9 +155,7 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         def current(self):
             return timezone.now() - self.start_time
 
-    set_default('ARCUTILS_PACKAGE_DIR', resource_filename, 'arcutils', '')
     package = set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
-    set_default('PACKAGE_DIR', resource_filename, package, '')
     set_default('ROOT_DIR', get_root_dir)
     set_default('VERSION', lambda: get_distribution(package).version)
 
