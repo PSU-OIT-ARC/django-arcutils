@@ -55,7 +55,9 @@ setup(
         'tox': [
             deps['coverage'],
             deps['djangorestframework'],
+            'flake8',
             deps['ldap3'],
+            'psu.oit.arc.tasks',
         ]
     },
     entry_points="""
