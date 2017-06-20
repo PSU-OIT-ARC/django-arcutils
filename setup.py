@@ -13,7 +13,6 @@ install_requires = [
     'django-local-settings>=1.0b6',
     'pytz>=2017.2',
     'raven>=6.1.0',
-    'stashward',
 ]
 
 if sys.version_info[:2] < (3, 4):
