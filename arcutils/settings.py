@@ -77,6 +77,8 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         - CWD (current working directory; primarily for use in
           development)
         - PACKAGE (top level project package)
+        - DISTRIBUTION (the Python distribution name; often the same as
+          PACKAGE but not always; defaults to PACKAGE)
         - START_TIME (current date/time; will be an "aware" UTC datetime
           object if the project has time zone support enabled)
         - UP_TIME (an object that can be used to retrieve the current
@@ -144,11 +146,13 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
             return timezone.now() - self.start_time
 
     set_default('CWD', os.getcwd)
-    package = set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
-    set_default('VERSION', lambda: get_distribution(package).version)
+    set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
 
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
+
+    set_default('DISTRIBUTION', lambda: settings['PACKAGE'])
+    set_default('VERSION', lambda: get_distribution(settings['DISTRIBUTION']).version)
 
     start_time = set_default('START_TIME', get_now)
     set_default('UP_TIME', UpTime, start_time)
