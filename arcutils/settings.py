@@ -74,8 +74,9 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     files will be added (if not explicitly set before calling this
     function):
 
+        - CWD (current working directory; primarily for use in
+          development)
         - PACKAGE (top level project package)
-        - ROOT_DIR (project directory; should only be used in dev)
         - START_TIME (current date/time; will be an "aware" UTC datetime
           object if the project has time zone support enabled)
 
@@ -95,19 +96,14 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     adjusted accordingly. See :func:`derive_top_level_package_name` for
     more info about these args.
 
-    The ``PACKAGE`` and ``ROOT_DIR`` settings will be derived based on
-    the location of the settings module this function is called from. If
-    this isn't working, ensure the ``package_level`` and ``stack_level``
-    options are correct; or, set the ``PACKAGE`` setting explicitly
-    before calling this function::
+    The ``PACKAGE`` settings will be derived based on the location of
+    the settings module this function is called from. If this isn't
+    working, ensure the ``package_level`` and ``stack_level`` options
+    are correct; or, set the ``PACKAGE`` setting explicitly before
+    calling this function::
 
         PACKAGE = 'quickticket'
         init_settings()
-
-    ``ROOT_DIR`` can also be set explicitly if necessary.
-
-    .. note:: If the package name and related settings can't be derived
-        automatically, that indicates a bug in this function.
 
     To drop unused default settings, specify a list of such settings via
     the ``drop`` arg.
@@ -123,16 +119,6 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         if key not in settings:
             settings[key] = fn(*args, **kwargs)
         return settings[key]
-
-    def get_root_dir():
-        # The default value for ROOT_DIR is the directory N levels up
-        # from PACKAGE_DIR, where N is equal to the package depth of the
-        # top level package. Note that in most cases N is 1; it will be
-        # greater than 1 when the top level package is contained in a
-        # namespace package.
-        package_depth = len(settings['PACKAGE'].split('.'))
-        parts = os.path.split(settings['PACKAGE_DIR'])
-        return os.path.join(*parts[:package_depth])
 
     def get_now():
         # NOTE: We can't simply use Django's timezone.now() here because
@@ -155,8 +141,8 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         def current(self):
             return timezone.now() - self.start_time
 
+    set_default('CWD', os.getcwd)
     package = set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
-    set_default('ROOT_DIR', get_root_dir)
     set_default('VERSION', lambda: get_distribution(package).version)
 
     if local_settings:
