@@ -200,7 +200,11 @@ def init_local_settings(settings, prompt=None, quiet=None):
     Args:
         settings (dict): A dict of settings as you'd get from calling
             ``globals()`` in a Django settings module.
+        prompt (bool): Whether to prompt for missing local settings.
         quiet (bool): Squelch standard out when loading local settings.
+
+    .. note:: ``prompt`` and ``quiet`` are passed through to
+        :func:`local_settings.load_and_check_settings`.
 
     .. note:: If your project has additional local settings, they must
         be defined *before* this function is called.
