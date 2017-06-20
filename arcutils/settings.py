@@ -79,6 +79,8 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         - PACKAGE (top level project package)
         - START_TIME (current date/time; will be an "aware" UTC datetime
           object if the project has time zone support enabled)
+        - UP_TIME (an object that can be used to retrieve the current
+          up time)
 
     If the project has additional local settings, they must be defined
     *before* this function is called.
