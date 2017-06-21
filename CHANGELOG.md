@@ -1,5 +1,33 @@
 # Change Log for ARCUtils
 
+## 2.20.0 - 2017-06-21
+
+- Template directories are no longer specified in settings. In a typical
+  scenario, this isn't needed since template directories from installed
+  apps are already included/searched.
+- Removed Logstash logging config and Stashward dependency since we're
+  not using Logstash (and actually never really did).
+- Removed PSU CA certificate since it was only used by Stashward.
+- The following settings are no longer added by `init_settings()`:
+  - `ARCUTILS_PACKAGE_DIR`
+  - `PACKAGE_DIR`
+  - `ROOT_DIR` (replaced by `CWD`)
+- The following settings are now added by `init_settings()`:
+  - `CWD`: The current working directory (replaces `ROOT_DIR`)
+  - `DISTRIBUTION`: The Python distribution; defaults to the `PACKAGE`
+    setting
+- The `DISTRIBUTION` setting is now used to get the Python distribution
+  instead of `PACKAGE` (used to set the `VERSION` setting).
+- Simplified innards of `init_settings()`.
+- Added `coverage` dependency.
+- Replaced `runtests.py` with a RunCommands command: `run test`. The new
+  command has options to easily get a coverage report and do linting.
+- Added `install` command from ARCTasks.
+- `migrations` directories are now ignored when linting via `flake8`.
+- Improved `tox` config: added tox-specific pip requirements file.
+- Cleaned up `requirements.txt`.
+
+
 ## 2.19.0 - 2017-06-19
 
 ### Major Changes

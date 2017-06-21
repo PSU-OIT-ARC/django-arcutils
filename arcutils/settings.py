@@ -18,8 +18,8 @@ import base64
 import inspect
 import ipaddress
 import os
-import pkg_resources
 from datetime import datetime
+from pkg_resources import get_distribution
 
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings as django_settings
@@ -74,12 +74,15 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     files will be added (if not explicitly set before calling this
     function):
 
-        - ARCUTILS_PACKAGE_DIR
+        - CWD (current working directory; primarily for use in
+          development)
         - PACKAGE (top level project package)
-        - PACKAGE_DIR (top level project package directory)
-        - ROOT_DIR (project directory; should only be used in dev)
+        - DISTRIBUTION (the Python distribution name; often the same as
+          PACKAGE but not always; defaults to PACKAGE)
         - START_TIME (current date/time; will be an "aware" UTC datetime
           object if the project has time zone support enabled)
+        - UP_TIME (an object that can be used to retrieve the current
+          up time)
 
     If the project has additional local settings, they must be defined
     *before* this function is called.
@@ -97,20 +100,14 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     adjusted accordingly. See :func:`derive_top_level_package_name` for
     more info about these args.
 
-    The ``PACKAGE``, ``PACKAGE_DIR``, and ``ROOT_DIR`` settings will be
-    derived based on the location of the settings module this function
-    is called from. If this isn't working, ensure the ``package_level``
-    and ``stack_level`` options are correct; or, set the ``PACKAGE``
-    setting explicitly before calling this function::
+    The ``PACKAGE`` settings will be derived based on the location of
+    the settings module this function is called from. If this isn't
+    working, ensure the ``package_level`` and ``stack_level`` options
+    are correct; or, set the ``PACKAGE`` setting explicitly before
+    calling this function::
 
         PACKAGE = 'quickticket'
         init_settings()
-
-    ``PACKAGE_DIR`` and ``ROOT_DIR`` can also be set explicitly if
-    necessary.
-
-    .. note:: If the package name and related settings can't be derived
-        automatically, that indicates a bug in this function.
 
     To drop unused default settings, specify a list of such settings via
     the ``drop`` arg.
@@ -122,61 +119,43 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
     """
     settings = settings if settings is not None else get_module_globals(stack_level)
 
-    if not settings.get('ARCUTILS_PACKAGE_DIR'):
-        arcutils_package_dir = pkg_resources.resource_filename('arcutils', '')
-        settings['ARCUTILS_PACKAGE_DIR'] = arcutils_package_dir
+    def set_default(key, fn, *args, **kwargs):
+        if key not in settings:
+            settings[key] = fn(*args, **kwargs)
+        return settings[key]
 
-    if not settings.get('PACKAGE'):
-        # The default value for PACKAGE is derived by figuring out where
-        # init_settings was called from in terms of package and scope.
-        settings['PACKAGE'] = derive_top_level_package_name(package_level, stack_level)
+    def get_now():
+        # NOTE: We can't simply use Django's timezone.now() here because
+        # it accesses settings.USE_TZ, but at this point the settings
+        # may not be considered fully configured by Django, so we have
+        # to do this to avoid an ImproperlyConfigured exception.
+        use_tz = settings.get('USE_TZ', False)
+        if use_tz:
+            return datetime.utcnow().replace(tzinfo=timezone.utc)
+        return datetime.now()
 
-    if not settings.get('PACKAGE_DIR'):
-        # The default value for PACKAGE_DIR is simply the directory
-        # corresponding to PACKAGE.
-        settings['PACKAGE_DIR'] = pkg_resources.resource_filename(settings['PACKAGE'], '')
+    class UpTime:
 
-    if not settings.get('ROOT_DIR'):
-        # The default value for ROOT_DIR is the directory N levels up
-        # from PACKAGE_DIR, where N is equal to the package depth of the
-        # top level package. Note that in most cases N is 1; it will be
-        # greater than 1 when the top level package is contained in a
-        # namespace package.
-        package_depth = len(settings['PACKAGE'].split('.'))
-        parts = os.path.split(settings['PACKAGE_DIR'])
-        root_dir = os.path.join(*parts[:package_depth])
-        settings['ROOT_DIR'] = root_dir
+        __slots__ = ('start_time',)
 
-    if not settings.get('VERSION'):
-        dist = pkg_resources.get_distribution(settings['PACKAGE'])
-        settings['VERSION'] = dist.version
+        def __init__(self, start_time):
+            self.start_time = start_time
+
+        @property
+        def current(self):
+            return timezone.now() - self.start_time
+
+    set_default('CWD', os.getcwd)
+    set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
 
     if local_settings:
         init_local_settings(settings, prompt=prompt, quiet=quiet)
 
-    # NOTE: We can't simply use Django's timezone.now() here because it
-    #       accesses settings.USE_TZ, but at this point the settings
-    #       may not be considered fully configured by Django, so we have
-    #       to do this to avoid an ImproperlyConfigured exception.
-    use_tz = settings.get('USE_TZ', False)
-    now = datetime.utcnow().replace(tzinfo=timezone.utc) if use_tz else datetime.now()
-    settings.setdefault('START_TIME', now)
+    set_default('DISTRIBUTION', lambda: settings['PACKAGE'])
+    set_default('VERSION', lambda: get_distribution(settings['DISTRIBUTION']).version)
 
-    if not settings.get('UP_TIME'):
-
-        class UpTime:
-
-            __slots__ = ('start_time',)
-
-            def __init__(self, start_time):
-                self.start_time = start_time
-
-            @property
-            def current(self):
-                from django.utils import timezone
-                return timezone.now() - self.start_time
-
-        settings['UP_TIME'] = UpTime(settings['START_TIME'])
+    start_time = set_default('START_TIME', get_now)
+    set_default('UP_TIME', UpTime, start_time)
 
     # Remove the MIDDLEWARE_CLASSES setting on Django >= 1.10, but only
     # if the MIDDLEWARE setting is present *and* set.
@@ -200,7 +179,11 @@ def init_local_settings(settings, prompt=None, quiet=None):
     Args:
         settings (dict): A dict of settings as you'd get from calling
             ``globals()`` in a Django settings module.
+        prompt (bool): Whether to prompt for missing local settings.
         quiet (bool): Squelch standard out when loading local settings.
+
+    .. note:: ``prompt`` and ``quiet`` are passed through to
+        :func:`local_settings.load_and_check_settings`.
 
     .. note:: If your project has additional local settings, they must
         be defined *before* this function is called.

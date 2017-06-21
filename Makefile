@@ -34,9 +34,9 @@ clean-install:
 	rm -rf $(egg_info)
 
 test: install
-	$(venv)/bin/python runtests.py
+	$(venv)/bin/runcommand test
 coverage:
-	$(venv)/bin/coverage run --source $(package) runtests.py && coverage report
+	$(venv)/bin/runcommand test --with-coverage
 
 tox: install
 	$(venv)/bin/tox
