@@ -5,19 +5,9 @@
 This package provides utilities that are commonly needed in ARC Django projects. It supports Python
 3.3+ and Django 1.8+.
 
-## General Note
-
-If ARCUtils contains a specific type of functionality that is needed in an ARC project, it is
-generally preferable to use the ARCUtils functionality instead of another package, since the entire
-purpose of ARCUtils is to encapsulate the configuration and functionality needed by many or most
-ARC projects.
-
-On the other hand (and this is a note to self as much as to anyone else), we should _avoid_ adding
-functionality to ARCUtils whenever possible.
-
 ## Development
 
-To work on this package, run `make init`; this will create a virtualenv for you, install the
+To work on this package, run `make init`. This will create a virtualenv for you, install the
 package in editable mode, and run the tests. Take a look at the Makefile to see the actual commands
 that are run.
 
@@ -28,8 +18,8 @@ Run `make test`.
 ## Usage
 
 _The following assumes your package has a setup.py that uses setuptools' `setup()` and that you are
-using pip. You will need to specify `--find-links http://cdn.research.pdx.edu/pypi/dist/` when
-running `pip install` (it's easiest to add `--find-links ...` to the top of the project's
+using pip. You will need to specify `--find-links http://pypi.research.pdx.edu/dist/` when running
+`pip install` (it's easiest to add `--find-links ...` to the top of the project's
 requirements.txt)._
 
 To use this package in a Django project, do the following:
@@ -59,8 +49,8 @@ straightforward:
   cases, this will be the only value in `AUTHENTICATION_BACKENDS`)
 - Include CAS URLs in the project's root URLconf: `url(r'^account/', include(arcutils.cas.urls))`
 
-By default, the first time a user logs in, a `User` record (with no password) will be created in the
-project's database.
+By default, the first time a user logs in, a `User` record (with an unusable password) will be
+created in the project's database.
 
 ### Database - arcutils.db
 
