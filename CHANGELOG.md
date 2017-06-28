@@ -1,8 +1,14 @@
 # Change Log for ARCUtils
 
-## 2.21.0 - unreleased
+## 2.21.0 - 2017-06-28
 
-In progress...
+Made a couple tweaks to the `masquerade` app:
+
+- Made the `is_masquerading` tempate tag more robust by immediately
+  returning `False` when masquerading is disabled.
+- For consistency, always register masquerade routes. This ensures URL
+  generation always works. When masquerading is disabled, all views
+  explicitly return a 404 response.
 
 
 ## 2.20.0 - 2017-06-21
