@@ -1,5 +1,10 @@
 # Change Log for ARCUtils
 
+## 2.23.0 - unreleased
+
+In progress...
+
+
 ## 2.22.0 - 2017-07-10
 
 - Upgraded django-local-settings 1.0a6 to 1.0a7. The latter doesn't
