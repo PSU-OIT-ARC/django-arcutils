@@ -1,8 +1,11 @@
 # Change Log for ARCUtils
 
-## 2.22.0 - unreleased
+## 2.22.0 - 2017-07-10
 
-In progress...
+- Upgraded django-local-settings 1.0a6 to 1.0a7. The latter doesn't
+  choke on tuple settings like the former did.
+- Enhanced the `UpTime` setting, in particular so that `str` and `repr`
+  return useful representations.
 
 
 ## 2.21.0 - 2017-06-28
