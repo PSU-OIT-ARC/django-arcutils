@@ -18,7 +18,7 @@ import base64
 import inspect
 import ipaddress
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pkg_resources import get_distribution
 
 from django import VERSION as DJANGO_VERSION
@@ -44,6 +44,47 @@ class _InternalIPsType:
 
 
 INTERNAL_IPS = _InternalIPsType()
+
+
+class UpTime:
+
+    __slots__ = ('start_time',)
+
+    def __init__(self, start_time):
+        self.start_time = start_time
+
+    @property
+    def current(self) -> timedelta:
+        """Get current up time as a timedelta object."""
+        return timezone.now() - self.start_time
+
+    @property
+    def current_tuple(self) -> tuple:
+        """Get current up time as (days, hours, minutes, seconds)."""
+        seconds = self.current.total_seconds()
+        days, seconds = divmod(seconds, 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+        days, hours, minutes, seconds = map(int, (days, hours, minutes, seconds))
+        return days, hours, minutes, seconds
+
+    def __str__(self) -> str:
+        """Get up time as "{days}d {hours}h {minutes}m {seconds}s"."""
+        parts = []
+        days, hours, minutes, seconds = self.current_tuple
+        if days:
+            parts.append('{days:d}d')
+        if days or hours:
+            parts.append('{hours:d}h')
+        if days or hours or minutes:
+            parts.append('{minutes:d}m')
+        parts.append('{seconds:d}s')
+        string = ' '.join(parts)
+        string = string.format_map(locals())
+        return string
+
+    def __repr__(self) -> str:
+        return 'UpTime({self.current})'.format(self=self)
 
 
 def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, package_level=0,
@@ -133,17 +174,6 @@ def init_settings(settings=None, local_settings=True, prompt=None, quiet=None, p
         if use_tz:
             return datetime.utcnow().replace(tzinfo=timezone.utc)
         return datetime.now()
-
-    class UpTime:
-
-        __slots__ = ('start_time',)
-
-        def __init__(self, start_time):
-            self.start_time = start_time
-
-        @property
-        def current(self):
-            return timezone.now() - self.start_time
 
     set_default('CWD', os.getcwd)
     set_default('PACKAGE', derive_top_level_package_name, package_level, stack_level + 1)
