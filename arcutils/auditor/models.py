@@ -33,6 +33,11 @@ class AuditLog(models.Model):
     new_value = JSONField(null=True, blank=True)
 
     @property
+    def related_count(self):
+        """Number of related changes in this record's changeset."""
+        return self.__class__.objects.filter(changeset_id=self.changeset_id).count() - 1
+
+    @property
     def type(self):
         if self.created:
             return 'creation'
