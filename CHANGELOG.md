@@ -1,8 +1,16 @@
 # Change Log for ARCUtils
 
-## 2.23.0 - unreleased
+## 2.23.0 - 2017-07-28
 
-In progress...
+- Added DRF serializer field type: `LocalDateTimeField`. This converts
+  the time to local time before serializing it to a string so that it
+  will read as expected when rendered in a template.
+- Changed default ordering of `AuditLog` records so that the most
+  recently added log records come first. Wanting to see the most recent
+  changes first is probably the most common usage scenario.
+- Added `AuditLog.related_changes` property to make it easy to check
+  if a log record has any related changes.
+- Upgraded `certifi` 2017.4.17 to 2017.7.27.1.
 
 
 ## 2.22.0 - 2017-07-10
