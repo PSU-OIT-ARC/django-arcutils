@@ -11,7 +11,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 class AuditLog(models.Model):
 
     class Meta:
-        ordering = ['timestamp', 'changeset_id', 'sequence']
+        ordering = ['-timestamp', 'changeset_id', 'sequence']
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
@@ -31,6 +31,11 @@ class AuditLog(models.Model):
     field_name = models.CharField(max_length=255)
     old_value = JSONField(null=True, blank=True)
     new_value = JSONField(null=True, blank=True)
+
+    @property
+    def related_count(self):
+        """Number of related changes in this record's changeset."""
+        return self.__class__.objects.filter(changeset_id=self.changeset_id).count() - 1
 
     @property
     def type(self):
