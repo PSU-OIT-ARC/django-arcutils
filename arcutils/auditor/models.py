@@ -11,7 +11,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 class AuditLog(models.Model):
 
     class Meta:
-        ordering = ['timestamp', 'changeset_id', 'sequence']
+        ordering = ['-timestamp', 'changeset_id', 'sequence']
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
 
