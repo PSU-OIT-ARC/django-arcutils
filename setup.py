@@ -25,7 +25,7 @@ else:
 deps = {
     'coverage': 'coverage>=4.4.1',
     'djangorestframework': 'djangorestframework>=3.6.3',
-    'ldap3': 'ldap3>=2.2.4',
+    'ldap3': 'ldap3>=2.3',
 }
 
 setup(
