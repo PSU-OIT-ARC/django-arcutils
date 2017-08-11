@@ -30,6 +30,6 @@ import ldap3
 
 from .connection import connect  # noqa
 from .search import ldapsearch, ldapsearch_by_email  # noqa
-from .utils import escape  # noqa
+from .utils import escape, parse_dn  # noqa
 
 CONNECTION_TYPE = ldap3.Connection

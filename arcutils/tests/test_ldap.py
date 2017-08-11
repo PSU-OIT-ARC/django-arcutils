@@ -1,3 +1,4 @@
+from doctest import DocTestSuite
 from unittest import TestCase
 
 import ldap3
@@ -10,6 +11,12 @@ from arcutils.ldap.profile import (
     parse_psu_extension,
     parse_profile,
 )
+from arcutils.ldap import utils
+
+
+def load_tests(loader, tests, ignore):
+    tests.addTests(DocTestSuite(utils))
+    return tests
 
 
 class TestLDAP(TestCase):
