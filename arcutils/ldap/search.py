@@ -59,7 +59,8 @@ def ldapsearch(query, connection=None, using='default', search_base=None,
             # For asynchronous strategies, result will be an int.
             response, _ = connection.get_response(result)
 
-    return [parse_profile(r['attributes']) for r in response] if parse else response
+    results = [r for r in response if r.get('type') != 'searchResRef']
+    return [parse_profile(r['attributes']) for r in results] if parse else results
 
 
 def ldapsearch_by_email(email, **kwargs):

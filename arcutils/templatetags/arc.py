@@ -271,16 +271,16 @@ def redirect_location(context, redirect_field_name=REDIRECT_FIELD_NAME, default_
 
     Wraps :func:`arcutils.response.get_redirect_location`.
 
-    To make this a little easier to use in templates, ``default`` and
-    ``kwargs`` are passed to Django's ``resolve_url()``. This keeps us
-    from having to do this::
+    To make this a little easier to use in templates,
+    ``default_location`` and ``kwargs`` are passed to Django's
+    ``resolve_url()``. This keeps us from having to do this::
 
         {% url 'xyz' x=1 as default_url %}
-        <a href="{% redirect_location default=default_url %}
+        <a href="{% redirect_location default_location=default_url %}
 
     and lets us do this instead::
 
-        <a href="{% redirect_location default='xyz' x=1 %}"
+        <a href="{% redirect_location default_location='xyz' x=1 %}"
 
     .. note:: The above doesn't work with positional route args. For
         such routes, use ``{% url ... as ... %}``.

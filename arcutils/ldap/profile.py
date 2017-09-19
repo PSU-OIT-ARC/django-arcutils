@@ -1,8 +1,7 @@
 import functools
 import re
-from collections import defaultdict
 
-from ldap3.utils.dn import parse_dn as _parse_dn
+from .utils import parse_dn
 
 
 def parse_profile(attributes):
@@ -269,27 +268,8 @@ def parse_member_of(attributes):
     """
     member_of = _get_attribute(attributes, 'memberOf', True)
     member_of = [parse_dn(m) for m in member_of]
-    member_of = [{'name': dn['cn'][0]} for dn in member_of]
+    member_of = [{'name': dn['first_cn']} for dn in member_of]
     return member_of
-
-
-def parse_dn(string):
-    """Parse a DN into a dict.
-
-    For example::
-
-        >>> parse_dn('CN=ABC,OU=XYZ,DC=PSU,DC=DS,DC=PDX,DC=EDU')
-        {'cn': ['ABC'], 'dc': ['PSU', 'DS', 'PDX', 'EDU'], 'ou': ['XYZ']}
-
-    Note that the keys get lower-cased for consistent access, but the
-    values are left as is.
-
-    """
-    dn = defaultdict(list)
-    for parts in _parse_dn(string):
-        k, v, *rest = parts
-        dn[k.lower()].append(v)
-    return dict(dn)
 
 
 def _reformat_datetime(dt):
