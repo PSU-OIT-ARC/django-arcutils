@@ -1,8 +1,14 @@
 # Change Log for ARCUtils
 
-## 2.24.0 - unreleased
+## 2.24.0 - 2017-09-19
 
-In progress...
+Made a few LDAP-related changes:
+
+- Upgraded ldap3 2.2.4 => 2.3
+- Added `ldap.utils.parse_dn()`; this wraps ldap3's `parse_dn()` utility
+  function, returning the results in an easier-to-user format
+- `searchResRef`s type results are now excluded from LDAP/AD search
+  results
 
 
 ## 2.23.0 - 2017-07-28
