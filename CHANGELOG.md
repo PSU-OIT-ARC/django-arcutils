@@ -1,5 +1,10 @@
 # Change Log for ARCUtils
 
+## 2.25.0 - unreleased
+
+In progress...
+
+
 ## 2.24.0 - 2017-09-19
 
 Made a few LDAP-related changes:
